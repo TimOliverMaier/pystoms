@@ -1,0 +1,8 @@
+# egg-info, toml is created when pip building
+
+/src/pystoms.egg-info/
+*.toml
+# pycache folder
+
+src/pystoms/__pycache__/
+
