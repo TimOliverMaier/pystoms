@@ -36,8 +36,16 @@ class FeatureLoaderDDA():
         # get summary data
         self._fetchPrecursor()
 
-    def loadData3D(self,marginLeft,marginRight,intensityMin,scanRange):
+    def loadData3D(self,marginLeft:float,marginRight:float,intensityMin:int,scanRange:int):
+        """Load Precursor datapoints. Using averagine model for number of isotopic peaks.
 
+        Args:
+            marginLeft (float): Mz region lower than monoisotopic peak to consider
+            marginRight (float): Mz region lower than monoisotopic peak to consider
+            intensityMin (int): Minimum considered intensity.
+            scanRange (int): Number of scans to consider.
+        """
+        
         peakN = self.getNumPeaks(self.monoisotopicMz,self.charge)
         scanMin = self.scanNumber-scanRange//2
         scanMax = self.scanNumber+scanRange//2
@@ -52,7 +60,7 @@ class FeatureLoaderDDA():
 
         scatterplot(x=mzs,y=scans,c=intensity)
 
-    
+        return (scans,mzs,intensity,frame)
 
     def loadData4D():
         raise NotImplementedError("Extraction of 4D feature is not yet implemented, \
