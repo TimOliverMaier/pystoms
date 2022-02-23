@@ -8,20 +8,23 @@ from scipy.optimize import curve_fit
 from pyproteolizard.data import PyTimsDataHandle, TimsFrame
 from pandas import DataFrame
 import numpy as np
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
 
 class FeatureLoaderDDA():
     """ Class to load a precursor peptide feature
         by it's Id from a DDA dataset.
     """
-    def _fetchPrecursor(self):
-        """ get row data from precursors table"""
+    def _fetchPrecursor(self)-> None:
+        """get row data from experiment's precursors table
+        """
         featureDataRow = self.datasetPointer.get_precursor_by_id(self.precursorID)
         self.monoisotopicMz = featureDataRow["MonoisotopicMz"].values[0]
         self.charge = featureDataRow["Charge"].values[0]
         self.scanNumber = featureDataRow["ScanNumber"].values[0]
         self.frameID = featureDataRow["Parent"].values[0]
 
-    def _getPrecursorSummary(self):
+    def _getPrecursorSummary(self) -> None:
         """returns precursor row data
         """
         summary = DataFrame({"MonoisotopicMz":self.monoisotopicMz, \
@@ -31,18 +34,34 @@ class FeatureLoaderDDA():
                                 })
         return(summary)
     
-    def _getScanBoundaries(self,datapoints:np.ndarray,model:str="gaussian",cutoffL:float=0.05,cutoffR:float=0.95) -> tuple:
-        
+    def _getScanBoundaries(self,datapoints:np.ndarray,IMSmodel:str="gaussian",cutoffL:float=0.05,cutoffR:float=0.95) -> tuple:
+        """Estimate minimum scan and maximum scan.
+
+        Args:
+            datapoints (np.ndarray): Scan, Itensity data from monoisotopic peak. 
+                                     Structure of 2D array [[scan1,intensity_n],...,[scan_n,intensity_n]]
+            IMSmodel (str, optional): Model of an IMS peak. Defaults to "gaussian".
+            cutoffL (float, optional): Probability mass to ignore on "left side". Defaults to 0.05.
+            cutoffR (float, optional): Probability mass to ignore on "right side". Defaults to 0.95.
+
+        Returns:
+            tuple (int,int): (lower scan bound, upper scan bound)
+        """
+        # model functions to fit
         def _gauss(data,α,μ,σ):
             return α*1/(σ*np.sqrt(2*np.pi))*np.exp(-0.5*np.power((data-μ)/(σ),2))
         
+        # extract data
         x = datapoints.T[0]
         y = datapoints.T[1]
         
-        if model == "gaussian":
+        if IMSmodel == "gaussian":
+            # fit model function
             param_opt,param_cov = curve_fit(_gauss,x,y,bounds=([y.min(),x.min(),0],[y.max(),x.max(),inf]))
             
+            # instantiate a normal distribution with calculated parameters
             fit_dist = norm(param_opt[1],param_opt[2])
+            # calculate lower and upper quantile
             lower = fit_dist.ppf(cutoffL)
             upper = fit_dist.ppf(cutoffR)
             
@@ -57,62 +76,87 @@ class FeatureLoaderDDA():
         # get summary data
         self._fetchPrecursor()
 
-    def loadData3D(self,marginLeft:float = 0.1,marginRight:float = 0.1,intensityMin:int = 10):
-        """Load Precursor datapoints. Using averagine model for number of isotopic peaks.
+    def loadHullData3D( self,
+                    intensityMin:int = 10,
+                    IMSmodel:str="gaussian",
+                    MZpeakwidth:float=0.1,
+                    AveragineProbMassTarget:float = 0.95,
+                    plotFeature:bool=False,
+                    ScanRange:int=80) -> DataFrame:
+        """Estimate convex hull of feature and return datapoints inside hull.
 
         Args:
-            marginLeft (float): Mz region lower than monoisotopic peak to consider
-            marginRight (float): Mz region lower than monoisotopic peak to consider
-            intensityMin (int): Minimum considered intensity.
-            
+            intensityMin (int, optional): Minimal peak intensity considered as signal. Defaults to 10.
+            IMSmodel (str, optional): Model use in estimation of feature's width in IMS dimension. Defaults to "gaussian".
+            MZpeakwidth (float, optional): Expected width of a peak in mz dimension. Defaults to 0.1.
+            AveragineProbMassTarget (float, optional): Probability mass of averagine model's poisson distribution covered
+                                                    with extracted isotopic peaks . Defaults to 0.95.
+            plotFeature (bool, optional): If true a scatterplot of feature is printed. Defaults to False.
+            ScanRange (int, optional): This parameter is handling the number of scans used to infer the
+                                       scan bounadaries of the monoisotopic peak. Defaults to 80.
+
+        Returns:
+            DataFrame: Dataframe with points in convex hull (scan,mz,intensity)
         """
-        scanMinInit = int(self.scanNumber//1-40)
-        scanMaxInit = int(self.scanNumber//1+40)
-        mzMinInit = self.monoisotopicMz-0.1
-        mzMaxInit = self.monoisotopicMz+0.1
+        # bounds of monoisotopic peak based on arguments
+        scanMinInit = int(self.scanNumber//1)-ScanRange//2
+        scanMaxInit = int(self.scanNumber//1)+ScanRange//2
+        mzMinInit = self.monoisotopicMz-MZpeakwidth
+        mzMaxInit = self.monoisotopicMz+MZpeakwidth
         
+        # extract monoisotopic peak
         frameInit = self.datasetPointer.get_frame(self.frameID).filter_ranged(scanMinInit,scanMaxInit,mzMinInit,mzMaxInit,intensityMin)
         
+        # calculate profile of monoisotopic peak
         monoProfileData = self.getMonoisotopicProfile(  self.monoisotopicMz,
                                                         self.scanNumber,
-                                                        frameInit)
-        scanMin_estimated,scanMax_estimated = self._getScanBoundaries(monoProfileData)
-        peakN = self.getNumPeaks(self.monoisotopicMz,self.charge)
-        mzMin_estimated = self.monoisotopicMz-marginLeft
-        mzMax_estimated = self.monoisotopicMz+(peakN-1)*self.charge+marginRight
+                                                        frameInit,
+                                                        ScanRange//2,
+                                                        MZpeakwidth/2)
+        # estimate scan boundaries
+        scanMin_estimated,scanMax_estimated = self._getScanBoundaries(monoProfileData,IMSmodel)
         
+        # via averagine calculate how many peaks should be considerd.
+        peakN = self.getNumPeaks(self.monoisotopicMz,self.charge,AveragineProbMassTarget)
+        mzMin_estimated = self.monoisotopicMz-MZpeakwidth
+        mzMax_estimated = self.monoisotopicMz+(peakN-1)*1/self.charge+MZpeakwidth
+        
+        # extract feature's hull data
         frame = self.datasetPointer.get_frame(self.frameID).filter_ranged(  scanMin_estimated,
                                                                                 scanMax_estimated,
                                                                                 mzMin_estimated,
                                                                                 mzMax_estimated,
                                                                                 intensityMin)
-        
-
-        
         scans = frame.scan()
         mzs = frame.mz()
         intensity = frame.intensity()
         
-        #scatterplot(x=mzs,y=scans,c=intensity)
-
+        # plot
+        if plotFeature:
+            scatter3D = plt.figure()
+            ax = scatter3D.add_subplot(111,projection="3d")
+            ax.scatter(mzs,scans,intensity)
+        # return as Dataframe
         return DataFrame({"Scan":scans,"Mz":mzs,"Intensity":intensity})
     
     
-    def loadData4D():
+    def loadHullData4D():
         raise NotImplementedError("Extraction of 4D feature is not yet implemented, \
          use .loadData3D for IMS,mz,Intensitiy extraction")
 
     @staticmethod
-    def getNumPeaks(monoisotopicMz: float,charge: int,probMassTarget: float = 0.95):
+    def getNumPeaks(monoisotopicMz: float,charge: int,probMassTarget: float = 0.95) -> int:
         """Calculation of number of isotopic peaks
         by averagine model. 
 
         Args:
             monoisotopicMz (float): Position of monoisotopic peak.
             charge (int): Charge of peptide
-            probMassTarget(float, optional): Total probability mass of poisson 
+            probMassTarget(float, optional): Minimum probability mass of poisson 
             distribtuion, that shall be covered (beginning with monoisotopic peak).
             Defaults to 0.95.
+        Returns:
+            int: Number of relevant peaks
         """
         # calculate λ of averagine poisson distribution
         mass = monoisotopicMz * charge
@@ -132,6 +176,49 @@ class FeatureLoaderDDA():
             # print(f"{peakNumber} peak. Probability Mass : {peakMass}")
         
         return peakNumber
+
+    @staticmethod
+    def getMonoisotopicProfile( monoisotopicMZ:float,
+                                scanNumber:float,
+                                frameSlice:TimsFrame,
+                                scanRange:int = 20,
+                                mzRange:float=0.05) -> np.ndarray:
+        """Gets profile of monoisotopic peak in IMS dimension.
+
+        Sums up peaks per scan that have a mz value close enough (mzRange)
+        to monoisotopic peak mz.
+
+        Args:
+            monoisotopicMZ (float): Mz value of peak.
+            scanNumber (float): ScanNumber of peak.
+            frameSlice (TimsFrame): Slice of monoisotopic peak
+            scanRange (int, optional): Number of scans to consider. Defaults to 20.
+            mzRange (float, optional): Maximal distance of a peak to monoisotopic mz
+                                         to be considered in calculation. Defaults to 0.05.
+        Returns:
+            np.ndarray: 2D Array of structure [[scan,intensity],...]
+        """
+        # lowest scan number and highest scan number
+        scanL = int(scanNumber//1)-scanRange//2
+        scanU = scanL + scanRange
+        consideredScans = np.arange(scanL,scanU)
+        
+        # extract values from passed TimsFrame slice of MI peak
+        scans = frameSlice.scan().copy()
+        mzs = frameSlice.mz().copy()
+        intensities = frameSlice.intensity().copy()
+        
+        idxs = np.zeros((scanRange,2))
+
+        for i,scan_i in enumerate(consideredScans):
+            # only view points in mz range and current scan
+            intensities_ma = np.ma.MaskedArray(intensities, mask = (scans!=scan_i)|(mzs<monoisotopicMZ-mzRange)|(mzs>monoisotopicMZ+mzRange))
+            # sum these points up (intensities) and store in 2D array
+            intensity_cumulated = np.ma.sum(intensities_ma) if intensities_ma.count()>0 else 0
+            idxs[i] = [scan_i,intensity_cumulated]
+
+        
+        return idxs
 
     @staticmethod
     def findClosestPeaks(scanRange:int, monoisotopicMz:float,scanNumber:float,frameSlice:TimsFrame):
@@ -154,36 +241,5 @@ class FeatureLoaderDDA():
             idxs[i] = idx
         print(idxs)
         return idxs
-
-    @staticmethod
-    def getMonoisotopicProfile(monoisotopicMZ:float,scanNumber:float,frameSlice:TimsFrame,scanRange:int = 20,mzRange:float=0.05):
-        """_summary_
-
-        Args:
-            monoisotopicMZ (float): _description_
-            scanNumber (float): _description_
-            frameSlice (TimsFrame): _description_
-            scanRange (int, optional): _description_. Defaults to 10.
-            mzRange (float, optional): _description_. Defaults to 0.05.
-        """
-        scanL = scanNumber//1-scanRange//2
-        scanU = scanL + scanRange
-        consideredScans = np.arange(scanL,scanU)
-        
-        scans = frameSlice.scan().copy()
-        mzs = frameSlice.mz().copy()
-        intensities = frameSlice.intensity().copy()
-        
-        idxs = np.zeros((scanRange,2))
-
-        for i,scan_i in enumerate(consideredScans):
-            intensities_ma = np.ma.MaskedArray(intensities, mask = (scans!=scan_i)|(mzs<monoisotopicMZ-mzRange)|(mzs>monoisotopicMZ+mzRange))
-            intensity_cumulated = np.ma.sum(intensities_ma)
-            idxs[i] = [scan_i,intensity_cumulated]
-
-        
-        return idxs
-
-
     
 
