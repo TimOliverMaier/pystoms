@@ -3,13 +3,16 @@ from pyproteolizard.data import TimsFrame
 from pyproteolizard.utility import *
 import numpy as np
 import pandas as pd
+import matplotlib.pyplot as plt
 
 def precursorDBSCAN3D(frame:TimsFrame,
                       eps:float = 1.7, 
                       min_samples:int = 3, 
                       metric:str = "euclidean",
                       scan_scaling:float =-.4, 
-                      resolution:int = 50000) -> pd.DataFrame:
+                      resolution:int = 50000,
+                      addPoint:tuple = (None,None),
+                      plot:bool = False) -> tuple:
     """Analogus function to pyproteolizard.data.cluster_precursors_dbscan.
        This function executes DBSCAN on 3D data (scan,mz,intenstiy) of a 
        given (possibly filtered) frame.
@@ -24,24 +27,41 @@ def precursorDBSCAN3D(frame:TimsFrame,
         scan_scaling (float, optional): a scale factor for ion mobility, 
             will be calculated as index / 2^scan_scaling. Defaults to -.4.
         resolution (int, optional): mass spectometer's resolution. Defaults to 50000.
+        addPoint (tuple, optional): Add artifical point to find cluster of e.g. MI peak. (mz,scan).
+                                    Defaults to (None,None).
+        plot (bool, optional): If true plot of datapoints is printed (if passed with added MI peak)
 
     Returns:
-        pd.DataFrame: Dataframe with columns: ["Scans","Mz","DBSCAN_Label"]. 
+        tuple (pd.DataFrame,int): Dataframe with columns: ["Scans","Mz","DBSCAN_Label"] and label of added point 
+                                    (-1 if no point was added).
     """
 
     # get Data from frame
     scans = frame.scan().copy()
     mzs = frame.mz().copy()
-
+    
     # rescale data
     mzs_scaled = peak_width_preserving_mz_transform(mzs,resolution)
     scans_scaled = scans/np.power(2,scan_scaling)
-
+    
     # bin scans and mzs to one array [[scan_1,mz_1],...,[scan_j,mz_j]]
     X = np.stack([mzs_scaled,scans_scaled],axis=1)
-
+    if addPoint[0] != None:
+        mi_mz_scaled = peak_width_preserving_mz_transform(addPoint[0],resolution)
+        mi_scan_scaled = addPoint[1]/np.power(2,scan_scaling)
+        if plot:
+            plt.scatter(mzs,scans,alpha=0.2)
+            plt.scatter(addPoint[0],addPoint[1])
+            plt.show()
+        X = np.vstack([X,[mi_mz_scaled,mi_scan_scaled]])
+        
     # run DBSCAN
     Clustering = DBSCAN(eps=eps,min_samples=min_samples,metric=metric).fit(X)
     cluster = Clustering.labels_
-
-    return pd.DataFrame(np.stack([scans,mzs,cluster],axis=1),columns=["Scan","Mz","DBSCAN_Label"])
+    MIclusterID = -1
+    if addPoint[0] != None:
+        print(MIclusterID)
+        MIclusterID = cluster[-1]
+        cluster = np.delete(cluster,-1)
+    
+    return (pd.DataFrame(np.stack([scans,mzs,cluster],axis=1),columns=["Scan","Mz","Cluster"]),MIclusterID)

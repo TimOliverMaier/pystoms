@@ -6,6 +6,7 @@ from cmath import inf
 from scipy.stats import poisson, norm
 from scipy.optimize import curve_fit
 from pyproteolizard.data import PyTimsDataHandle, TimsFrame
+from pystoms.clustering import precursorDBSCAN3D
 from pandas import DataFrame
 import numpy as np
 import matplotlib.pyplot as plt
@@ -27,10 +28,10 @@ class FeatureLoaderDDA():
     def _getPrecursorSummary(self) -> None:
         """returns precursor row data
         """
-        summary = DataFrame({"MonoisotopicMz":self.monoisotopicMz, \
-                                "Charge":self.charge,                 \
-                                "ScanNumber":self.scanNumber,         \
-                                "FrameID":self.frameID                \
+        summary = DataFrame({"MonoisotopicMz":self.monoisotopicMz, 
+                                "Charge":self.charge,                 
+                                "ScanNumber":self.scanNumber,         
+                                "FrameID":self.frameID                
                                 })
         return(summary)
     
@@ -70,6 +71,7 @@ class FeatureLoaderDDA():
         else:
             raise NotImplementedError("This model is not implemented")
 
+    
     def __init__(self, dataHandle: PyTimsDataHandle, precursorID: int):
         self.datasetPointer = dataHandle
         self.precursorID = precursorID
@@ -107,20 +109,33 @@ class FeatureLoaderDDA():
         # extract monoisotopic peak
         frameInit = self.datasetPointer.get_frame(self.frameID).filter_ranged(scanMinInit,scanMaxInit,mzMinInit,mzMaxInit,intensityMin)
         
-        # calculate profile of monoisotopic peak
-        monoProfileData = self.getMonoisotopicProfile(  self.monoisotopicMz,
-                                                        self.scanNumber,
-                                                        frameInit,
-                                                        ScanRange//2,
-                                                        MZpeakwidth/2)
-        # estimate scan boundaries
-        scanMin_estimated,scanMax_estimated = self._getScanBoundaries(monoProfileData,IMSmodel)
-        
-        # via averagine calculate how many peaks should be considerd.
+         # via averagine calculate how many peaks should be considerd.
         peakN = self.getNumPeaks(self.monoisotopicMz,self.charge,AveragineProbMassTarget)
         mzMin_estimated = self.monoisotopicMz-MZpeakwidth
         mzMax_estimated = self.monoisotopicMz+(peakN-1)*1/self.charge+MZpeakwidth
         
+        if IMSmodel in ["gaussian"]:
+                
+            # calculate profile of monoisotopic peak
+            monoProfileData = self.getMonoisotopicProfile(  self.monoisotopicMz,
+                                                            self.scanNumber,
+                                                            frameInit,
+                                                            ScanRange//2,
+                                                            MZpeakwidth/2)
+            # estimate scan boundaries
+            scanMin_estimated,scanMax_estimated = self._getScanBoundaries(monoProfileData,IMSmodel)
+        elif IMSmodel == "DBSCAN":
+            
+            clusteredData, MIClusterID = precursorDBSCAN3D(frameInit,addPoint = (self.monoisotopicMz,self.scanNumber),plot=plotFeature)
+            
+            if MIClusterID != -1:
+                MICluster = clusteredData[clusteredData.Cluster == MIClusterID]
+                scanMax_estimated = int(MICluster.Scan.max())
+                scanMin_estimated = int(MICluster.Scan.min())
+            else:
+                raise ValueError("Monoisotopic peak cluster could not be found, use different method for\
+                             Eestimation of scan width")
+       
         # extract feature's hull data
         frame = self.datasetPointer.get_frame(self.frameID).filter_ranged(  scanMin_estimated,
                                                                                 scanMax_estimated,
@@ -220,26 +235,6 @@ class FeatureLoaderDDA():
         
         return idxs
 
-    @staticmethod
-    def findClosestPeaks(scanRange:int, monoisotopicMz:float,scanNumber:float,frameSlice:TimsFrame):
-        """Finds closest signal to recorded monoisotopic peak
-        """
-        scanL = scanNumber//1-scanRange//2
-        scanU = scanL + scanRange
-        consideredScans = np.arange(scanL,scanU)
-        
-        scans = frameSlice.scan().copy()
-        mzs = frameSlice.mz().copy()
-        
-        
-        mzs_dif = mzs-monoisotopicMz
-        idxs = np.zeros(scanRange,dtype=np.int16)
-
-        for i,scan_i in enumerate(consideredScans):
-            mzs_dif_ma = np.ma.MaskedArray(mzs_dif, mask = scans!=scan_i)
-            idx = np.ma.argmin(mzs_dif_ma)
-            idxs[i] = idx
-        print(idxs)
-        return idxs
+    
     
 
