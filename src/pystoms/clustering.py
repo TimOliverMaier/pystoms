@@ -46,6 +46,9 @@ def precursorDBSCAN3D(frame:TimsFrame,
     
     # bin scans and mzs to one array [[scan_1,mz_1],...,[scan_j,mz_j]]
     X = np.stack([mzs_scaled,scans_scaled],axis=1)
+
+    # if extra peak was passed scale this peak accodringly and add
+    # on end of point arrays
     if addPoint[0] != None:
         mi_mz_scaled = peak_width_preserving_mz_transform(addPoint[0],resolution)
         mi_scan_scaled = addPoint[1]/np.power(2,scan_scaling)
@@ -58,10 +61,13 @@ def precursorDBSCAN3D(frame:TimsFrame,
     # run DBSCAN
     Clustering = DBSCAN(eps=eps,min_samples=min_samples,metric=metric).fit(X)
     cluster = Clustering.labels_
+
+    # Get cluster id of passed extra peak (e.g. monoisotopic peak data from Precursors table)
     MIclusterID = -1
     if addPoint[0] != None:
         print(MIclusterID)
         MIclusterID = cluster[-1]
         cluster = np.delete(cluster,-1)
     
+    # return labeled data and cluster ID of passed extra peak
     return (pd.DataFrame(np.stack([scans,mzs,cluster],axis=1),columns=["Scan","Mz","Cluster"]),MIclusterID)
