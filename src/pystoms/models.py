@@ -1,4 +1,4 @@
-from pySTOMS.synthetics import SyntheticPeptideFeature
+from pystoms.synthetics import SyntheticPeptideFeature
 import pymc3 as pm
 import arviz as az
 import numpy as np

@@ -1,8 +1,8 @@
 from matplotlib import pyplot as plt
 import numpy as np
 import scipy.stats as sps
-from pySTOMS.synthetics import SyntheticPeptideFeature
-from pySTOMS import models
+from pystoms.synthetics import SyntheticPeptideFeature
+from pystoms import models
 import pandas as pd
 import os
 from numpy.typing import ArrayLike
