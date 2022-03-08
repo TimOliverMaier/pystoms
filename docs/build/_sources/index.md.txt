@@ -6,10 +6,16 @@
 ```{include} ../../README.md
 ```
 ```{toctree}
-:caption: 'Contents:'
+:caption: 'Documentation:'
 :hidden:
 :maxdepth: 2
 :glob:
 pystoms/*
 ```
-
+```{toctree}
+:caption: 'Weekly Reports:'
+:hidden:
+:maxdepth: 2
+:glob:
+weekReport/*/*
+```

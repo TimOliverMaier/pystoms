@@ -37,6 +37,8 @@ extensions = [
     "sphinx.ext.autodoc",# read docstrings of python functions
     "sphinx.ext.napoleon",# google style doc strings
     "sphinx.ext.autosummary",# auto read whole modules etc.
+    'sphinx.ext.mathjax',
+    #'sphinxcontrib.bibtex',
     "nbsphinx", #notebooks as source
 
 ]
@@ -47,7 +49,7 @@ templates_path = ['_templates']
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
-exclude_patterns = []
+exclude_patterns = ['_build', '**.ipynb_checkpoints']
 
 
 # -- Options for HTML output -------------------------------------------------
@@ -61,3 +63,8 @@ html_theme = 'furo'
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
+
+nbsphinx_execute_arguments = [
+    "--InlineBackend.figure_formats={'svg', 'pdf'}",
+    "--InlineBackend.rc={'figure.dpi': 96}",
+]
