@@ -461,38 +461,35 @@ implemented a jax backend making it possible to run Nuts on the GPU.</p>
 <br/>
 </div><hr class="docutils"/>
 <p>After developing on methods for feature extraction from data-dependent-acquisition datasets, the next step in a prototype pipeline for a bayesian precursor feature analysis is the data transfer to the model. Bayesian statistics provide deep insights in the possible parameters of a model, however this comes with rather long sampling runtimes. But since the evaluation of two features can be performed independently, parallelization might help overcome this drawback. Nevertheless we need to keep in
-mind, that the evaluation of a single feature gives rise to multiple threads corresponding to the number of chains used for sampling. It is obvious that running multiple feature evaluations parallely - each running e.g. 4 chains parallely - quickly pushes the typical workstation CPU to it’s limits. However graphical processing units (GPU) might be of help here, since they employ a significant higher number of processing cores. Pymc v4 comes with a jax backend allowing for sampling bayesian
-models with NUTS on the GPU. The idea here is not to put on model fit at at time on the GPU but to fit n models simultanously (<strong>Fig. 1</strong>)</p>
+mind, that the evaluation of a single feature necessarily gives rise to multiple threads corresponding to the number of chains used for convergence control <span id="id1">[<a class="reference internal" href="#id6" title="Andrew Gelman and Donald B. Rubin. Inference from Iterative Simulation Using Multiple Sequences. Statistical Science, 7(4):457 – 472, 1992. URL: https://doi.org/10.1214/ss/1177011136, doi:10.1214/ss/1177011136.">1</a>]</span>. It is obvious that running multiple feature evaluations parallely - each running e.g. 4 chains parallely - quickly pushes the typical workstation CPU to it’s limits. However graphical processing units (GPU) might be of help here, since they employ a significant higher number of processing cores (e.g.The here used
+Geforce GTX 1080Ti employing 3584 CUDA cores <span id="id2">[]</span>). The probabilistic programming library Pymc <span id="id3">[<a class="reference internal" href="#id5" title="John Salvatier, Thomas V Wiecki, and Christopher Fonnesbeck. Probabilistic programming in python using pymc3. PeerJ Computer Science, 2:e55, 2016.">2</a>]</span> comes with a jax backend allowing for sampling bayesian models with NUTS on the GPU. The idea here is not to put on model fit at at time on the GPU but to fit n models simultanously (<strong>Fig. 1</strong>)</p>
 <hr class="docutils"/>
 <div ,height="200" style="background-color:rgba(256, 76, 76,0.4)">
 <br/>
 <h4>Methods and Material</h4>
 <br/>
 </div><hr class="docutils"/>
+<p>Implementation basis for the reported experiment is the blog article from pymc labs published in december 2021. pymc ceo T. Wiecki reports a speed up in sampling by execution on GPU.</p>
+<p>Basis model is a normal distribution</p>
 <hr class="docutils"/>
 <div ,height="200" style="background-color:rgba(256, 76, 76,0.4)">
 <br/>
 <h4>Results</h4>
 <br/>
 </div><hr class="docutils"/>
-<hr class="docutils"/>
-<div style="background-color:white"><p><img alt="80fad84061464259941d7bcbdb4910b8" src="../../_images/week9_CPU_vs_GPU_1_13221824.png"/></p>
-</div><figcaption style="font-weight:bold"><div style="font-style:italic"><p>Fig 2:</p>
-</div></figcaption><div style="background-color:white"><p><img alt="c27d42b3f342473694508cd48dd593f5" src="../../_images/week9_CPU_pymc3_1_2322_1455.png"/></p>
-</div><figcaption style="font-weight:bold"><div style="font-style:italic"><p>Fig 3:</p>
-</div></figcaption><div style="background-color:white"><p><img alt="6ce51d51088c4e02b6ad36b0bcb9c476" src="../../_images/week9_GPU_vs_GPUv_1_23221307.png"/></p>
-</div><figcaption style="font-weight:bold"><div style="font-style:italic"><p>Fig 4:</p>
-</div></figcaption><div ,height="200" style="background-color:rgba(256, 76, 76,0.4)">
+<div ,height="200" style="background-color:rgba(256, 76, 76,0.4)">
 <br/>
 <h4>Conclusion and Outlook</h4>
 <br/>
 </div><hr class="docutils"/>
+<p>Lorem ipsum</p>
 <hr class="docutils"/>
 <div ,height="200" style="background-color:rgba(256, 76, 76,0.4)">
 <br/>
 <h4>References</h4>
 <br/>
 </div><hr class="docutils"/>
+<p>Lorem ipsum</p>
 <hr class="docutils"/>
 <div ,height="200" style="background-color:rgba(256, 76, 76,0.4)">
 <br/>
@@ -675,7 +672,7 @@ models with NUTS on the GPU. The idea here is not to put on model fit at at time
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../../_images/weekReport_week9_week9_22_1.png" src="../../_images/weekReport_week9_week9_22_1.png"/>
+<img alt="../../_images/weekReport_week9_week9_20_1.png" src="../../_images/weekReport_week9_week9_20_1.png"/>
 </div>
 </div>
 <div class="nbinput docutils container">
@@ -699,7 +696,7 @@ models with NUTS on the GPU. The idea here is not to put on model fit at at time
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../../_images/weekReport_week9_week9_23_0.png" src="../../_images/weekReport_week9_week9_23_0.png"/>
+<img alt="../../_images/weekReport_week9_week9_21_0.png" src="../../_images/weekReport_week9_week9_21_0.png"/>
 </div>
 </div>
 <div class="nbinput nblast docutils container">
@@ -710,6 +707,15 @@ models with NUTS on the GPU. The idea here is not to put on model fit at at time
 </pre></div>
 </div>
 </div>
+<p id="id4"><dl class="citation">
+<dt class="label" id="id6"><span class="brackets"><a class="fn-backref" href="#id1">1</a></span></dt>
+<dd><p>Andrew Gelman and Donald B. Rubin. Inference from Iterative Simulation Using Multiple Sequences. <em>Statistical Science</em>, 7(4):457 – 472, 1992. URL: <a class="reference external" href="https://doi.org/10.1214/ss/1177011136">https://doi.org/10.1214/ss/1177011136</a>, <a class="reference external" href="https://doi.org/10.1214/ss/1177011136">doi:10.1214/ss/1177011136</a>.</p>
+</dd>
+<dt class="label" id="id5"><span class="brackets"><a class="fn-backref" href="#id3">2</a></span></dt>
+<dd><p>John Salvatier, Thomas V Wiecki, and Christopher Fonnesbeck. Probabilistic programming in python using pymc3. <em>PeerJ Computer Science</em>, 2:e55, 2016.</p>
+</dd>
+</dl>
+</p>
 </section>
 
         </article>

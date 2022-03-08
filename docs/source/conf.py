@@ -38,11 +38,16 @@ extensions = [
     "sphinx.ext.napoleon",# google style doc strings
     "sphinx.ext.autosummary",# auto read whole modules etc.
     'sphinx.ext.mathjax',
-    #'sphinxcontrib.bibtex',
+    'sphinxcontrib.bibtex',
     "nbsphinx", #notebooks as source
 
 ]
 
+# list all bibtex files here
+bibtex_bibfiles = ['weekReport/week9/references9.bib']
+# unsrt style is [1],[2] etc.
+bibtex_default_style = 'unsrt'
+bibtex_reference_style = 'label'
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
 
