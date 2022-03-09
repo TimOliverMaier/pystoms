@@ -452,8 +452,8 @@ div.rendered_html tbody tr:hover {
 <h4>Abstract</h4>
 <br/>
 </div><hr class="docutils"/>
-<p>While Bayesian statistics provide deep insights into the parameter space of a certain model, a major drawback are the long execution times. When the same bayesian model is fit to multiple datasets, parallelization of the sampling step might help overcome this drawback. Graphical Processing Units offer an oppertunity to parallelize a large amount of tasks, making attempts to sample a large amount of models simultanously on a GPU an interesting experiment. The developers of pymc recently
-implemented a jax backend making it possible to run Nuts on the GPU.</p>
+<p>While Bayesian statistics provide deep insights into the parameter space of a certain model, a major drawback are the long execution times. When the same bayesian model is fit to multiple datasets, parallelization of the sampling step might help overcome this drawback. Graphical Processing Units offer an oppertunity to parallelize a large amount of tasks, making attempts to sample a set of models simultanously on a GPU an interesting experiment. The developers of pymc recently implemented a jax
+backend making it possible to run Nuts on the GPU.</p>
 <hr class="docutils"/>
 <div ,height="200" style="background-color:rgba(256, 76, 76,0.4)">
 <br/>
@@ -461,52 +461,38 @@ implemented a jax backend making it possible to run Nuts on the GPU.</p>
 <br/>
 </div><hr class="docutils"/>
 <p>After developing on methods for feature extraction from data-dependent-acquisition datasets, the next step in a prototype pipeline for a bayesian precursor feature analysis is the data transfer to the model. Bayesian statistics provide deep insights in the possible parameters of a model, however this comes with rather long sampling runtimes. But since the evaluation of two features can be performed independently, parallelization might help overcome this drawback. Nevertheless we need to keep in
-mind, that the evaluation of a single feature necessarily gives rise to multiple threads corresponding to the number of chains used for convergence control <span id="id1">[<a class="reference internal" href="#id6" title="Andrew Gelman and Donald B. Rubin. Inference from Iterative Simulation Using Multiple Sequences. Statistical Science, 7(4):457 – 472, 1992. URL: https://doi.org/10.1214/ss/1177011136, doi:10.1214/ss/1177011136.">1</a>]</span>. It is obvious that running multiple feature evaluations parallely - each running e.g. 4 chains parallely - quickly pushes the typical workstation CPU to it’s limits. However graphical processing units (GPU) might be of help here, since they employ a significant higher number of processing cores (e.g.The here used
-Geforce GTX 1080Ti employing 3584 CUDA cores <span id="id2">[]</span>). The probabilistic programming library Pymc <span id="id3">[<a class="reference internal" href="#id5" title="John Salvatier, Thomas V Wiecki, and Christopher Fonnesbeck. Probabilistic programming in python using pymc3. PeerJ Computer Science, 2:e55, 2016.">2</a>]</span> comes with a jax backend allowing for sampling bayesian models with NUTS on the GPU. The idea here is not to put on model fit at at time on the GPU but to fit n models simultanously (<strong>Fig. 1</strong>)</p>
+mind, that the evaluation of a single feature necessarily gives rise to multiple threads corresponding to the number of chains used for convergence control <span id="id1">[<a class="reference internal" href="#id9" title="Andrew Gelman and Donald B. Rubin. Inference from Iterative Simulation Using Multiple Sequences. Statistical Science, 7(4):457 – 472, 1992. URL: https://doi.org/10.1214/ss/1177011136, doi:10.1214/ss/1177011136.">1</a>]</span>. It is obvious that running multiple feature evaluations parallely - each running e.g. 4 chains parallely - quickly pushes the typical workstation CPU to it’s limits. However graphical processing units (GPU) might be of help here, since they employ a significant higher number of processing cores (e.g.The here used
+Geforce GTX 1080Ti employing 3584 CUDA cores <span id="id2">[<a class="reference internal" href="#id10" title="\url https://www.nvidia.com/en-sg/geforce/products/10series/geforce-gtx-1080-ti/.">2</a>]</span>). Fitting many models at once on a GPU might speed up the sampling process signifincantly.</p>
 <hr class="docutils"/>
 <div ,height="200" style="background-color:rgba(256, 76, 76,0.4)">
 <br/>
 <h4>Methods and Material</h4>
 <br/>
 </div><hr class="docutils"/>
-<p>Implementation basis for the reported experiment is the blog article from pymc labs published in december 2021. pymc ceo T. Wiecki reports a speed up in sampling by execution on GPU.</p>
-<p>Basis model is a normal distribution</p>
+<p>The probabilistic models are written with the probabilistic programming library PyMC <span id="id3">[<a class="reference internal" href="#id8" title="John Salvatier, Thomas V Wiecki, and Christopher Fonnesbeck. Probabilistic programming in python using pymc3. PeerJ Computer Science, 2:e55, 2016.">3</a>]</span>. The PyMC developers recently reported a sampling speed up by employing the GPU with pre-release PyMC v4 <span id="id4">[<a class="reference internal" href="#id11" title="Martin Ingram, Thomas V Wiecki, and PyMC developers. Mcmc for big datasets – faster sampling with jax and the gpu. \url https://martiningram.github.io/mcmc-comparison/, 2021. Last accessed on 09.03.2022.">4</a>]</span>. PyMC v4 comes with a jax backend allowing for sampling bayesian models with numpyro’s No-U-Turn sampler (NUTS) implementation on the GPU <span id="id5">[<a class="reference internal" href="#id12" title="James Bradbury, Roy Frostig, Peter Hawkins, Matthew James Johnson, Chris Leary, Dougal Maclaurin, George Necula, Adam Paszke, Jake VanderPlas, Skye Wanderman-Milne, and Qiao Zhang. JAX: composable transformations of Python+NumPy programs. 2018. URL: http://github.com/google/jax.">5</a>, <a class="reference internal" href="#id13" title="Du Phan, Neeraj Pradhan, and Martin Jankowiak. Composable effects for flexible and accelerated probabilistic programming in numpyro. arXiv preprint arXiv:1912.11554, 2019.">6</a>]</span> .</p>
+<p>Since parallel sampling of many isntances of the same model on the GPU currently seemed not to be straightforward, a artificial parallelization was accomplished by building a PyMC model, that is spanning n submodels. Each submodel is an instance of the model of interest and is independent of each other submodel. The input data is shaped accordingly.</p>
+<p>As an minimal model example the inference of the mean of a normal distribution was employed (Fig.1):</p>
+<div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="n">pm</span><span class="o">.</span><span class="n">Model</span><span class="p">()</span> <span class="k">as</span> <span class="n">model</span><span class="p">:</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">pm</span><span class="o">.</span><span class="n">Data</span><span class="p">(</span><span class="s2">"data"</span><span class="p">,</span> <span class="n">obs_data</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">mus</span> <span class="o">=</span> <span class="n">pm</span><span class="o">.</span><span class="n">Normal</span><span class="p">(</span><span class="s2">"mus"</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">20</span><span class="p">,</span><span class="n">shape</span><span class="o">=</span><span class="n">d2</span><span class="p">)</span>
+    <span class="n">normals</span> <span class="o">=</span> <span class="p">[</span><span class="n">pm</span><span class="o">.</span><span class="n">Normal</span><span class="p">(</span><span class="sa">f</span><span class="s2">"obs_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span><span class="n">mu</span> <span class="o">=</span> <span class="n">mus</span><span class="p">[</span><span class="n">i</span><span class="p">],</span><span class="n">sigma</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>\
+    <span class="n">observed</span><span class="o">=</span><span class="n">data</span><span class="o">.</span><span class="n">get_value</span><span class="p">()[</span><span class="n">i</span><span class="p">])</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">d2</span><span class="p">)]</span>
+</pre></div>
+</div>
+<p>To assay the runtime behaviour over time a total of 640 datasets were created with 10 and 20 datapoints each. These datasets were apssed to the artificial modelset with increasing degree of parallelization. The tested numbers of submodels were 1,10,20,40,80,160,320 and 640, i.e. in the first case all datasets were regarded sequentially and in the last case parallely. For both CPU and GPU execution the runtimes were recorded.</p>
+<p>Python scripts for CPU and GPU samping can be downloaded (<a class="reference external" href="data/pymcCPUtest.py">CPU</a> and <a class="reference external" href="data/pymcGPUtest.py">GPU</a>).</p>
+<p>Due to crashing CPU execution in PyMC v4, CPU python program was executed with PyMC v3.</p>
 <hr class="docutils"/>
-<div ,height="200" style="background-color:rgba(256, 76, 76,0.4)">
+<div style="background-color:white"><p><img alt="65dfc38bf6dd444993a48f8aa9575b09" src="../../_images/modelGraphviz.svg"/></p>
+</div><figcaption style="font-weight:bold;font-size:small"><p>Fig 1: Visualization of artificial Model spanning 10 submodels each receiving an independent dataset of normally distributed data of unknown mean. Visualization was created with python-graphviz <span id="id6">[<a class="reference internal" href="#id14" title="Emden R. Gansner and Stephen C. North. An open graph visualization system and its applications to software engineering. SOFTWARE - PRACTICE AND EXPERIENCE, 30(11):1203–1233, 2000.">7</a>]</span>.</p>
+</figcaption><div ,height="200" style="background-color:rgba(256, 76, 76,0.4)">
 <br/>
 <h4>Results</h4>
 <br/>
 </div><hr class="docutils"/>
-<div ,height="200" style="background-color:rgba(256, 76, 76,0.4)">
-<br/>
-<h4>Conclusion and Outlook</h4>
-<br/>
-</div><hr class="docutils"/>
-<p>Lorem ipsum</p>
-<hr class="docutils"/>
-<div ,height="200" style="background-color:rgba(256, 76, 76,0.4)">
-<br/>
-<h4>References</h4>
-<br/>
-</div><hr class="docutils"/>
-<p>Lorem ipsum</p>
-<hr class="docutils"/>
-<div ,height="200" style="background-color:rgba(256, 76, 76,0.4)">
-<br/>
-<h4>To Do</h4>
-<br/>
-</div><hr class="docutils"/>
-<ul class="simple">
-<li><p>CPU breakdown for bigger models in pymc4</p></li>
-<li><p>Put GLM model in pystoms</p></li>
-<li><p>Model Evaluation for GLM in pystoms</p></li>
-<li><p>Parallelized GLM model</p></li>
-<li><p>Feature Evaluation Manager</p></li>
-<li><p>Test Model on GPU</p></li>
-</ul>
-<hr class="docutils"/>
+<p>Recorded runtimes were stored in csv format. First, these are loaded:</p>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
@@ -517,179 +503,75 @@ Geforce GTX 1080Ti employing 3584 CUDA cores <span id="id2">[]</span>). The prob
 </pre></div>
 </div>
 </div>
+<p>Datasets with 10 datapoints in eachs set:</p>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">CPU</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s2">"data/dataCPUD310.csv"</span><span class="p">,</span><span class="n">index_col</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><br><span></span><span class="n">CPU</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s2">"data/dataCPUD310.csv"</span><span class="p">,</span><span class="n">index_col</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
 <span class="n">GPU</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s2">"data/dataGPUD310.csv"</span><span class="p">,</span><span class="n">index_col</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<br/></br></pre></div>
+</div>
+</div>
+<p>Datasets with 20 datapoints in each set: (GPU broke here, has yet to be done)</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
 </pre></div>
 </div>
-</div>
-<div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
-</pre></div>
-</div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">GPU</span>
-</pre></div>
-</div>
-</div>
-<div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
-</pre></div>
-</div>
-<div class="output_area rendered_html docutils container">
-<div>
-<style scoped="">
-    .dataframe tbody tr th:only-of-type {
-        vertical-align: middle;
-    }
-
-    .dataframe tbody tr th {
-        vertical-align: top;
-    }
-
-    .dataframe thead th {
-        text-align: right;
-    }
-</style>
-<div class="table-wrapper"><table border="1" class="dataframe">
-<thead>
-<tr style="text-align: right;">
-<th></th>
-<th>D1</th>
-<th>D2</th>
-<th>D3</th>
-<th>GPU_times</th>
-<th>GPUv_times</th>
-<th>Model_build_times</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<th>0</th>
-<td>640</td>
-<td>1</td>
-<td>10</td>
-<td>5533.299187</td>
-<td>2937.242950</td>
-<td>2.373700</td>
-</tr>
-<tr>
-<th>1</th>
-<td>64</td>
-<td>10</td>
-<td>10</td>
-<td>1064.418569</td>
-<td>635.294347</td>
-<td>0.054022</td>
-</tr>
-<tr>
-<th>2</th>
-<td>32</td>
-<td>20</td>
-<td>10</td>
-<td>706.487763</td>
-<td>472.834575</td>
-<td>0.104229</td>
-</tr>
-<tr>
-<th>3</th>
-<td>16</td>
-<td>40</td>
-<td>10</td>
-<td>476.422270</td>
-<td>378.841688</td>
-<td>0.199790</td>
-</tr>
-<tr>
-<th>4</th>
-<td>8</td>
-<td>80</td>
-<td>10</td>
-<td>346.796392</td>
-<td>334.466776</td>
-<td>0.392063</td>
-</tr>
-<tr>
-<th>5</th>
-<td>4</td>
-<td>160</td>
-<td>10</td>
-<td>352.092704</td>
-<td>430.540143</td>
-<td>0.759313</td>
-</tr>
-<tr>
-<th>6</th>
-<td>2</td>
-<td>320</td>
-<td>10</td>
-<td>272.473488</td>
-<td>367.375130</td>
-<td>1.569888</td>
-</tr>
-<tr>
-<th>7</th>
-<td>1</td>
-<td>640</td>
-<td>10</td>
-<td>985.415023</td>
-<td>421.705749</td>
-<td>3.048243</td>
-</tr>
-</tbody>
-</table></div>
-</div></div>
-</div>
-<div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[22]:
-</pre></div>
-</div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">D2</span> <span class="o">=</span> <span class="n">GPU</span><span class="o">.</span><span class="n">D2</span>
-<span class="n">Fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">()</span>
-<span class="n">Fig</span><span class="o">.</span><span class="n">set_dpi</span><span class="p">(</span><span class="mi">300</span><span class="p">)</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">D2</span><span class="p">,</span><span class="n">GPU</span><span class="o">.</span><span class="n">GPU_times</span><span class="p">,</span><span class="n">label</span><span class="o">=</span><span class="s2">"GPU parallel"</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s2">"green"</span><span class="p">)</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">D2</span><span class="p">,</span><span class="n">GPU</span><span class="o">.</span><span class="n">GPUv_times</span><span class="p">,</span><span class="n">label</span><span class="o">=</span><span class="s2">"GPU vectorized"</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s2">"blue"</span><span class="p">)</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">D2</span><span class="p">,</span><span class="n">CPU</span><span class="o">.</span><span class="n">CPU_times</span><span class="p">,</span><span class="n">label</span><span class="o">=</span><span class="s2">"CPU"</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s2">"red"</span><span class="p">)</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">"Model Size"</span><span class="p">)</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">"Time [s]"</span><span class="p">)</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">CPUD20</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s2">"data/dataCPUD320.csv"</span><span class="p">,</span><span class="n">index_col</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
 <br/></pre></div>
 </div>
 </div>
-<div class="nboutput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[22]:
+<p>Number of submodels are stored in D2.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
 </pre></div>
 </div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-&lt;matplotlib.legend.Legend at 0x7f12d3e30970&gt;
-</pre></div></div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">submodel_n</span> <span class="o">=</span> <span class="n">GPU</span><span class="o">.</span><span class="n">D2</span>
+</pre></div>
+</div>
+</div>
+<p>Plot the runtimes vs. the number of submodels (Fig.2). Since the runtime for submodel_n = 1 case is very high, Fig.3 cuts the submodel_n = 1 case off.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><br><span></span><span class="n">Fig2</span><span class="p">,</span> <span class="n">ax2</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">()</span>
+<span class="n">Fig2</span><span class="o">.</span><span class="n">set_dpi</span><span class="p">(</span><span class="mi">300</span><span class="p">)</span>
+<span class="n">ax2</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">submodel_n</span><span class="p">,</span><span class="n">GPU</span><span class="o">.</span><span class="n">GPU_times</span><span class="p">,</span><span class="n">label</span><span class="o">=</span><span class="s2">"GPU parallel"</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s2">"green"</span><span class="p">)</span>
+<span class="n">ax2</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">submodel_n</span><span class="p">,</span><span class="n">GPU</span><span class="o">.</span><span class="n">GPUv_times</span><span class="p">,</span><span class="n">label</span><span class="o">=</span><span class="s2">"GPU vectorized"</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s2">"blue"</span><span class="p">)</span>
+<span class="n">ax2</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">submodel_n</span><span class="p">,</span><span class="n">CPU</span><span class="o">.</span><span class="n">CPU_times</span><span class="p">,</span><span class="n">label</span><span class="o">=</span><span class="s2">"CPU"</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s2">"red"</span><span class="p">)</span>
+<span class="n">ax2</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">submodel_n</span><span class="p">,</span><span class="n">CPUD20</span><span class="o">.</span><span class="n">CPU_times</span><span class="p">,</span><span class="n">label</span><span class="o">=</span><span class="s2">"CPU D3=20"</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s2">"black"</span><span class="p">)</span>
+<span class="n">ax2</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">"Number of Submodels in Model"</span><span class="p">)</span>
+<span class="n">ax2</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">"Total Sample Time [s]"</span><span class="p">)</span>
+<span class="n">ax2</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+<br/></br></pre></div>
+</div>
 </div>
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="../../_images/weekReport_week9_week9_20_1.png" src="../../_images/weekReport_week9_week9_20_1.png"/>
+<img alt="../../_images/weekReport_week9_week9_20_0.png" src="../../_images/weekReport_week9_week9_20_0.png"/>
 </div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[25]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">D2</span> <span class="o">=</span> <span class="n">GPU</span><span class="o">.</span><span class="n">D2</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
-<span class="n">Fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">()</span>
-<span class="n">Fig</span><span class="o">.</span><span class="n">set_dpi</span><span class="p">(</span><span class="mi">300</span><span class="p">)</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">D2</span><span class="p">,</span><span class="n">GPU</span><span class="o">.</span><span class="n">GPU_times</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span><span class="n">label</span><span class="o">=</span><span class="s2">"GPU parallel"</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s2">"green"</span><span class="p">)</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">D2</span><span class="p">,</span><span class="n">GPU</span><span class="o">.</span><span class="n">GPUv_times</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span><span class="n">label</span><span class="o">=</span><span class="s2">"GPU vectorized"</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s2">"blue"</span><span class="p">)</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">D2</span><span class="p">,</span><span class="n">CPU</span><span class="o">.</span><span class="n">CPU_times</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span><span class="n">label</span><span class="o">=</span><span class="s2">"CPU"</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s2">"red"</span><span class="p">)</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">"Model Size"</span><span class="p">)</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">"Time [s]"</span><span class="p">)</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><br><span></span><span class="n">Fig3</span><span class="p">,</span> <span class="n">ax3</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">()</span>
+<span class="n">Fig3</span><span class="o">.</span><span class="n">set_dpi</span><span class="p">(</span><span class="mi">300</span><span class="p">)</span>
+<span class="n">ax3</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">submodel_n</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span><span class="n">GPU</span><span class="o">.</span><span class="n">GPU_times</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span><span class="n">label</span><span class="o">=</span><span class="s2">"GPU parallel"</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s2">"green"</span><span class="p">)</span>
+<span class="n">ax3</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">submodel_n</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span><span class="n">GPU</span><span class="o">.</span><span class="n">GPUv_times</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span><span class="n">label</span><span class="o">=</span><span class="s2">"GPU vectorized"</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s2">"blue"</span><span class="p">)</span>
+<span class="n">ax3</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">submodel_n</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span><span class="n">CPU</span><span class="o">.</span><span class="n">CPU_times</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span><span class="n">label</span><span class="o">=</span><span class="s2">"CPU"</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s2">"red"</span><span class="p">)</span>
+<span class="n">ax3</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">submodel_n</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span><span class="n">CPUD20</span><span class="o">.</span><span class="n">CPU_times</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span> <span class="n">label</span><span class="o">=</span><span class="s2">"CPU D3=20"</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s2">"black"</span><span class="p">)</span>
+<span class="n">ax3</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">"Number of Submodels in Model"</span><span class="p">)</span>
+<span class="n">ax3</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">"Total Sample Time [s]"</span><span class="p">)</span>
+<span class="n">ax3</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+<span class="n">ax3</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">""</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
-<br/></pre></div>
+<br/></br></pre></div>
 </div>
 </div>
 <div class="nboutput nblast docutils container">
@@ -699,23 +581,81 @@ Geforce GTX 1080Ti employing 3584 CUDA cores <span id="id2">[]</span>). The prob
 <img alt="../../_images/weekReport_week9_week9_21_0.png" src="../../_images/weekReport_week9_week9_21_0.png"/>
 </div>
 </div>
-<div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+<p>Fig.4 shows model build times.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[17]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">Fig4</span><span class="p">,</span><span class="n">ax4</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">()</span>
+<span class="n">Fig4</span><span class="o">.</span><span class="n">set_dpi</span><span class="p">(</span><span class="mi">300</span><span class="p">)</span>
+<span class="n">ax4</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">submodel_n</span><span class="p">,</span><span class="n">CPU</span><span class="o">.</span><span class="n">Model_build_times</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s2">"red"</span><span class="p">,</span><span class="n">label</span><span class="o">=</span><span class="s2">"D3 = 10"</span><span class="p">)</span>
+<span class="n">ax4</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">submodel_n</span><span class="p">,</span><span class="n">CPUD20</span><span class="o">.</span><span class="n">Model_build_times</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s2">"black"</span><span class="p">,</span><span class="n">label</span><span class="o">=</span><span class="s2">"D3 = 20"</span><span class="p">)</span>
+<span class="n">ax4</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">"Number of Submodels in Model"</span><span class="p">)</span>
+<span class="n">ax4</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">"Model build time [s]"</span><span class="p">)</span>
+<span class="n">ax4</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
 </div>
 </div>
-<p id="id4"><dl class="citation">
-<dt class="label" id="id6"><span class="brackets"><a class="fn-backref" href="#id1">1</a></span></dt>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../../_images/weekReport_week9_week9_23_0.png" src="../../_images/weekReport_week9_week9_23_0.png"/>
+</div>
+</div>
+<hr class="docutils"/>
+<div ,height="200" style="background-color:rgba(256, 76, 76,0.4)">
+<br/>
+<h4>Conclusion and Outlook</h4>
+<br/>
+</div><hr class="docutils"/>
+<p>Lorem ipsum….</p>
+<hr class="docutils"/>
+<div ,height="200" style="background-color:rgba(256, 76, 76,0.4)">
+<br/>
+<h4>References</h4>
+<br/>
+</div><hr class="docutils"/>
+<p id="id7"><dl class="citation">
+<dt class="label" id="id9"><span class="brackets"><a class="fn-backref" href="#id1">1</a></span></dt>
 <dd><p>Andrew Gelman and Donald B. Rubin. Inference from Iterative Simulation Using Multiple Sequences. <em>Statistical Science</em>, 7(4):457 – 472, 1992. URL: <a class="reference external" href="https://doi.org/10.1214/ss/1177011136">https://doi.org/10.1214/ss/1177011136</a>, <a class="reference external" href="https://doi.org/10.1214/ss/1177011136">doi:10.1214/ss/1177011136</a>.</p>
 </dd>
-<dt class="label" id="id5"><span class="brackets"><a class="fn-backref" href="#id3">2</a></span></dt>
+<dt class="label" id="id10"><span class="brackets"><a class="fn-backref" href="#id2">2</a></span></dt>
+<dd><p><a class="reference external" href="https://www.nvidia.com/en-sg/geforce/products/10series/geforce-gtx-1080-ti/">https://www.nvidia.com/en-sg/geforce/products/10series/geforce-gtx-1080-ti/</a>.</p>
+</dd>
+<dt class="label" id="id8"><span class="brackets"><a class="fn-backref" href="#id3">3</a></span></dt>
 <dd><p>John Salvatier, Thomas V Wiecki, and Christopher Fonnesbeck. Probabilistic programming in python using pymc3. <em>PeerJ Computer Science</em>, 2:e55, 2016.</p>
+</dd>
+<dt class="label" id="id11"><span class="brackets"><a class="fn-backref" href="#id4">4</a></span></dt>
+<dd><p>Martin Ingram, Thomas V Wiecki, and PyMC developers. Mcmc for big datasets – faster sampling with jax and the gpu. <a class="reference external" href="https://martiningram.github.io/mcmc-comparison/">https://martiningram.github.io/mcmc-comparison/</a>, 2021. Last accessed on 09.03.2022.</p>
+</dd>
+<dt class="label" id="id12"><span class="brackets"><a class="fn-backref" href="#id5">5</a></span></dt>
+<dd><p>James Bradbury, Roy Frostig, Peter Hawkins, Matthew James Johnson, Chris Leary, Dougal Maclaurin, George Necula, Adam Paszke, Jake VanderPlas, Skye Wanderman-Milne, and Qiao Zhang. JAX: composable transformations of Python+NumPy programs. 2018. URL: <a class="reference external" href="http://github.com/google/jax">http://github.com/google/jax</a>.</p>
+</dd>
+<dt class="label" id="id13"><span class="brackets"><a class="fn-backref" href="#id5">6</a></span></dt>
+<dd><p>Du Phan, Neeraj Pradhan, and Martin Jankowiak. Composable effects for flexible and accelerated probabilistic programming in numpyro. <em>arXiv preprint arXiv:1912.11554</em>, 2019.</p>
+</dd>
+<dt class="label" id="id14"><span class="brackets"><a class="fn-backref" href="#id6">7</a></span></dt>
+<dd><p>Emden R. Gansner and Stephen C. North. An open graph visualization system and its applications to software engineering. <em>SOFTWARE - PRACTICE AND EXPERIENCE</em>, 30(11):1203–1233, 2000.</p>
 </dd>
 </dl>
 </p>
+<hr class="docutils"/>
+<div ,height="200" style="background-color:rgba(256, 76, 76,0.4)">
+<br/>
+<h4>To Do</h4>
+<br/>
+</div><hr class="docutils"/>
+<p>Next Steps:</p>
+<ol class="arabic simple">
+<li><p>Parallelized GLM model</p></li>
+<li><p>Model Evaluation for GLM in pystoms</p></li>
+<li><p>Feature Manager -&gt; handling many features at once</p></li>
+<li><p>Test Model on GPU</p></li>
+<li><p>CPU and GPU breakdown for bigger models in pymc4</p></li>
+</ol>
+<hr class="docutils"/>
 </section>
 
         </article>
