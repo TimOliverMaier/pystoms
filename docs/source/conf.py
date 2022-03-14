@@ -17,12 +17,13 @@
 
 # -- Project information -----------------------------------------------------
 
-project = 'pystoms'
+#project = 'PystoMS'
 copyright = '2022, Tim Maier'
 author = 'Tim Maier'
-
+html_logo = "pystomsLogo.png"
+html_title = "PystoMS v0.1"
 # The full version, including alpha/beta/rc tags
-release = '0.1'
+#release = '0.1'
 
 
 # -- General configuration ---------------------------------------------------
