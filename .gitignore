@@ -6,3 +6,9 @@
 
 src/pystoms/__pycache__/
 
+# doc build
+docs/build/
+
+# jupyter checkpoints anywhere
+
+.ipynb_checkpoints
