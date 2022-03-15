@@ -210,8 +210,8 @@ class FeatureLoaderDDA():
             monoisotopic_mz (float): Position of monoisotopic peak.
             charge (int): Charge of peptide
             prob_mass_target(float, optional): Minimum probability mass
-            of poisson distribtuion, that shall be covered
-            (beginning with monoisotopic peak). Defaults to 0.95.
+              of poisson distribtuion, that shall be covered
+              (beginning with monoisotopic peak). Defaults to 0.95.
         Returns:
             int: Number of relevant peaks
         """
