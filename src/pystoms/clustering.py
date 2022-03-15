@@ -1,6 +1,7 @@
 """Clustering functions for LC-IMS-MS data.
 
-Currently, there is only the precursor_dbscan_3d
+Currently, there is only the precursor_dbscan_3d, allowing for
+detection of 2D peaks in the IMS-MS space.
 """
 
 from sklearn.cluster import DBSCAN
