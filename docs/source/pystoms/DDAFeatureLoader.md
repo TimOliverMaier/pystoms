@@ -2,6 +2,6 @@
 
 ```{eval-rst}
 .. currentmodule:: pystoms.feature_loader_dda
-.. autoclass:: FeatureLoaderDDA
+.. automodule:: FeatureLoaderDDA
     :members:
 ```
