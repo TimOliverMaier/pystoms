@@ -40,10 +40,12 @@ extensions = [
     "sphinx.ext.autosummary",# auto read whole modules etc.
     'sphinx.ext.mathjax',
     'sphinxcontrib.bibtex',
+    'sphinx.ext.todo',
     "nbsphinx", #notebooks as source
 
 ]
 
+todo_include_todos = True
 # list all bibtex files here
 bibtex_bibfiles = ['weekReport/week9/references9.bib']
 # unsrt style is [1],[2] etc.
@@ -71,6 +73,6 @@ html_theme = 'furo'
 html_static_path = ['_static']
 
 nbsphinx_execute_arguments = [
-    "--InlineBackend.figure_formats={'svg', 'pdf'}",
-    "--InlineBackend.rc={'figure.dpi': 96}",
+    "--InlineBackend.figure_formats={'svg'}",
+    "--InlineBackend.rc <'figure.dpi': 300>",
 ]
