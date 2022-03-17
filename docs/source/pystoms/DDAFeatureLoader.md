@@ -1,7 +1,7 @@
 # DDA Feature Loader
 
 ```{eval-rst}
-.. currentmodule:: pystoms.feature_loader_dda
-.. automodule:: FeatureLoaderDDA
+.. currentmodule:: pystoms
+.. automodule:: pystoms.feature_loader_dda
     :members:
 ```

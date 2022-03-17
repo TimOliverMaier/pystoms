@@ -40,6 +40,7 @@ extensions = [
     "sphinx.ext.autosummary",# auto read whole modules etc.
     'sphinx.ext.mathjax',
     'sphinxcontrib.bibtex',
+    'sphinx_gallery.gen_gallery',
     'sphinx.ext.todo',
     "nbsphinx", #notebooks as source
 

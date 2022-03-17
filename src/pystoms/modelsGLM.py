@@ -1,3 +1,8 @@
+"""Probabilistic General linear models for LC-IMS-MS precursor features
+
+
+
+"""
 import pymc3 as pm
 import pymc3.math as pmath
 import numpy as np
@@ -8,16 +13,17 @@ from plotly.subplots import make_subplots
 class AbstractModel(pm.Model):
     def __init__(self,name,model):
         super().__init__(name,model)
-    
+        self.trace = None
+
     def _plotPosterior3D(self,num:int = 40):
         def _fxy(x,y,α,pos_ms,σ_ms,w_ms,pos_ims,σ_ims):
             shape = x.shape
             x = x.flatten().reshape((-1,1))
             y = y.flatten()
-            z = np.zeros_like(y)
+            z = np.zeros_like(y,dtype=np.float64)
             for i in range(num):
                 α_i = α[i]
-                
+
                 σ_ms_i = σ_ms[i]
                 pos_ms_i = pos_ms[i]
                 w_ms_i = w_ms[i]
@@ -41,7 +47,7 @@ class AbstractModel(pm.Model):
         ymin = obs_y.min()-1
         ymax = obs_y.max()+1
         # x axis and y axis , scan intervall is 1, mz 0.01
-        
+
         y = np.arange(ymin,ymax)
         x = np.arange(xmin*100,xmax*100)/100
         x,y = np.meshgrid(x,y)
@@ -73,13 +79,13 @@ class AbstractModel(pm.Model):
     def _sample(self,resample:bool=False,**kwargs):
         if self.trace == None or resample:
             with self as model:
-                self.trace = pm.sample(kwargs)
+                self.trace = pm.sample(**kwargs)
         else:
             print("This model was already sampled, if you want to resample pass 'resample=True'")
-            return 
+            return
 
     def evaluation(self,resample:bool=False,**kwargs):
-        self._sample(resample,kwargs)
+        self._sample(resample,**kwargs)
         self._plotPosterior3D()
 
 
@@ -93,9 +99,9 @@ class ModelGLM3D(AbstractModel):
         self.intensity = pm.Data("intensity",intensity)
         self.scan = pm.Data("scan",scan)
         self.mz = pm.Data("mz",np.reshape(mz,(mz.size,1)))
-        
+
         self.Var("I_t",pm.Normal.dist(mu=scan_mean,sigma=scan_range/2))
-        self.Var("I_s",pm.Uniform.dist(lower=0,upper=scan_range))      
+        self.Var("I_s",pm.Uniform.dist(lower=0,upper=scan_range))
 
         self.Var("MS_mz",pm.Normal.dist(mu=mz_mean,sigma=10))
         self.Var("MS_s",pm.Exponential.dist(lam=10))
