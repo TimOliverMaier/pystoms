@@ -30,69 +30,6 @@ class AbstractModel(pm.Model):
         # instantiate inference data
         self.idata :Optional[az.InferenceData] = None
 
-    def ppc_surface(x,y,α,pos_ms,σ_ms,w_ms,pos_ims,σ_ims):
-                shape = x.shape
-                x = x.flatten().reshape((-1,1))
-                y = y.flatten()
-                z = np.zeros_like(y,dtype=np.float64)
-                for i in range(num):
-                    α_i = α[i]
-
-                    σ_ms_i = σ_ms[i]
-                    pos_ms_i = pos_ms[i]
-                    w_ms_i = w_ms[i]
-
-                    σ_ims_i = σ_ims[i]
-                    pos_ims_i = pos_ims [i]
-
-                    t1 = np.exp(-0.5*np.power(pos_ims_i-y,2)/np.power(σ_ims_i,2))
-                    t2 = np.sum(w_ms_i*np.exp(-0.5*np.power(pos_ms_i-x,2)/np.power(σ_ms_i,2)),axis=1)
-                    z += α_i*t1*t2
-                z /= num
-                return(np.reshape(z,shape))
-        def _plotPosterior3D(self,num:int = 40):
-
-        trace = self.trace
-        # extract hull boundaries of feature
-        obs_x = trace.constant_data.mz.values.flatten()
-        obs_y = trace.constant_data.scan.values
-        obs_z = trace.constant_data.intensity.values
-        # set axis limits accordingly
-        xmin = obs_x.min()-1
-        xmax = obs_x.max()+1
-        ymin = obs_y.min()-1
-        ymax = obs_y.max()+1
-        # x axis and y axis , scan intervall is 1, mz 0.01
-
-        y = np.arange(ymin,ymax)
-        x = np.arange(xmin*100,xmax*100)/100
-        x,y = np.meshgrid(x,y)
-        # get positions of chosen values from posterior
-        num_chains = trace.posterior.dims["chain"]
-        num_draws = trace.posterior.dims["draw"]
-        sample_idx = np.random.choice(range(num_draws),num)
-        # now go through chains and calculate mean surface for chosen paramters
-        zs = []
-        # instantiate figure
-        fig = make_subplots(rows=num_chains//2,cols=2,specs=[[{"type":"scatter3d"}]*2]*(num_chains//2))
-        for chain_i in range(num_chains):
-            # select parameters from posterior
-            α = trace.posterior["alpha"][chain_i].values[sample_idx]
-            pos_ms = trace.posterior["pos"][chain_i].values[sample_idx]
-            σ_ms = trace.posterior["MS_s"][chain_i].values[sample_idx]
-            w_ms = trace.posterior["ws"][chain_i].values[sample_idx]
-            pos_ims = trace.posterior["I_t"][chain_i].values[sample_idx]
-            σ_ims = trace.posterior["I_s"][chain_i].values[sample_idx]
-            # calculate z (=intensity values)
-            z = _fxy(x,y,α,pos_ms,σ_ms,w_ms,pos_ims,σ_ims)
-            # add to list and plots
-            zs.append(z)
-            fig.add_trace(go.Surface(x=x,y=y,z=z,opacity=0.3,showscale=False),row=chain_i//2+1,col=chain_i%2+1)
-            fig.add_trace(go.Scatter3d(x=obs_x,y=obs_y,z=obs_z,mode="markers",marker=dict(size=5,color="black")),row=chain_i//2+1,col=chain_i%2+1)
-        fig.update_layout(autosize=False,width=1000,height=1000)
-        fig.show()
-
-
     def _sample_predictive(self,
                            is_prior:bool = False,
                            is_grid_predictive:bool = False,
