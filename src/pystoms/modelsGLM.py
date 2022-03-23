@@ -131,12 +131,12 @@ class ModelGLM3D(AbstractModel):
     def __init__(self,num_observed:int,peak_num:int,z,intensity,scan,mz,name:str="",model:pm.Model=None):
         super().__init__(name,model)
 
-        self.peak_num = pm.Data("peak_num",peak_num)
-        self.num_observed = pm.Data("num_observed",num_observed)
-        self.charge = pm.Data("charge",z)
-        self.intensity = pm.Data("intensity",intensity)
-        self.scan = pm.Data("scan",scan)
-        self.mz = pm.Data("mz",np.tile(mz,(peak_num,1)).T)
+        self.peak_num = pm.MutableData("peak_num",peak_num)
+        self.num_observed = pm.MutableData("num_observed",num_observed)
+        self.charge = pm.MutableData("charge",z)
+        self.intensity = pm.MutableData("intensity",intensity)
+        self.scan = pm.MutableData("scan",scan)
+        self.mz = pm.MutableData("mz",np.tile(mz,(peak_num,1)).T)
 
         intensity_sum = pmath.sum(self.intensity)
         mz_mean = pmath.dot(self.mz[:,0],self.intensity)/intensity_sum
