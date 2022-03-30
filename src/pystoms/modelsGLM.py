@@ -4,12 +4,14 @@
 
 """
 from logging import warning
+import pandas as pd
 import pymc as pm
 import pymc.math as pmath
 import numpy as np
 #from scipy.special import factorial
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
+import plotly.express as px
 from typing import Optional
 import arviz as az
 from aesara import tensor as at
@@ -92,7 +94,7 @@ class AbstractModel(pm.Model):
                                                     extend_inferencedata=True,
                                                     **kwargs)
 
-    def visualize_predictions(self,in_sample:bool = True, is_prior:bool = False) -> None:
+    def visualize_predictions_scatter(self,size:int = 50, in_sample:bool = True, is_prior:bool = False, pred_name:str = "obs",plot_observed_data:bool = True) -> None:
         """Plotting posterior/prior predictions.
 
         Args:
@@ -103,22 +105,118 @@ class AbstractModel(pm.Model):
             is_prior (bool, optional): If True prior
               predictions are plotted, else posterior.
               Defaults to False.
+            pred_name (str,optional): predicted variable to plot.
+              Defaults to 'obs'.
+            plot_observed_data (bool,optional): Wether to plot observed
+              data on top of scatter plot. Defaults to True.
         """
 
+        if not in_sample:
+            predictors_data = self.idata.predictions_constant_data
+            if is_prior:
+                draw_sample = np.random.choice(self.idata\
+                                                .prior_predictions\
+                                                .draw.values, size)
+                predicted_data = self.idata.\
+                                    prior_predictions[{"draw":draw_sample}]
+            if not is_prior:
+                draw_sample = np.random.choice(self.idata\
+                                                .predictions\
+                                                .draw\
+                                                .values,
+                                                size)
+                predicted_data = self.idata.predictions[{"draw":draw_sample}]
+
         if in_sample:
+            predictors_data = self.idata.constant_data
+            if is_prior:
+                draw_sample = np.random.choice(self.idata\
+                                                .prior_predictive\
+                                                .draw\
+                                                .values,
+                                                size)
+                predicted_data = self.idata\
+                                    .prior_predictive[{"draw":draw_sample}]
+            if not is_prior:
+                draw_sample = np.random.choice(self.idata\
+                                                .posterior_predictive\
+                                                .draw\
+                                                .values,
+                                                size)
+                predicted_data = self.idata\
+                                    .posterior_predictive[{"draw":draw_sample}]
 
-          predictors = self.idata.constant_data
-          if is_prior:
-            observed = self.idata.prior_predictive
-          else:
-            observed = self.idata.posterior_predictive
-          # mz stores observed mz values in
-          # n identical columns, where n
-          # is the number of peaks in model
-          x = predictors.mz.values[:,0]
-          y = predictors.scan.values
-          z = observed.obs
 
+        # get mz and scan values (predictors)
+        # first extract variable from xarray dataset
+        # because direct to_dataframe crashed
+        df_mz = predictors_data.mz\
+                    .to_dataframe()\
+                    .xs(0,level="mz_dim_1")\
+                    .reset_index()
+        df_scan = predictors_data.scan\
+                    .to_dataframe()\
+                    .reset_index()
+
+        df_predictors = pd.merge(df_mz,
+                                df_scan,
+                                left_on="mz_dim_0",
+                                right_on="scan_dim_0")\
+                                .drop(columns=["scan_dim_0"])\
+                                .rename(columns={
+                                        "mz_dim_0":"data_point"
+                                        })
+        # get corresponding predicted values
+        if pred_name not in predicted_data.data_vars.keys():
+            pred_name_new = list(predicted_data.data_vars.keys())[0]
+            warning(f"{pred_name} not in 'prior_predictive',\
+                    using {pred_name_new}")
+            pred_name = pred_name_new
+        pred_name_dim_0 = pred_name + "_dim_0"
+        df_predicted = getattr( predicted_data,pred_name)\
+                                .to_dataframe()\
+                                .reset_index()\
+                                .rename(columns={
+                                    pred_name_dim_0:"data_point"
+                                    })
+        # merge to dataframe with predictors and predicted vars
+        df_plot = pd.merge(
+                          df_predictors,
+                          df_predicted,
+                          on = "data_point"
+                          ).astype({"chain":"str"})
+        fig = px.scatter_3d(data_frame=df_plot,
+                            x="scan",
+                            y="mz",
+                            z=pred_name,
+                            color="chain",
+                            opacity=0.1)
+        if plot_observed_data:
+            obs_data_trace = self.plot_feature_data(return_fig_trace=True)
+            fig.add_trace(obs_data_trace)
+        fig.show(renderer="notebook")
+
+    def plot_feature_data(self,return_fig_trace:bool = False):
+        """plots model's input feature data.
+
+        Args:
+            return_fig_trace (bool, optional): Wether to only return
+                plotly 3D scatter trace. Defaults to False.
+        """
+        data = self.idata.constant_data
+        x = data.scan.values
+        y = data.mz.values[:,0]
+        z = data.intensity.values
+        fig_trace = go.Scatter3d(x=x,
+                                 y=y,
+                                 z=z,
+                                 mode="markers",
+                                 marker=dict(color="black",size=10))
+        if return_fig_trace:
+            return fig_trace
+        else:
+            fig = go.Figure(data=[fig_trace])
+            fig.show()
 
 
     def _set_grid_data(self) -> None:
