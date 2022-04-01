@@ -3,18 +3,25 @@
 
 
 """
+
 from logging import warning
+from typing import List
 import pandas as pd
 import pymc as pm
 import pymc.math as pmath
 import numpy as np
-#from scipy.special import factorial
+import numpy.typing as npt
 import plotly.graph_objects as go
-from plotly.subplots import make_subplots
 import plotly.express as px
 from typing import Optional
 import arviz as az
 from aesara import tensor as at
+from aesara.tensor.sharedvar import TensorSharedVariable
+
+#typing
+NDArrayFloat = npt.NDArray[np.float64]
+NDArrayInt   = npt.NDArray[np.int64]
+
 
 class AbstractModel(pm.Model):
     """Abstract model class for model evaluation.
@@ -24,14 +31,41 @@ class AbstractModel(pm.Model):
 
 
     Attributes:
-        idata (Optional[az.InferenceData]):
+        idata (az.InferenceData):
           inferenceData of last model fit.
     """
     def __init__(self,name:str,model:Optional[pm.Model]):
         # name and model must be passed to pm.Model
         super().__init__(name,model)
         # instantiate inference data
-        self.idata :Optional[az.InferenceData] = None
+        self.idata = az.InferenceData()
+
+    def _reset_idata(self):
+        self.idata = az.InferenceData()
+
+    def _get_model_shared_data(self,
+                               predictions_constant_data:bool = True
+                              ) -> az.InferenceData:
+        """Get model's input data from model as idata.
+
+        Args:
+            predictions_constant_data (bool, optional): If True data is put in
+                `predictions_constant_data` group. Else into `constant_data` group.
+                 Defaults to True.
+
+        Returns:
+            az.InferenceData: InferenceData with model's input
+                data in `constant_data` or `predictions_constant_data`
+        """
+        data = dict()
+        for key,var in self.named_vars.items():
+            if isinstance(var, TensorSharedVariable):
+                data[key] = var.get_value()
+        if predictions_constant_data:
+            idata = az.from_dict(predictions_constant_data=data)
+        else:
+            idata = az.from_dict(constant_data = data)
+        return idata
 
     def _sample_predictive(self,
                            is_prior:bool = False,
@@ -51,53 +85,72 @@ class AbstractModel(pm.Model):
         # for overview on arviz inferenceData groups visit
         # https://arviz-devs.github.io/arviz/schema/schema.html
         # only prior can be sampled before posterior was sampled
-        if self.idata is None and not is_prior:
+        if "posterior" not in self.idata.groups() and not is_prior:
             self._sample()
 
         # prior out of sample predictions with grid
         # as predictors -> model surface
         if is_prior and is_grid_predictive:
-            self._set_grid_data()
-            prior_prediction = pm.sample_prior_predictive(model=self,
+
+            if "prior_predictions" not in self.idata.groups():
+                self._set_grid_data()
+                prior_prediction = pm.sample_prior_predictive(model=self,
                                                           **kwargs)
-            warning("Prior out-of-sample predictions are currently a work around.\n\
-              Arviz will warn about non-defined InferenceData group 'prior_predictions'.")
-            self.idata.add_groups({"prior_predictions":prior_prediction.prior_predictive})
+                warning("Prior out-of-sample predictions are currently \
+                    a work around.\n Arviz will warn about non-defined \
+                    InferenceData group 'prior_predictions'.")
+                self.idata.add_groups({
+                "prior_predictions":prior_prediction.prior_predictive
+                })
+            if "predictions_constant_data" not in self.idata.groups():
+                predictions_data = self._get_model_shared_data()
+                self.idata.extend(predictions_data)
+
+
             self._set_observed_data()
         # prior predictions on coordinates of observed data
         # used for posterior sampling (in sample predictions)
         if is_prior and not is_grid_predictive:
-            with self as model:
-                prior_idata = pm.sample_prior_predictive(**kwargs)
-            if self.idata is not None:
+            if "prior" not in self.idata.groups():
+                prior_idata = pm.sample_prior_predictive(**kwargs,model=self)
                 self.idata.extend(prior_idata)
-            else:
-                self.idata = prior_idata
+
 
         # posterior out of sample predictions with grid
         # as predictors -> model surface
         if not is_prior and is_grid_predictive:
-            self._set_grid_data()
-            prediction = pm.sample_posterior_predictive(self.idata,
-                                                        model=self,
-                                                        extend_inferencedata=True,
-                                                        predictions=True,
-                                                        **kwargs)
-            # until fix inference data must be updated
-            self.idata.extend(prediction)
-            self._set_observed_data()
+            if "predictions" not in self.idata.groups():
+                self._set_grid_data()
+                prediction = pm.sample_posterior_predictive(
+                                                    self.idata,
+                                                    model=self,
+                                                    #extend_inferencedata=True,
+                                                    predictions=True,
+                                                    **kwargs)
+                # until fix inference data must be updated
+                self.idata.extend(prediction)
+                self._set_observed_data()
         # posterior predictions on coordinates of observed data
         # used for posterior sampling (in sample predictions)
         if not is_prior and not is_grid_predictive:
-            with self as model:
-                pp = pm.sample_posterior_predictive(self.idata,
-                                                    extend_inferencedata=True,
-                                                    **kwargs)
+            if "posterior_predictive" not in self.idata.groups():
+                pm.sample_posterior_predictive(self.idata,
+                                                extend_inferencedata=True,
+                                                model=self,
+                                                **kwargs)
 
-    def visualize_predictions_scatter(self,size:int = 50, in_sample:bool = True, is_prior:bool = False, pred_name:str = "obs",plot_observed_data:bool = True) -> None:
+    def visualize_predictions_scatter(self,
+                                      size:int = 50,
+                                      in_sample:bool = True,
+                                      is_prior:bool = False,
+                                      pred_name:str = "obs",
+                                      plot_observed_data:bool = True,
+                                      use_renderer:str ="notebook") -> None:
         """Plotting posterior/prior predictions.
 
         Args:
+            size (int,optional): Number of predictions to plot
+              for each position.
             in_sample (bool, optional): If True in-sample
               predictions are plotted. Else out-of-sample
               predictions are plotted.
@@ -109,16 +162,23 @@ class AbstractModel(pm.Model):
               Defaults to 'obs'.
             plot_observed_data (bool,optional): Wether to plot observed
               data on top of scatter plot. Defaults to True.
+            use_renderer (str,optional): Which plotly renderer to use.
+              Defaults to 'notebook'.
         """
+        # we want to plot predictors -> predicted
+        # get correct data depeding on arguments
 
+        # grid data
         if not in_sample:
             predictors_data = self.idata.predictions_constant_data
+            # prior predictions on grid data (prior_predictions)
             if is_prior:
                 draw_sample = np.random.choice(self.idata\
                                                 .prior_predictions\
                                                 .draw.values, size)
                 predicted_data = self.idata.\
                                     prior_predictions[{"draw":draw_sample}]
+            # posterior predictions on grid data (predictions)
             if not is_prior:
                 draw_sample = np.random.choice(self.idata\
                                                 .predictions\
@@ -126,9 +186,10 @@ class AbstractModel(pm.Model):
                                                 .values,
                                                 size)
                 predicted_data = self.idata.predictions[{"draw":draw_sample}]
-
+        # original observed data
         if in_sample:
             predictors_data = self.idata.constant_data
+            # prior predictions on observed data (prior_predictive)
             if is_prior:
                 draw_sample = np.random.choice(self.idata\
                                                 .prior_predictive\
@@ -137,6 +198,7 @@ class AbstractModel(pm.Model):
                                                 size)
                 predicted_data = self.idata\
                                     .prior_predictive[{"draw":draw_sample}]
+            # posterior predictions on observed data (psoterior_predictive)
             if not is_prior:
                 draw_sample = np.random.choice(self.idata\
                                                 .posterior_predictive\
@@ -157,7 +219,7 @@ class AbstractModel(pm.Model):
         df_scan = predictors_data.scan\
                     .to_dataframe()\
                     .reset_index()
-
+        # then merge to one df
         df_predictors = pd.merge(df_mz,
                                 df_scan,
                                 left_on="mz_dim_0",
@@ -167,7 +229,9 @@ class AbstractModel(pm.Model):
                                         "mz_dim_0":"data_point"
                                         })
         # get corresponding predicted values
+        # test if desired pred_name was sampled
         if pred_name not in predicted_data.data_vars.keys():
+            # use first data variable in DataArray otherwise
             pred_name_new = list(predicted_data.data_vars.keys())[0]
             warning(f"{pred_name} not in 'prior_predictive',\
                     using {pred_name_new}")
@@ -185,6 +249,7 @@ class AbstractModel(pm.Model):
                           df_predicted,
                           on = "data_point"
                           ).astype({"chain":"str"})
+        # plotting
         fig = px.scatter_3d(data_frame=df_plot,
                             x="scan",
                             y="mz",
@@ -194,7 +259,8 @@ class AbstractModel(pm.Model):
         if plot_observed_data:
             obs_data_trace = self.plot_feature_data(return_fig_trace=True)
             fig.add_trace(obs_data_trace)
-        fig.show(renderer="notebook")
+
+        fig.show(renderer=use_renderer)
 
     def plot_feature_data(self,return_fig_trace:bool = False):
         """plots model's input feature data.
@@ -224,8 +290,10 @@ class AbstractModel(pm.Model):
 
         Used for prediction on a grid
         """
-
-        data = self.idata.constant_data
+        if "constant_data" not in self.idata:
+            data = self._get_model_shared_data(False).constant_data
+        else:
+            data = self.idata.constant_data
         # extract hull boundaries of feature
         obs_x = data.mz.values.flatten()
         obs_y = data.scan.values
@@ -274,25 +342,110 @@ class AbstractModel(pm.Model):
                     model=self)
 
     def _sample(self,**kwargs):
-        if "return_inferencedata" not in kwargs:
-            kwargs["return_inferencedata"] = True
 
-        with self as model:
-            trace = pm.sample(**kwargs)
+        kwargs.setdefault("return_inferencedata", True)
 
-        if self.idata is not None:
-            self.idata.extend(trace, join="right")
-        else:
-            self.idata = trace
+        trace = pm.sample(**kwargs,model=self)
 
-    def evaluation(self,is_new_feature:bool = True,**kwargs):
-        if is_new_feature:
-          self.idata = None
-        self._sample(**kwargs)
+        self.idata.extend(trace, join="right")
+
+
+    def evaluation(self,
+                   prior_pred_in:bool = False,
+                   posterior_pred_in:bool = True,
+                   prior_pred_out:bool = False,
+                   posterior_pred_out:bool = False,
+                   plots:Optional[List[str]] = None,
+                   reset_idata:bool = True,
+                   progressbar:bool = True,
+                   **plot_kwargs
+                   ) -> az.InferenceData:
+        """Evaluate precursor feature model.
+
+        This function is wrapping several steps
+        such as sampling of the model ,predictive
+        analyses an plotting.
+
+        Args:
+            prior_pred_in (bool, optional): Wether to perform prior
+                predictive check (in-sample). Defaults to False.
+            posterior_pred_in (bool, optional): Wether to perform posterior
+                predictive check (in-sample). Defaults to True.
+            prior_pred_out (bool, optional): Wether to perform prior
+                predictive check (out-of-sample). Defaults to False.
+            posterior_pred_out (bool, optional): Wether to perform psoterior
+                predictive check (out-of-sample). Defaults to False.
+            plots (Optional[List[str]],optional): List of plots to generate.
+                Possible entries :  'prior_pred_in',
+                                    'prior_pred_out',
+                                    'posterior_pred_in',
+                                    'posterior_pred_out'
+                Defaults to None.
+            reset_idata (bool, optional): Wether to reset
+                inferenceData. Defaults to True.
+            progressbar (bool,optional): Wether to plot progressbar.
+                Defaults to True.
+        Returns:
+            [az.InferenceData]: Inference data of model.
+        """
+        if reset_idata:
+            self.idata = az.InferenceData()
+        self._sample(progressbar=progressbar)
+
+        # make 'in' operator available for plots
+        if plots is None:
+            plots = []
+
+        # prior predictive analysis in-sample
+        if prior_pred_in:
+            self._sample_predictive(is_prior=True)
+            if "prior_pred_in" in plots:
+                self.visualize_predictions_scatter(is_prior=True,
+                                                   **plot_kwargs)
+
+        # prior predictive analysis out-of-sample
+        if prior_pred_out:
+            self._sample_predictive(is_prior=True,
+                                    is_grid_predictive=True)
+            if "prior_pred_out" in plots:
+                self.visualize_predictions_scatter(in_sample=False,
+                                                   is_prior=True,
+                                                   **plot_kwargs)
+
+        # posterior predictive analysis in-sample
+        if posterior_pred_in:
+            self._sample_predictive(progressbar=progressbar)
+            if "posterior_pred_in" in plots:
+                self.visualize_predictions_scatter(**plot_kwargs)
+
+        # posterior predictive analysis out-of-sample
+        if posterior_pred_out:
+            self._sample_predictive(is_grid_predictive=True,progressbar=progressbar)
+            if "posterior_pred_out" in plots:
+                self.visualize_predictions_scatter(in_sample=False,
+                                                   **plot_kwargs)
+
+        return self.idata.copy()
 
 
 class ModelGLM3D(AbstractModel):
-    def __init__(self,num_observed:int,peak_num:int,z,intensity,scan,mz,name:str="",model:pm.Model=None):
+    # TODO(Tim) Add latex model function and properly describe model
+    # in docstring
+    """Simple GLM like model of precursor feature
+
+
+
+
+    """
+    def __init__(self,
+                 num_observed:int,
+                 peak_num:int,
+                 z:int,
+                 intensity:NDArrayFloat,
+                 scan:NDArrayInt,
+                 mz:NDArrayFloat,
+                 name:str="",
+                 model:pm.Model = None):
         super().__init__(name,model)
 
         self.peak_num = pm.MutableData("peak_num",peak_num)
@@ -309,23 +462,31 @@ class ModelGLM3D(AbstractModel):
         scan_range = at.max(self.scan)-at.min(self.scan)
 
 
-        self.I_t = pm.Normal("I_t",mu=scan_mean,sigma=scan_range/2)
-        self.I_s = pm.Uniform("I_s",lower=0,upper=scan_range)
+        self.i_t = pm.Normal("i_t",mu=scan_mean,sigma=scan_range/2)
+        self.i_s = pm.Uniform("i_s",lower=0,upper=scan_range)
 
-        self.MS_mz = pm.Normal("MS_mz",mu=mz_mean,sigma=10)
-        self.MS_s = pm.Exponential("MS_s",lam=10)
-        self.pos = self.peaks/(self.charge+1)+self.MS_mz
-        self.lam = 0.000594 * (self.charge+1)*self.MS_mz - 0.03091
+        self.ms_mz = pm.Normal("ms_mz",mu=mz_mean,sigma=10)
+        self.ms_s = pm.Exponential("ms_s",lam=10)
+        self.pos = self.peaks/(self.charge+1)+self.ms_mz
+        self.lam = 0.000594 * (self.charge+1)*self.ms_mz - 0.03091
         self.ws_matrix = self.lam**self.peaks/ \
                          at.gamma(self.peaks)* \
                          pmath.exp(-self.lam)
 
         self.alpha = pm.Exponential("alpha",lam = 1/at.max(self.intensity))
 
-        self.pi1 = self.alpha*pmath.exp(-(self.I_t-self.scan)**2/(2*self.I_s**2))
-        self.pi2 = pmath.sum(self.ws_matrix*pmath.exp(-(self.pos-self.mz)**2/(2*self.MS_s**2)),axis=1)
-        self.pi = pm.Deterministic("mu",var=self.pi1*self.pi2)
-
+        self.pi1 = self.alpha\
+                   *pmath.exp(-(self.i_t-self.scan)**2/(2*self.i_s**2))
+        self.pi2 = pmath.sum(self.ws_matrix\
+                             *pmath.exp(-(self.pos-self.mz)**2\
+                                        /(2*self.ms_s**2))
+                             ,axis=1)
+        #self.pi = pm.Deterministic("mu",var=self.pi1*self.pi2,auto=True)
+        self.pi = self.pi1*self.pi2
         self.me = pm.HalfNormal("me",sigma=10)
-        self.obs = pm.Normal("obs",mu=self.pi,sigma=self.me,observed=self.intensity)
+        # Likelihood
+        self.obs = pm.Normal("obs",
+                             mu=self.pi,
+                             sigma=self.me,
+                             observed=self.intensity)
 
