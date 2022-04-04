@@ -366,11 +366,22 @@ class AbstractModel(pm.Model):
 
         trace = pm.sample(**kwargs,model=self)
 
-        self.idata.extend(trace, join="right")
+        self.idata.extend(trace)
 
-    def arviz_plots(self):
-        # TODO(Tim) arviz plot_posterior, trace, energy, pairs, etc.
-        raise NotImplementedError("This method was not implemented yet.")
+    def arviz_plots(self,var_names=["i_t","i_s","alpha","ms_mz","ms_s","me"]):
+        """Generate various arviz plots
+
+        Args:
+            var_names (list, optional): Which variables to consider.
+                Defaults to ["i_t","i_s","alpha","ms_mz","ms_s","me"].
+        """
+        if "posterior" not in self.idata.groups():
+            self._sample()
+        az.plot_posterior(self.idata,var_names)
+        az.plot_trace(self.idata,var_names)
+        az.plot_pair(self.idata,var_names=var_names)
+        az.plot_energy(self.idata)
+
 
     def evaluation(self,
                    prior_pred_in:bool = False,
@@ -442,7 +453,8 @@ class AbstractModel(pm.Model):
 
         # posterior predictive analysis out-of-sample
         if posterior_pred_out:
-            self._sample_predictive(is_grid_predictive=True,progressbar=progressbar)
+            self._sample_predictive(is_grid_predictive=True,
+                                    progressbar=progressbar)
             if "posterior_pred_out" in plots:
                 self.visualize_predictions_scatter(in_sample=False,
                                                    **plot_kwargs)
