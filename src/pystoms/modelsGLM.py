@@ -299,6 +299,11 @@ class AbstractModel(pm.Model):
         obs_y = data.scan.values
         charge = data.charge.values[0]
         peak_num = int(data.peak_num.values[0])
+        ims_mu = data.ims_mu.values[0]
+        ims_sigma = data.ims_sigma.values[0]
+        mz_mu = data.mz_mu.values[0]
+        mz_sigma = data.mz_sigma.values[0]
+        alpha_lam = data.alpha_lam.values[0]
         # set axis limits accordingly
         xmin = obs_x.min()-1
         xmax = obs_x.max()+1
@@ -318,6 +323,11 @@ class AbstractModel(pm.Model):
                       "charge":charge,
                       "peak_num":peak_num,
                       "peaks":np.tile(np.arange(peak_num),(y.size,1)),
+                      "ims_mu":ims_mu,
+                      "ims_sigma":ims_sigma,
+                      "mz_mu":mz_mu,
+                      "mz_sigma":mz_sigma,
+                      "alpha_lam":alpha_lam,
                     },
                     model=self)
 
@@ -331,13 +341,22 @@ class AbstractModel(pm.Model):
         obs_z = data.intensity.values
         charge = data.charge.values[0]
         peak_num = int(data.peak_num.values[0])
-
+        ims_mu = data.ims_mu.values[0]
+        ims_sigma = data.ims_sigma.values[0]
+        mz_mu = data.mz_mu.values[0]
+        mz_sigma = data.mz_sigma.values[0]
+        alpha_lam = data.alpha_lam.values[0]
         pm.set_data({"scan":obs_y,
                       "mz":obs_x, # awful but mzs currently needed as column
                       "intensity":obs_z,
                       "charge":charge,
                       "peak_num":peak_num,
                       "peaks":np.tile(np.arange(peak_num),(obs_y.size,1)),
+                      "ims_mu":ims_mu,
+                      "ims_sigma":ims_sigma,
+                      "mz_mu":mz_mu,
+                      "mz_sigma":mz_sigma,
+                      "alpha_lam":alpha_lam,
                     },
                     model=self)
 
@@ -349,6 +368,9 @@ class AbstractModel(pm.Model):
 
         self.idata.extend(trace, join="right")
 
+    def arviz_plots(self):
+        # TODO(Tim) arviz plot_posterior, trace, energy, pairs, etc.
+        raise NotImplementedError("This method was not implemented yet.")
 
     def evaluation(self,
                    prior_pred_in:bool = False,
@@ -444,10 +466,15 @@ class ModelGLM3D(AbstractModel):
                  intensity:NDArrayFloat,
                  scan:NDArrayInt,
                  mz:NDArrayFloat,
+                 ims_mu:float,
+                 ims_sigma:float,
+                 mz_mu:float,
+                 mz_sigma:float,
+                 alpha_lam:float,
                  name:str="",
                  model:pm.Model = None):
         super().__init__(name,model)
-
+        # accessible from outside (data and hyperpriors)
         self.peak_num = pm.MutableData("peak_num",peak_num)
         self.charge = pm.MutableData("charge",z)
         self.intensity = pm.MutableData("intensity",intensity)
@@ -455,17 +482,25 @@ class ModelGLM3D(AbstractModel):
         self.mz = pm.MutableData("mz",np.tile(mz,(peak_num,1)).T)
         self.peaks = pm.MutableData("peaks",np.tile(np.arange(peak_num),
                             (num_observed,1)))
-
+        self.ims_mu = pm.MutableData("ims_mu",ims_mu)
+        self.ims_sigma = pm.MutableData("ims_sigma",ims_sigma)
+        self.mz_mu = pm.MutableData("mz_mu",mz_mu)
+        self.mz_sigma = pm.MutableData("mz_sigma",mz_sigma)
+        self.alpha_lam = pm.MutableData("alpha_lam",alpha_lam)
+        """
+        # this lets prior predictive fail, because self.intensity zero
         intensity_sum = at.sum(self.intensity)
         mz_mean = at.dot(self.mz[:,0],self.intensity)/intensity_sum
         scan_mean = at.dot(self.scan,self.intensity)/intensity_sum
         scan_range = at.max(self.scan)-at.min(self.scan)
+        """
+        # priors
+        # IMS
+        self.i_t = pm.Normal("i_t",mu=self.ims_mu,sigma=self.ims_sigma/2)
+        self.i_s = pm.Uniform("i_s",lower=0,upper=self.ims_sigma)
 
-
-        self.i_t = pm.Normal("i_t",mu=scan_mean,sigma=scan_range/2)
-        self.i_s = pm.Uniform("i_s",lower=0,upper=scan_range)
-
-        self.ms_mz = pm.Normal("ms_mz",mu=mz_mean,sigma=10)
+        # mass spec
+        self.ms_mz = pm.Normal("ms_mz",mu=self.mz_mu,sigma=self.mz_sigma)
         self.ms_s = pm.Exponential("ms_s",lam=10)
         self.pos = self.peaks/(self.charge+1)+self.ms_mz
         self.lam = 0.000594 * (self.charge+1)*self.ms_mz - 0.03091
@@ -473,16 +508,22 @@ class ModelGLM3D(AbstractModel):
                          at.gamma(self.peaks)* \
                          pmath.exp(-self.lam)
 
-        self.alpha = pm.Exponential("alpha",lam = 1/at.max(self.intensity))
-
+        # scalar α
+        self.alpha = pm.Exponential("alpha",lam = self.alpha_lam)
+        # α*f_IMS(t)
         self.pi1 = self.alpha\
                    *pmath.exp(-(self.i_t-self.scan)**2/(2*self.i_s**2))
+        # f_mass(mz)
         self.pi2 = pmath.sum(self.ws_matrix\
                              *pmath.exp(-(self.pos-self.mz)**2\
                                         /(2*self.ms_s**2))
                              ,axis=1)
-        #self.pi = pm.Deterministic("mu",var=self.pi1*self.pi2,auto=True)
-        self.pi = self.pi1*self.pi2
+
+        # f(t,mz) = α*f_IMS(t)*f_mass(MZ)
+        self.pi = pm.Deterministic("mu",var=self.pi1*self.pi2,auto=True)
+        # debug deterministic:
+        # self.pi = self.pi1*self.pi2
+        # Model error
         self.me = pm.HalfNormal("me",sigma=10)
         # Likelihood
         self.obs = pm.Normal("obs",
