@@ -368,13 +368,17 @@ class AbstractModel(pm.Model):
 
         self.idata.extend(trace)
 
-    def arviz_plots(self,var_names=["i_t","i_s","alpha","ms_mz","ms_s","me"]):
+    def arviz_plots(self,var_names:Optional[List[str]] = None):
         """Generate various arviz plots
 
         Args:
-            var_names (list, optional): Which variables to consider.
-                Defaults to ["i_t","i_s","alpha","ms_mz","ms_s","me"].
+            var_names (Optional[List[str]], optional): Which variables to consider.
+                If None, then ["i_t","i_s","alpha","ms_mz","ms_s","me"] are considered.
+                Defaults to None.
         """
+        if var_names is None:
+            # because list as default values are dangerous
+            var_names = ["i_t","i_s","alpha","ms_mz","ms_s","me"]
         if "posterior" not in self.idata.groups():
             self._sample()
         az.plot_posterior(self.idata,var_names)
@@ -409,10 +413,8 @@ class AbstractModel(pm.Model):
             posterior_pred_out (bool, optional): Wether to perform psoterior
                 predictive check (out-of-sample). Defaults to False.
             plots (Optional[List[str]],optional): List of plots to generate.
-                Possible entries :  'prior_pred_in',
-                                    'prior_pred_out',
-                                    'posterior_pred_in',
-                                    'posterior_pred_out'
+                Possible entries :  'prior_pred_in','prior_pred_out',
+                'posterior_pred_in','posterior_pred_out'.
                 Defaults to None.
             reset_idata (bool, optional): Wether to reset
                 inferenceData. Defaults to True.
@@ -421,6 +423,7 @@ class AbstractModel(pm.Model):
         Returns:
             [az.InferenceData]: Inference data of model.
         """
+
         if reset_idata:
             self.idata = az.InferenceData()
         self._sample(progressbar=progressbar)
@@ -485,6 +488,7 @@ class ModelGLM3D(AbstractModel):
                  alpha_lam:float,
                  name:str="",
                  model:pm.Model = None):
+        """docstring of constructor"""
         super().__init__(name,model)
         # accessible from outside (data and hyperpriors)
         self.peak_num = pm.MutableData("peak_num",peak_num)
