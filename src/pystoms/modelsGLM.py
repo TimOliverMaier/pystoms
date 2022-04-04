@@ -17,6 +17,8 @@ from typing import Optional
 import arviz as az
 from aesara import tensor as at
 from aesara.tensor.sharedvar import TensorSharedVariable
+import matplotlib.pyplot as plt
+import os
 
 #typing
 NDArrayFloat = npt.NDArray[np.float64]
@@ -145,6 +147,9 @@ class AbstractModel(pm.Model):
                                       is_prior:bool = False,
                                       pred_name:str = "obs",
                                       plot_observed_data:bool = True,
+                                      write_to_file:bool = False,
+                                      path:str = "",
+                                      file_name:Optional[str] = None,
                                       use_renderer:str ="notebook") -> None:
         """Plotting posterior/prior predictions.
 
@@ -162,6 +167,13 @@ class AbstractModel(pm.Model):
               Defaults to 'obs'.
             plot_observed_data (bool,optional): Wether to plot observed
               data on top of scatter plot. Defaults to True.
+            write_to_file (bool, optional): Wether to write plot to file.
+                Defaults to False.
+            path (str, optional): Path to folder in which output files
+                are stored. Defaults to "".
+            file_name (Optional[str], optional): Name of html output file.
+                If is None, generic file name depending on `is_prior` and
+                `in_sample` is used. Defaults to None.
             use_renderer (str,optional): Which plotly renderer to use.
               Defaults to 'notebook'.
         """
@@ -260,7 +272,23 @@ class AbstractModel(pm.Model):
             obs_data_trace = self.plot_feature_data(return_fig_trace=True)
             fig.add_trace(obs_data_trace)
 
-        fig.show(renderer=use_renderer)
+        if write_to_file:
+            if file_name is None:
+                fn_1 = "prior_predictive" if is_prior else "posterior_predictive"
+                fn_2 = "in_sample" if in_sample else "out_of_sample"
+                file_name = fn_1 + "_" + fn_2 + ".html"
+
+            if not file_name.endswith(".html"):
+                fn_prefix = file_name.split(".")[0]
+                file_name = fn_prefix + ".html"
+
+            path_to_file = path+"/"+file_name
+
+            if not os.path.exists(path):
+                os.makedirs(path)
+            fig.write_html(path_to_file)
+        else:
+            fig.show(renderer=use_renderer)
 
     def plot_feature_data(self,return_fig_trace:bool = False):
         """plots model's input feature data.
@@ -368,23 +396,53 @@ class AbstractModel(pm.Model):
 
         self.idata.extend(trace)
 
-    def arviz_plots(self,var_names:Optional[List[str]] = None):
+    def arviz_plots(self,
+                    var_names:Optional[List[str]] = None,
+                    save_fig:bool = True,
+                    path:str = "") -> None:
         """Generate various arviz plots
 
         Args:
             var_names (Optional[List[str]], optional): Which variables to consider.
                 If None, then ["i_t","i_s","alpha","ms_mz","ms_s","me"] are considered.
                 Defaults to None.
+            save_fig (bool, optional): Wether to save plots to png.
+                Defaults to True.
+            path (str, optional): Path to folder in which plots shall
+                be saved. Defaults to ""
         """
+
         if var_names is None:
             # because list as default values are dangerous
             var_names = ["i_t","i_s","alpha","ms_mz","ms_s","me"]
         if "posterior" not in self.idata.groups():
             self._sample()
+        if not os.path.exists(path):
+            os.makedirs(path)
         az.plot_posterior(self.idata,var_names)
+        if save_fig:
+            plt.savefig(path+"/"+"posterior.png")
+            plt.close()
+        else:
+            plt.show()
         az.plot_trace(self.idata,var_names)
+        if save_fig:
+            plt.savefig(path+"/"+"trace.png")
+            plt.close()
+        else:
+            plt.show()
         az.plot_pair(self.idata,var_names=var_names)
+        if save_fig:
+            plt.savefig(path+"/"+"pairs.png")
+            plt.close()
+        else:
+            plt.show()
         az.plot_energy(self.idata)
+        if save_fig:
+            plt.savefig(path+"/"+"energy.png")
+            plt.close()
+        else:
+            plt.show()
 
 
     def evaluation(self,
