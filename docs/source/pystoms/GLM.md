@@ -4,6 +4,6 @@
 
 .. currentmodule:: pystoms
 
-.. automodule:: pystoms.modelsGLM
+.. automodule:: pystoms.models_glm
     :members:
 ```

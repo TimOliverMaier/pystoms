@@ -331,7 +331,7 @@ class AbstractModel(pm.Model):
         charge = data.charge.values[0]
         peak_num = int(data.peak_num.values[0])
         ims_mu = data.ims_mu.values[0]
-        ims_sigma = data.ims_sigma.values[0]
+        ims_sigma_max = data.ims_sigma_max.values[0]
         mz_mu = data.mz_mu.values[0]
         mz_sigma = data.mz_sigma.values[0]
         alpha_lam = data.alpha_lam.values[0]
@@ -355,7 +355,7 @@ class AbstractModel(pm.Model):
                       "peak_num":peak_num,
                       "peaks":np.tile(np.arange(peak_num),(y.size,1)),
                       "ims_mu":ims_mu,
-                      "ims_sigma":ims_sigma,
+                      "ims_sigma_max":ims_sigma_max,
                       "mz_mu":mz_mu,
                       "mz_sigma":mz_sigma,
                       "alpha_lam":alpha_lam,
@@ -373,7 +373,7 @@ class AbstractModel(pm.Model):
         charge = data.charge.values[0]
         peak_num = int(data.peak_num.values[0])
         ims_mu = data.ims_mu.values[0]
-        ims_sigma = data.ims_sigma.values[0]
+        ims_sigma_max = data.ims_sigma_max.values[0]
         mz_mu = data.mz_mu.values[0]
         mz_sigma = data.mz_sigma.values[0]
         alpha_lam = data.alpha_lam.values[0]
@@ -384,7 +384,7 @@ class AbstractModel(pm.Model):
                       "peak_num":peak_num,
                       "peaks":np.tile(np.arange(peak_num),(obs_y.size,1)),
                       "ims_mu":ims_mu,
-                      "ims_sigma":ims_sigma,
+                      "ims_sigma_max":ims_sigma_max,
                       "mz_mu":mz_mu,
                       "mz_sigma":mz_sigma,
                       "alpha_lam":alpha_lam,
@@ -534,10 +534,37 @@ class ModelGLM3D(AbstractModel):
     # in docstring
     """Simple GLM like model of precursor feature
 
+    GLM model fitting the 2D function
 
+    .. math::
 
+        f(mz,scan) = α*f_{NM}(mz)*f_{N}(scan)
+
+    With :math:`f_{NM}(mz)` being the pdf of a normal
+    mixture distribution and :math:`f_{N}(scan)` being
+    the pdf of a normal distribution.
+
+    Args:
+        num_observed (int): Number of observed datapoints.
+        peak_num (int): Number of isotopic (incl MI) peaks
+            to consider.
+        z (int): Charge of precursor.
+        intensity (NDArrayFloat): Observed intensities
+        scan (NDArrayInt): Observed scan numbers.
+        mz (NDArrayFloat): Observed mass to charge ratios.
+        ims_mu (float): Hyperprior. Expected value for scan number.
+        ims_sigma_max (float): Hyperprior. Maximal expected standard deviation
+            for scan number.
+        mz_mu (float): Hyperprior. Expected value for monoisotopic
+            mass to charge ratio.
+        mz_sigma (float): Hyperprior. Standard deviation of prior normal
+            distribution for monoisotopic peak
+        alpha_lam (float): Expected value for scalar.
+        name (str,optional): Defaults to "".
+        model (Optional[pm.Model],optional): Defaults to None.
 
     """
+
     def __init__(self,
                  num_observed:int,
                  peak_num:int,
@@ -546,7 +573,7 @@ class ModelGLM3D(AbstractModel):
                  scan:NDArrayInt,
                  mz:NDArrayFloat,
                  ims_mu:float,
-                 ims_sigma:float,
+                 ims_sigma_max:float,
                  mz_mu:float,
                  mz_sigma:float,
                  alpha_lam:float,
@@ -563,7 +590,7 @@ class ModelGLM3D(AbstractModel):
         self.peaks = pm.MutableData("peaks",np.tile(np.arange(peak_num),
                             (num_observed,1)))
         self.ims_mu = pm.MutableData("ims_mu",ims_mu)
-        self.ims_sigma = pm.MutableData("ims_sigma",ims_sigma)
+        self.ims_sigma_max = pm.MutableData("ims_sigma_max",ims_sigma_max)
         self.mz_mu = pm.MutableData("mz_mu",mz_mu)
         self.mz_sigma = pm.MutableData("mz_sigma",mz_sigma)
         self.alpha_lam = pm.MutableData("alpha_lam",alpha_lam)
@@ -576,8 +603,8 @@ class ModelGLM3D(AbstractModel):
         """
         # priors
         # IMS
-        self.i_t = pm.Normal("i_t",mu=self.ims_mu,sigma=self.ims_sigma/2)
-        self.i_s = pm.Uniform("i_s",lower=0,upper=self.ims_sigma)
+        self.i_t = pm.Normal("i_t",mu=self.ims_mu,sigma=self.ims_sigma_max/2)
+        self.i_s = pm.Uniform("i_s",lower=0,upper=self.ims_sigma_max)
 
         # mass spec
         self.ms_mz = pm.Normal("ms_mz",mu=self.mz_mu,sigma=self.mz_sigma)
