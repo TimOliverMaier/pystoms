@@ -530,8 +530,6 @@ class AbstractModel(pm.Model):
 
 
 class ModelGLM3D(AbstractModel):
-    # TODO(Tim) Add latex model function and properly describe model
-    # in docstring
     """Simple GLM like model of precursor feature
 
     GLM model fitting the 2D function
@@ -579,7 +577,7 @@ class ModelGLM3D(AbstractModel):
                  alpha_lam:float,
                  name:str="",
                  model:pm.Model = None):
-        """docstring of constructor"""
+
         super().__init__(name,model)
         # accessible from outside (data and hyperpriors)
         self.peak_num = pm.MutableData("peak_num",peak_num)
