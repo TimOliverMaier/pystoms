@@ -52,14 +52,14 @@ class AbstractModel(pm.Model):
 
         Args:
             predictions_constant_data (bool, optional): If True data is put in
-                `predictions_constant_data` group. Else into `constant_data` group.
-                 Defaults to True.
+                `predictions_constant_data` group. Else into `constant_data`
+                 group. Defaults to True.
 
         Returns:
             az.InferenceData: InferenceData with model's input
                 data in `constant_data` or `predictions_constant_data`
         """
-        data = dict()
+        data = {}
         for key,var in self.named_vars.items():
             if isinstance(var, TensorSharedVariable):
                 data[key] = var.get_value()
@@ -82,6 +82,7 @@ class AbstractModel(pm.Model):
             is_grid_predictive (bool, optional): If True make
               out-of-sample predictions with feature's
               grid data and store it in `idata.predictions`
+            **kwargs: Keyword arguments passed to predictive sampler.
         """
 
         # for overview on arviz inferenceData groups visit
@@ -274,7 +275,9 @@ class AbstractModel(pm.Model):
 
         if write_to_file:
             if file_name is None:
-                fn_1 = "prior_predictive" if is_prior else "posterior_predictive"
+                fn_1 = "prior_predictive" \
+                        if is_prior \
+                        else "posterior_predictive"
                 fn_2 = "in_sample" if in_sample else "out_of_sample"
                 file_name = fn_1 + "_" + fn_2 + ".html"
 
@@ -403,8 +406,9 @@ class AbstractModel(pm.Model):
         """Generate various arviz plots
 
         Args:
-            var_names (Optional[List[str]], optional): Which variables to consider.
-                If None, then ["i_t","i_s","alpha","ms_mz","ms_s","me"] are considered.
+            var_names (Optional[List[str]], optional): Which variables
+                to consider. If None, then
+                ["i_t","i_s","alpha","ms_mz","ms_s","me"] are considered.
                 Defaults to None.
             save_fig (bool, optional): Wether to save plots to png.
                 Defaults to True.
@@ -478,6 +482,8 @@ class AbstractModel(pm.Model):
                 inferenceData. Defaults to True.
             progressbar (bool,optional): Wether to plot progressbar.
                 Defaults to True.
+            **plot_kwargs: Keyword Arguments passed to
+                `visualize_predictions_scatter` method.
         Returns:
             [az.InferenceData]: Inference data of model.
         """
