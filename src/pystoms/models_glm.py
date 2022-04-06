@@ -188,7 +188,7 @@ class AbstractModel(pm.Model):
               Defaults to False.
             pred_name (str,optional): predicted variable to plot.
               Defaults to 'obs'. If variable is not found, first
-              variable in `data_vars` of `DataArray` is used.
+              variable in `data_vars` of Dataset is used.
             plot_observed_data (bool,optional): Wether to plot observed
               data on top of scatter plot. Defaults to True.
             write_to_file (bool, optional): Wether to write plot to file.
@@ -273,7 +273,7 @@ class AbstractModel(pm.Model):
         # get corresponding predicted values
         # test if desired pred_name was sampled
         if pred_name not in predicted_data.data_vars.keys():
-            # use first data variable in DataArray otherwise
+            # use first data variable in Dataset otherwise
             pred_name_new = list(predicted_data.data_vars.keys())[0]
             warning(f"{pred_name} not in 'prior_predictive',\
                     using {pred_name_new}")
