@@ -4,6 +4,7 @@
 
 """
 
+from ast import Raise
 from logging import warning
 from typing import List
 import pandas as pd
@@ -629,8 +630,12 @@ class ModelGLM3D(AbstractModel):
         mz_sigma (float): Hyperprior. Standard deviation of prior normal
             distribution for monoisotopic peak
         alpha_lam (float): Expected value for scalar.
-        name (str,optional): Defaults to "".
+        likelihood (str, optional): Likelihood distribution. Currently
+            supported: 'Normal', 'StudentT'. Defaults to 'Normal'.
+        name (str,optional): Defaults to empty string.
         model (Optional[pm.Model],optional): Defaults to None.
+    Raises:
+        NotImplementedError if provided likelihood is not suppored.
 
     """
 
@@ -646,6 +651,7 @@ class ModelGLM3D(AbstractModel):
                  mz_mu:float,
                  mz_sigma:float,
                  alpha_lam:float,
+                 likelihood:str = "Normal",
                  name:str="",
                  model:pm.Model = None) -> None:
 
@@ -696,8 +702,16 @@ class ModelGLM3D(AbstractModel):
         # Model error
         self.me = pm.HalfNormal("me",sigma=10)
         # Likelihood
-        self.obs = pm.Normal("obs",
+        if likelihood == "Normal":
+            self.obs = pm.Normal("obs",
                              mu=self.pi,
                              sigma=self.me,
                              observed=self.intensity)
-
+        elif likelihood == "StudentT":
+            self.obs = pm.StudentT("obs",
+                                   nu=1,
+                                   mu=self.pi,
+                                   sigma=self.me,
+                                   observed=self.intensity)
+        else:
+            Raise(NotImplementedError("This likelihood is not supported"))
