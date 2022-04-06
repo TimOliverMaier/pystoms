@@ -105,6 +105,9 @@ class AbstractModel(pm.Model):
                 self._set_grid_data()
                 prior_prediction = pm.sample_prior_predictive(model=self,
                                                           **kwargs)
+                if "mu" in prior_prediction.prior.data_vars.keys():
+                    prior_prediction.prior_predictive["mu"]\
+                        = prior_prediction.prior["mu"]
                 warning("Prior out-of-sample predictions are currently \
                     a work around.\n Arviz will warn about non-defined \
                     InferenceData group 'prior_predictions'.")
@@ -127,6 +130,9 @@ class AbstractModel(pm.Model):
             # used for posterior sampling (in-sample predictions)
             if "prior" not in self.idata.groups():
                 prior_idata = pm.sample_prior_predictive(**kwargs,model=self)
+                if "mu" in prior_idata.prior.data_vars.keys():
+                    prior_idata.prior_predictive["mu"]\
+                        = prior_idata.prior["mu"]
                 self.idata.extend(prior_idata)
             else:
                 warning("Inference data of model already\n\
