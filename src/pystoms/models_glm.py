@@ -529,6 +529,7 @@ class AbstractModel(pm.Model):
                    plots:Optional[List[str]] = None,
                    reset_idata:bool = True,
                    progressbar:bool = True,
+                   pred_name_list:Optional[List[str]] = None,
                    **plot_kwargs
                    ) -> az.InferenceData:
         """Evaluate precursor feature model.
@@ -554,6 +555,8 @@ class AbstractModel(pm.Model):
                 inferenceData. Defaults to True.
             progressbar (bool,optional): Wether to plot progressbar.
                 Defaults to True.
+            pred_name_list (Optional[List[str]],optional): Which predicted
+                variables to plot. If None, 'obs' is plotted. Defaults to None.
             **plot_kwargs: Keyword Arguments passed to
                 `visualize_predictions_scatter` method.
         Returns:
@@ -564,6 +567,9 @@ class AbstractModel(pm.Model):
             self.idata = az.InferenceData()
         self._sample(progressbar=progressbar)
 
+        if pred_name_list is None:
+            pred_name_list = ["obs"]
+
         if plots is None:
             # make 'in' operator available for plots
             plots = []
@@ -572,7 +578,9 @@ class AbstractModel(pm.Model):
             # prior predictive analysis in-sample
             self._sample_predictive(is_prior=True)
             if "prior_pred_in" in plots:
-                self.visualize_predictions_scatter(is_prior=True,
+                for pred_name in pred_name_list:
+                    plot_kwargs["pred_name"] = pred_name
+                    self.visualize_predictions_scatter(is_prior=True,
                                                    **plot_kwargs)
 
         if prior_pred_out:
@@ -580,7 +588,9 @@ class AbstractModel(pm.Model):
             self._sample_predictive(is_prior=True,
                                     is_grid_predictive=True)
             if "prior_pred_out" in plots:
-                self.visualize_predictions_scatter(in_sample=False,
+                for pred_name in pred_name_list:
+                    plot_kwargs["pred_name"] = pred_name
+                    self.visualize_predictions_scatter(in_sample=False,
                                                    is_prior=True,
                                                    **plot_kwargs)
 
@@ -588,14 +598,18 @@ class AbstractModel(pm.Model):
             # posterior predictive analysis in-sample
             self._sample_predictive(progressbar=progressbar)
             if "posterior_pred_in" in plots:
-                self.visualize_predictions_scatter(**plot_kwargs)
+                for pred_name in pred_name_list:
+                    plot_kwargs["pred_name"] = pred_name
+                    self.visualize_predictions_scatter(**plot_kwargs)
 
         if posterior_pred_out:
             # posterior predictive analysis out-of-sample
             self._sample_predictive(is_grid_predictive=True,
                                     progressbar=progressbar)
             if "posterior_pred_out" in plots:
-                self.visualize_predictions_scatter(in_sample=False,
+                for pred_name in pred_name_list:
+                    plot_kwargs["pred_name"] = pred_name
+                    self.visualize_predictions_scatter(in_sample=False,
                                                    **plot_kwargs)
 
         return self.idata.copy()
