@@ -33,19 +33,19 @@ class AbstractModel(pm.Model):
 
     Args:
         name (str): Name of model.
-        model (Optional[pm.Model]: PyMC model)
+        model (Optional[pm.Model]): PyMC model
 
     Attributes:
         idata (az.InferenceData):
           inferenceData of current model.
     """
-    def __init__(self,name:str,model:Optional[pm.Model]):
+    def __init__(self,name:str,model:Optional[pm.Model]) -> None:
         # name and model must be passed to pm.Model
         super().__init__(name,model)
         # instantiate inference data
         self.idata = az.InferenceData()
 
-    def _reset_idata(self):
+    def _reset_idata(self) -> None:
         self.idata = az.InferenceData()
 
     def _get_model_shared_data(self,
@@ -641,7 +641,7 @@ class ModelGLM3D(AbstractModel):
                  mz_sigma:float,
                  alpha_lam:float,
                  name:str="",
-                 model:pm.Model = None):
+                 model:pm.Model = None) -> None:
 
         super().__init__(name,model)
         # accessible from outside (data and hyperpriors)
