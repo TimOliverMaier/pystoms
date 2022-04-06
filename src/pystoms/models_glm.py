@@ -203,8 +203,8 @@ class AbstractModel(pm.Model):
             path (str, optional): Path to folder in which output files
                 are stored. Defaults to "".
             file_name (Optional[str], optional): Name of html output file.
-                If is None, generic file name depending on `is_prior` and
-                `in_sample` is used. Defaults to None.
+                If is None, generic file name depending on `is_prior`,
+                `pred_name` and `in_sample` is used. Defaults to None.
             use_renderer (str,optional): Which plotly renderer to use.
               Defaults to 'notebook'.
         """
@@ -315,7 +315,7 @@ class AbstractModel(pm.Model):
                         if is_prior \
                         else "posterior_predictive"
                 fn_2 = "in_sample" if in_sample else "out_of_sample"
-                file_name = fn_1 + "_" + fn_2 + ".html"
+                file_name = fn_1 + "_" + fn_2 + "_" + pred_name + ".html"
 
             if not file_name.endswith(".html"):
                 fn_prefix = file_name.split(".")[0]
@@ -709,7 +709,7 @@ class ModelGLM3D(AbstractModel):
                              observed=self.intensity)
         elif likelihood == "StudentT":
             self.obs = pm.StudentT("obs",
-                                   nu=1,
+                                   nu=5,
                                    mu=self.pi,
                                    sigma=self.me,
                                    observed=self.intensity)
