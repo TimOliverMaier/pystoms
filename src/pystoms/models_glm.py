@@ -657,13 +657,7 @@ class ModelGLM3D(AbstractModel):
         self.mz_mu = pm.MutableData("mz_mu",mz_mu)
         self.mz_sigma = pm.MutableData("mz_sigma",mz_sigma)
         self.alpha_lam = pm.MutableData("alpha_lam",alpha_lam)
-        """
-        # this lets prior predictive fail, because self.intensity zero
-        intensity_sum = at.sum(self.intensity)
-        mz_mean = at.dot(self.mz[:,0],self.intensity)/intensity_sum
-        scan_mean = at.dot(self.scan,self.intensity)/intensity_sum
-        scan_range = at.max(self.scan)-at.min(self.scan)
-        """
+
         # priors
         # IMS
         self.i_t = pm.Normal("i_t",mu=self.ims_mu,sigma=self.ims_sigma_max/2)
