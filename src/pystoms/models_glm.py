@@ -630,12 +630,14 @@ class ModelGLM3D(AbstractModel):
 
     Args:
         num_observed (int): Number of observed datapoints.
+        num_features (int): Number of features in passed data.
         peak_num (int): Number of isotopic (incl MI) peaks
             to consider.
         z (int): Charge of precursor.
         intensity (NDArrayFloat): Observed intensities
         scan (NDArrayInt): Observed scan numbers.
         mz (NDArrayFloat): Observed mass to charge ratios.
+        peaks (NDArrayInt): Isotopic peaks to consider as numpy nd array.
         ims_mu (float): Hyperprior. Expected value for scan number.
         ims_sigma_max (float): Hyperprior. Maximal expected standard deviation
             for scan number.
@@ -655,11 +657,13 @@ class ModelGLM3D(AbstractModel):
 
     def __init__(self,
                  num_observed:int,
+                 num_features:int,
                  peak_num:int,
                  z:int,
                  intensity:NDArrayFloat,
                  scan:NDArrayInt,
                  mz:NDArrayFloat,
+                 peaks:NDArrayInt,
                  ims_mu:float,
                  ims_sigma_max:float,
                  mz_mu:float,
@@ -671,18 +675,30 @@ class ModelGLM3D(AbstractModel):
 
         super().__init__(name,model)
         # accessible from outside (data and hyperpriors)
-        self.peak_num = pm.MutableData("peak_num",peak_num)
-        self.charge = pm.MutableData("charge",z)
-        self.intensity = pm.MutableData("intensity",intensity)
-        self.scan = pm.MutableData("scan",scan)
-        self.mz = pm.MutableData("mz",np.tile(mz,(peak_num,1)).T)
-        self.peaks = pm.MutableData("peaks",np.tile(np.arange(peak_num),
-                            (num_observed,1)))
-        self.ims_mu = pm.MutableData("ims_mu",ims_mu)
-        self.ims_sigma_max = pm.MutableData("ims_sigma_max",ims_sigma_max)
-        self.mz_mu = pm.MutableData("mz_mu",mz_mu)
-        self.mz_sigma = pm.MutableData("mz_sigma",mz_sigma)
-        self.alpha_lam = pm.MutableData("alpha_lam",alpha_lam)
+        self.num_observed = pm.MutableData("num_observed",num_observed)
+        self.num_features = pm.MutableData("num_features",num_features)
+        self.peak_num = pm.MutableData("peak_num",peak_num,
+                                        broadcastable=(True,False,True))
+        self.charge = pm.MutableData("charge",z,
+                                     broadcastable=(True,False,True))
+        self.intensity = pm.MutableData("intensity",intensity,
+                                        broadcastable=(False,False,True))
+        self.scan = pm.MutableData("scan",scan,
+                                   broadcastable=(False,False,True))
+        self.mz = pm.MutableData("mz",mz,
+                                 broadcastable=(False,False,False))
+        self.peaks = pm.MutableData("peaks",peaks,
+                                    broadcastable=(False,False,False))
+        self.ims_mu = pm.MutableData("ims_mu",ims_mu,
+                                     broadcastable=(True,False,True))
+        self.ims_sigma_max = pm.MutableData("ims_sigma_max",ims_sigma_max,
+                                            broadcastable=(True,False,True))
+        self.mz_mu = pm.MutableData("mz_mu",mz_mu,
+                                    broadcastable=(True,False,True))
+        self.mz_sigma = pm.MutableData("mz_sigma",mz_sigma,
+                                       broadcastable=(True,False,True))
+        self.alpha_lam = pm.MutableData("alpha_lam",alpha_lam,
+                                        broadcastable=(True,False,True))
 
         # priors
         # IMS
@@ -691,11 +707,12 @@ class ModelGLM3D(AbstractModel):
 
         # mass spec
         self.ms_mz = pm.Normal("ms_mz",mu=self.mz_mu,sigma=self.mz_sigma)
-        self.ms_s = pm.Exponential("ms_s",lam=10)
+        # TODO(Tim) separate mz_sigma
+        self.ms_s = pm.Exponential("ms_s",lam=self.mz_sigma)
         self.pos = self.peaks/(self.charge+1)+self.ms_mz
         self.lam = 0.000594 * (self.charge+1)*self.ms_mz - 0.03091
         self.ws_matrix = self.lam**self.peaks/ \
-                         at.gamma(self.peaks)* \
+                         at.gamma(self.peaks+1)* \
                          pmath.exp(-self.lam)
 
         # scalar α
@@ -707,7 +724,9 @@ class ModelGLM3D(AbstractModel):
         self.pi2 = pmath.sum(self.ws_matrix\
                              *pmath.exp(-(self.pos-self.mz)**2\
                                         /(2*self.ms_s**2))
-                             ,axis=1)
+                             ,axis=2).reshape((at.cast(self.num_observed,"int"),
+                                               at.cast(self.num_features,"int"),
+                                               1))
 
         # f(t,mz) = α*f_IMS(t)*f_mass(MZ)
         self.pi = pm.Deterministic("mu",var=self.pi1*self.pi2,auto=True)
