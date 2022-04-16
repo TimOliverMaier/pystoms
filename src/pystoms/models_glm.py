@@ -33,17 +33,22 @@ class AbstractModel(pm.Model):
     evaluation methods.
 
     Args:
+        batch_size (int): Number of features
+            in one batch.
         name (str): Name of model.
         model (Optional[pm.Model]): PyMC model
 
     Attributes:
+        batch_size (int): Number of features in
+            one batch.
         idata (az.InferenceData):
           inferenceData of current model.
     """
-    def __init__(self,name:str,model:Optional[pm.Model]) -> None:
+    def __init__(self,batch_size:int, name:str,model:Optional[pm.Model]) -> None:
         # name and model must be passed to pm.Model
         super().__init__(name,model)
         # instantiate inference data
+        self.batch_size = batch_size
         self.idata = az.InferenceData()
 
     def _reset_idata(self) -> None:
@@ -629,10 +634,6 @@ class ModelGLM3D(AbstractModel):
     the pdf of a normal distribution.
 
     Args:
-        num_observed (int): Number of observed datapoints.
-        num_features (int): Number of features in passed data.
-        peak_num (int): Number of isotopic (incl MI) peaks
-            to consider.
         z (int): Charge of precursor.
         intensity (NDArrayFloat): Observed intensities
         scan (NDArrayInt): Observed scan numbers.
@@ -656,9 +657,6 @@ class ModelGLM3D(AbstractModel):
     """
 
     def __init__(self,
-                 num_observed:int,
-                 num_features:int,
-                 peak_num:int,
                  z:int,
                  intensity:NDArrayFloat,
                  scan:NDArrayInt,
@@ -673,32 +671,34 @@ class ModelGLM3D(AbstractModel):
                  name:str="",
                  model:pm.Model = None) -> None:
 
-        super().__init__(name,model)
+        batch_size = intensity.shape[1]
+        super().__init__(batch_size,name,model)
         # accessible from outside (data and hyperpriors)
-        self.num_observed = pm.MutableData("num_observed",num_observed)
-        self.num_features = pm.MutableData("num_features",num_features)
-        self.peak_num = pm.MutableData("peak_num",peak_num,
-                                        broadcastable=(True,False,True))
+
+        self.intensity = pm.MutableData("intensity",intensity,
+                                        broadcastable=(False,False))
+
+        self.ims_mu = pm.MutableData("ims_mu",ims_mu,
+                                     broadcastable=(True,False))
+        self.ims_sigma_max = pm.MutableData("ims_sigma_max",ims_sigma_max,
+                                            broadcastable=(True,False))
+        self.scan = pm.MutableData("scan",scan,
+                                   broadcastable=(False,False))
+
+        self.alpha_lam = pm.MutableData("alpha_lam",alpha_lam,
+                                        broadcastable=(True,False))
+
         self.charge = pm.MutableData("charge",z,
                                      broadcastable=(True,False,True))
-        self.intensity = pm.MutableData("intensity",intensity,
-                                        broadcastable=(False,False,True))
-        self.scan = pm.MutableData("scan",scan,
-                                   broadcastable=(False,False,True))
         self.mz = pm.MutableData("mz",mz,
                                  broadcastable=(False,False,False))
         self.peaks = pm.MutableData("peaks",peaks,
                                     broadcastable=(False,False,False))
-        self.ims_mu = pm.MutableData("ims_mu",ims_mu,
-                                     broadcastable=(True,False,True))
-        self.ims_sigma_max = pm.MutableData("ims_sigma_max",ims_sigma_max,
-                                            broadcastable=(True,False,True))
         self.mz_mu = pm.MutableData("mz_mu",mz_mu,
                                     broadcastable=(True,False,True))
         self.mz_sigma = pm.MutableData("mz_sigma",mz_sigma,
                                        broadcastable=(True,False,True))
-        self.alpha_lam = pm.MutableData("alpha_lam",alpha_lam,
-                                        broadcastable=(True,False,True))
+
 
         # priors
         # IMS
@@ -724,9 +724,7 @@ class ModelGLM3D(AbstractModel):
         self.pi2 = pmath.sum(self.ws_matrix\
                              *pmath.exp(-(self.pos-self.mz)**2\
                                         /(2*self.ms_s**2))
-                             ,axis=2).reshape((at.cast(self.num_observed,"int"),
-                                               at.cast(self.num_features,"int"),
-                                               1))
+                             ,axis=2)
 
         # f(t,mz) = α*f_IMS(t)*f_mass(MZ)
         self.pi = pm.Deterministic("mu",var=self.pi1*self.pi2,auto=True)
