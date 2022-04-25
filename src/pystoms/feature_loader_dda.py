@@ -40,8 +40,8 @@ class FeatureLoaderDDA():
 
     def _get_scan_boundaries(self,datapoints:np.ndarray,
                              ims_model:str="gaussian",
-                             cut_off_left:float=0.05,
-                             cut_off_right:float=0.95) -> tuple:
+                             cut_off_left:float=0.01,
+                             cut_off_right:float=0.99) -> tuple:
         """Estimate minimum scan and maximum scan.
 
         Args:

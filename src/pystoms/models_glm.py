@@ -522,7 +522,7 @@ class AbstractModel(pm.Model):
     def arviz_plots(self,
                     var_names:Optional[List[str]] = None,
                     save_fig:bool = True,
-                    path:str = "") -> None:
+                    path:str = ".") -> None:
         """Generate various arviz plots
 
         Args:
@@ -533,12 +533,17 @@ class AbstractModel(pm.Model):
             save_fig (bool, optional): Wether to save plots to png.
                 Defaults to True.
             path (str, optional): Path to folder in which plots shall
-                be saved. Defaults to ""
+                be saved. Defaults to ".".
+        Raises:
+            ValueError: If one of the variables in var_names has to many dimensions.
         """
 
         if var_names is None:
             # because list as default values are dangerous
             var_names = ["i_t","i_s","alpha","ms_mz","ms_s","me"]
+        is_data_point_assoc = list(filter(lambda v: v in ["obs","mu"] or getattr(self,v).eval().shape[0]>1, var_names))
+        if len(is_data_point_assoc)>0:
+            raise ValueError(f"Following variables can not be plotted, due to high dimensionality:{is_data_point_assoc}")
 
         # test if posterior and prior was sampled
         if "posterior" not in self.idata.groups():
@@ -546,42 +551,44 @@ class AbstractModel(pm.Model):
         if "prior" not in self.idata.groups():
             self._sample_predictive(is_prior=True)
 
-        if not os.path.exists(path):
-            os.makedirs(path)
-
         for idx,feature in enumerate(self.feature_ids):
-            idata_sliced = self.idata.isel(feature=idx)
+            feature_path = path+f"/feature{feature}/"
+            if not os.path.exists(feature_path):
+                os.makedirs(feature_path)
+            idata_sliced = self.idata.isel(feature=idx,
+                                           data_point=0,
+                                           isotopic_peak=0)
             az.plot_posterior(idata_sliced,var_names)
             if save_fig:
-                plt.savefig(path+f"/{feature}"+"posterior.png")
+                plt.savefig(feature_path+"posterior.png")
                 plt.close()
             else:
                 plt.show()
 
             az.plot_trace(idata_sliced,var_names)
             if save_fig:
-                plt.savefig(path+f"/{feature}"+"trace.png")
+                plt.savefig(feature_path+"trace.png")
                 plt.close()
             else:
                 plt.show()
 
             az.plot_pair(idata_sliced,var_names=var_names)
             if save_fig:
-                plt.savefig(path+f"/{feature}"+"pairs.png")
+                plt.savefig(feature_path+"pairs.png")
                 plt.close()
             else:
                 plt.show()
 
             az.plot_energy(idata_sliced)
             if save_fig:
-                plt.savefig(path+f"/{feature}"+"energy.png")
+                plt.savefig(feature_path+"energy.png")
                 plt.close()
             else:
                 plt.show()
 
             az.plot_density(idata_sliced,group="prior",var_names=var_names)
             if save_fig:
-                plt.savefig(path+f"/{feature}"+"prior.png")
+                plt.savefig(feature_path+"prior.png")
                 plt.close()
             else:
                 plt.show()
