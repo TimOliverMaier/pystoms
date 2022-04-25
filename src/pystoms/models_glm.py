@@ -805,8 +805,8 @@ class ModelGLM3D(AbstractModel):
         self.ms_s = pm.Exponential("ms_s",
                                    lam=self.mz_sigma,
                                    dims=dims_3d)
-        self.pos = self.peaks/(self.charge+1)+self.ms_mz
-        self.lam = 0.000594 * (self.charge+1)*self.ms_mz - 0.03091
+        self.pos = self.peaks/(self.charge)+self.ms_mz
+        self.lam = 0.000594 * (self.charge)*self.ms_mz - 0.03091
         self.ws_matrix = self.lam**self.peaks/ \
                          at.gamma(self.peaks+1)* \
                          pmath.exp(-self.lam)
