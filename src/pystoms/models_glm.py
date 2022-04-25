@@ -21,6 +21,7 @@ from aesara.tensor.sharedvar import TensorSharedVariable
 import matplotlib.pyplot as plt
 import os
 
+
 #typing
 NDArrayFloat = npt.NDArray[np.float64]
 NDArrayInt   = npt.NDArray[np.int64]
@@ -39,25 +40,39 @@ class AbstractModel(pm.Model):
         model (Optional[pm.Model]): PyMC model
 
     Attributes:
+        feature_ids(List[int]): List of feature ids in batch.
         batch_size (int): Number of features in
             one batch.
         idata (az.InferenceData):
           inferenceData of current model.
+
     """
-    def __init__(self,batch_size:int, name:str,model:Optional[pm.Model]) -> None:
+    def __init__(self,
+                 feature_ids:List[int],
+                 batch_size:int,
+                 name:str,model:Optional[pm.Model]) -> None:
         # name and model must be passed to pm.Model
         super().__init__(name,model)
         # instantiate inference data
+        self.feature_ids = feature_ids
         self.batch_size = batch_size
         self.idata = az.InferenceData()
 
     def _reset_idata(self) -> None:
         self.idata = az.InferenceData()
 
+    def _initialize_idata(self):
+        """Inits InferenceData with constant_data group
+        """
+        prior_idata = pm.sample_prior_predictive(5,model=self)
+        self.idata.add_groups({"constant_data":prior_idata.constant_data})
+
     def _get_model_shared_data(self,
                                predictions_constant_data:bool = True
                               ) -> az.InferenceData:
         """Get model's input data from model as idata.
+
+        This function is depreceated!
 
         Args:
             predictions_constant_data (bool, optional): If True data is put in
@@ -118,14 +133,14 @@ class AbstractModel(pm.Model):
                     a work around.\n Arviz will warn about non-defined \
                     InferenceData group 'prior_predictions'.")
                 self.idata.add_groups({
-                "prior_predictions":prior_prediction.prior_predictive
+                "prior_predictions":prior_prediction.prior_predictive,
+                "predictions_constant_data":prior_prediction.constant_data
                 })
+
             else:
                 warning("Inference data of model already\n\
                          has prior_predictions")
-            if "predictions_constant_data" not in self.idata.groups():
-                predictions_data = self._get_model_shared_data()
-                self.idata.extend(predictions_data)
+
             # else: do nothing, posterior out-of-sample predictions
             # were sampled before, providing predictions_constant_data
 
@@ -181,7 +196,7 @@ class AbstractModel(pm.Model):
                                       pred_name:str = "obs",
                                       plot_observed_data:bool = True,
                                       write_to_file:bool = False,
-                                      path:str = "",
+                                      folder_path:str = ".",
                                       file_name:Optional[str] = None,
                                       use_renderer:str ="notebook") -> None:
         """Plotting posterior/prior predictions.
@@ -205,8 +220,8 @@ class AbstractModel(pm.Model):
               data on top of scatter plot. Defaults to True.
             write_to_file (bool, optional): Wether to write plot to file.
                 Defaults to False.
-            path (str, optional): Path to folder in which output files
-                are stored. Defaults to "".
+            folder_path (str, optional): Path to folder in which output files
+                are stored. Defaults to ".".
             file_name (Optional[str], optional): Name of html output file.
                 If is None, generic file name depending on `is_prior`,
                 `pred_name` and `in_sample` is used. Defaults to None.
@@ -268,20 +283,15 @@ class AbstractModel(pm.Model):
         # because direct to_dataframe crashed
         df_mz = predictors_data.mz\
                     .to_dataframe()\
-                    .xs(0,level="mz_dim_1")\
-                    .reset_index()
+                    .xs(0,level="isotopic_peak")
+
         df_scan = predictors_data.scan\
-                    .to_dataframe()\
-                    .reset_index()
+                    .to_dataframe()
         # then merge to one df
         df_predictors = pd.merge(df_mz,
                                 df_scan,
-                                left_on="mz_dim_0",
-                                right_on="scan_dim_0")\
-                                .drop(columns=["scan_dim_0"])\
-                                .rename(columns={
-                                        "mz_dim_0":"data_point"
-                                        })
+                                left_index=True,
+                                right_index=True)
         # get corresponding predicted values
         # test if desired pred_name was sampled
         if pred_name not in predicted_data.data_vars.keys():
@@ -290,64 +300,68 @@ class AbstractModel(pm.Model):
             warning(f"{pred_name} not in 'prior_predictive',\
                     using {pred_name_new}")
             pred_name = pred_name_new
-        pred_name_dim_0 = pred_name + "_dim_0"
+
         df_predicted = getattr( predicted_data,pred_name)\
-                                .to_dataframe()\
-                                .reset_index()\
-                                .rename(columns={
-                                    pred_name_dim_0:"data_point"
-                                    })
+                                .to_dataframe()
         # merge to dataframe with predictors and predicted vars
         df_plot = pd.merge(
                           df_predictors,
                           df_predicted,
-                          on = "data_point"
-                          ).astype({"chain":"str"})
+                          left_index = True,
+                          right_index = True
+                          ).reset_index()\
+                          .astype({"chain":"str"})
         # plotting
-        fig = px.scatter_3d(data_frame=df_plot,
-                            x="scan",
-                            y="mz",
-                            z=pred_name,
-                            color="chain",
-                            opacity=0.1)
-        if plot_observed_data:
-            obs_data_trace = self.plot_feature_data(return_fig_trace=True)
-            fig.add_trace(obs_data_trace)
+        for i,feature in enumerate(self.feature_ids):
+            fig = px.scatter_3d(data_frame=df_plot[df_plot.feature==i],
+                                x="scan",
+                                y="mz",
+                                z=pred_name,
+                                color="chain",
+                                opacity=0.1)
+            if plot_observed_data:
+                obs_data_trace = self.plot_feature_data(return_fig_trace=True,
+                                                        feature_pos=i)
+                fig.add_trace(obs_data_trace)
 
-        if write_to_file:
-            if file_name is None:
-                fn_1 = "prior_predictive" \
-                        if is_prior \
-                        else "posterior_predictive"
-                fn_2 = "in_sample" if in_sample else "out_of_sample"
-                file_name = fn_1 + "_" + fn_2 + "_" + pred_name + ".html"
+            if write_to_file:
+                feature_path = folder_path + f"/feature{feature}/"
+                if file_name is None:
+                    fn_1 = "prior_predictive" \
+                            if is_prior \
+                            else "posterior_predictive"
+                    fn_2 = "in_sample" if in_sample else "out_of_sample"
+                    file_name = fn_1 + "_" + fn_2 + "_" + pred_name + ".html"
 
-            if not file_name.endswith(".html"):
-                fn_prefix = file_name.split(".")[0]
-                file_name = fn_prefix + ".html"
+                if not file_name.endswith(".html"):
+                    fn_prefix = file_name.split(".")[0]
+                    file_name = fn_prefix + ".html"
 
-            path_to_file = path+"/"+file_name
+                path_to_file = feature_path+file_name
 
-            if not os.path.exists(path):
-                os.makedirs(path)
-            fig.write_html(path_to_file)
-        else:
-            fig.show(renderer=use_renderer)
+                if not os.path.exists(feature_path):
+                    os.makedirs(feature_path)
+                fig.write_html(path_to_file)
+            else:
+                fig.show(renderer=use_renderer)
 
     def plot_feature_data(self,
-                          return_fig_trace:bool = False
+                          return_fig_trace:bool = False,
+                          feature_pos:int = 0,
                           ) -> Optional[go.Scatter3d]:
         """plots model's input feature data.
 
         Args:
             return_fig_trace (bool, optional): Wether to only return
                 plotly 3D scatter trace. Defaults to False.
+            feature_pos (int, optional): Which feature (index in feature_ids)
+                to plot. Defaults to 0.
         Returns:
             Optional[go.Scatter3d]: If `return_fig_trace` is True,
                 then plotly Scatter3d trace with observed data is
                 returned.
         """
-        data = self.idata.constant_data
+        data = self.idata.constant_data.isel(feature=feature_pos)
         x = data.scan.values
         y = data.mz.values[:,0]
         z = data.intensity.values
@@ -368,82 +382,126 @@ class AbstractModel(pm.Model):
 
         Used for prediction on a grid.
         """
-        if "constant_data" not in self.idata:
-            # get data directly from model instead
-            data = self._get_model_shared_data(False).constant_data
-        else:
-            data = self.idata.constant_data
+        data = self.idata.constant_data
         # calculate hull boundaries of feature
-        obs_x = data.mz.values[:,0].flatten()
-        obs_y = data.scan.values
-        peak_num = int(data.peak_num.values[0])
+        # isotopic peak dimension of mz values is repetition
+        # of same value to fit shapes of peaks tensor
+        obs_mz = data.mz.isel(isotopic_peak=0)
+        obs_scan = data.scan
+        peak_num = data.dims["isotopic_peak"]
+        feature_num = data.dims["feature"]
 
         # set axis limits accordingly
-        xmin = obs_x.min()-1
-        xmax = obs_x.max()+1
-        ymin = obs_y.min()-1
-        ymax = obs_y.max()+1
-        # x axis and y axis , scan intervall is 1, mz 0.01
+        mz_min = obs_mz.min(dim="data_point").values-1
+        mz_max = obs_mz.max(dim="data_point").values+1
+        scan_min = obs_scan.min(dim="data_point").values-1
+        scan_max = obs_scan.max(dim="data_point").values+1
 
-        y = np.arange(ymin,ymax,dtype=int)
-        x = np.arange(xmin*100,xmax*100)/100
-        x,y = np.meshgrid(x,y)
-        x = np.tile(x.flatten(),(int(peak_num),1)).T
-        y = y.flatten()
+        # draw axis
+        scan_grid_num = 10
+        mz_grid_num = 100
+        grid_num = scan_grid_num*mz_grid_num
+        scan_axes = np.linspace(scan_min,scan_max,num=scan_grid_num)
+        mz_axes = np.linspace(mz_min,mz_max,num=mz_grid_num)
 
+        # calculate grids
+        mz_grids = np.zeros((feature_num,grid_num))
+        scan_grids = np.zeros((feature_num,grid_num))
+        for i in range(feature_num):
+            x,y = np.meshgrid(mz_axes[:,i],scan_axes[:,i])
+            mz_grids[i] = x.flatten()
+            scan_grids[i] = y.flatten()
+        # reshape into shape of shared variables
+        mz_grids = mz_grids.T.reshape((-1,feature_num,1))
+        mz_grids = np.tile(mz_grids,(1,1,peak_num))
+        peaks = np.arange(peak_num).reshape(1,1,-1)
+        peaks = np.tile(peaks,(grid_num,feature_num,1)).astype("int")
+        scan_grids = scan_grids.T
         # get rest of data, necessary to reset
         # these as well to run properly
-        charge = data.charge.values[0]
-        ims_mu = data.ims_mu.values[0]
-        ims_sigma_max = data.ims_sigma_max.values[0]
-        mz_mu = data.mz_mu.values[0]
-        mz_sigma = data.mz_sigma.values[0]
-        alpha_lam = data.alpha_lam.values[0]
+        # parameters that are broadcasted for a certaui
+        # dimension are stored in idata with a lot of nan
+        # to fit arrays to other data with same dimensions
 
-        pm.set_data({"scan":y,
-                      "mz":x,
-                      "intensity":np.zeros_like(y,dtype="float"),
+        # parameters below all only change for dimension "feature"
+        # value of each parameter for a given feature is at
+        # first position in "isotopic_peak" and "data_point" dim
+
+        # slicers for 3d and 2d parameters
+        slice_3d = {"isotopic_peak":0,"data_point":0}
+        slice_2d = {"data_point":0}
+        # data put into model must have same number of dimensions
+        # there are 2d and 3d parameters.
+        s_3d = (1,feature_num,1)
+        s_2d = (1,feature_num)
+        # extract parameters as 1d array and reshape it into 2d or 3d array
+        charge = data.charge.isel(slice_3d).values.astype("int").reshape(s_3d)
+        ims_mu = data.ims_mu.isel(slice_2d).values.reshape(s_2d)
+        ims_sigma_max = data.ims_sigma_max.isel(slice_2d).values.reshape(s_2d)
+        mz_mu = data.mz_mu.isel(slice_3d).values.reshape(s_3d)
+        mz_sigma = data.mz_sigma.isel(slice_3d).values.reshape(s_3d)
+        alpha_lam = data.alpha_lam.isel(slice_2d).values.reshape(s_2d)
+        me_sigma = data.me_sigma.isel(slice_2d).values.reshape(s_2d)
+        pm.set_data({"scan":scan_grids,
+                      "mz":mz_grids,
+                      "intensity":np.zeros_like(scan_grids,dtype="float"),
                       "charge":charge,
-                      "peak_num":peak_num,
-                      "peaks":np.tile(np.arange(peak_num),(y.size,1)),
+                      "peaks":peaks,
                       "ims_mu":ims_mu,
                       "ims_sigma_max":ims_sigma_max,
                       "mz_mu":mz_mu,
                       "mz_sigma":mz_sigma,
                       "alpha_lam":alpha_lam,
+                      "me_sigma":me_sigma,
                     },
                     model=self)
 
     def _set_observed_data(self) -> None:
         """Set model's pm.MutableData container (back) to observed data
         """
-        if "constant_data" not in self.idata:
-            # get data directly from model instead
-            data = self._get_model_shared_data(False).constant_data
-        else:
-            data = self.idata.constant_data
+        data = self.idata.constant_data
         # extract original observed values
-        obs_x = data.mz.values
-        obs_y = data.scan.values
-        obs_z = data.intensity.values
-        charge = data.charge.values[0]
-        peak_num = int(data.peak_num.values[0])
-        ims_mu = data.ims_mu.values[0]
-        ims_sigma_max = data.ims_sigma_max.values[0]
-        mz_mu = data.mz_mu.values[0]
-        mz_sigma = data.mz_sigma.values[0]
-        alpha_lam = data.alpha_lam.values[0]
-        pm.set_data({"scan":obs_y,
-                      "mz":obs_x, # awful but mzs currently needed as column
-                      "intensity":obs_z,
+        mz = data.mz.values
+        scan = data.scan.values
+        intensity = data.intensity.values
+        peaks = data.peaks.values
+        feature_num = data.dims["feature"]
+        # get rest of data, necessary to reset
+        # these as well to run properly
+        # parameters that are broadcasted for a certaui
+        # dimension are stored in idata with a lot of nan
+        # to fit arrays to other data with same dimensions
+
+        # parameters below all only change for dimension "feature"
+        # value of each parameter for a given feature is at
+        # first position in "isotopic_peak" and "data_point" dim
+
+        # slicers for 3d and 2d parameters
+        slice_3d = {"isotopic_peak":0,"data_point":0}
+        slice_2d = {"data_point":0}
+        # data put into model must have same number of dimensions
+        # there are 2d and 3d parameters.
+        s_3d = (1,feature_num,1)
+        s_2d = (1,feature_num)
+        # extract parameters as 1d array and reshape it into 2d or 3d array
+        charge = data.charge.isel(slice_3d).values.astype("int").reshape(s_3d)
+        ims_mu = data.ims_mu.isel(slice_2d).values.reshape(s_2d)
+        ims_sigma_max = data.ims_sigma_max.isel(slice_2d).values.reshape(s_2d)
+        mz_mu = data.mz_mu.isel(slice_3d).values.reshape(s_3d)
+        mz_sigma = data.mz_sigma.isel(slice_3d).values.reshape(s_3d)
+        alpha_lam = data.alpha_lam.isel(slice_2d).values.reshape(s_2d)
+        me_sigma = data.me_sigma.isel(slice_2d).values.reshape(s_2d)
+        pm.set_data({"scan":scan,
+                      "mz":mz,
+                      "intensity":intensity,
                       "charge":charge,
-                      "peak_num":peak_num,
-                      "peaks":np.tile(np.arange(peak_num),(obs_y.size,1)),
+                      "peaks":peaks,
                       "ims_mu":ims_mu,
                       "ims_sigma_max":ims_sigma_max,
                       "mz_mu":mz_mu,
                       "mz_sigma":mz_sigma,
                       "alpha_lam":alpha_lam,
+                      "me_sigma":me_sigma,
                     },
                     model=self)
 
@@ -491,40 +549,42 @@ class AbstractModel(pm.Model):
         if not os.path.exists(path):
             os.makedirs(path)
 
-        az.plot_posterior(self.idata,var_names)
-        if save_fig:
-            plt.savefig(path+"/"+"posterior.png")
-            plt.close()
-        else:
-            plt.show()
+        for idx,feature in enumerate(self.feature_ids):
+            idata_sliced = self.idata.isel(feature=idx)
+            az.plot_posterior(idata_sliced,var_names)
+            if save_fig:
+                plt.savefig(path+f"/{feature}"+"posterior.png")
+                plt.close()
+            else:
+                plt.show()
 
-        az.plot_trace(self.idata,var_names)
-        if save_fig:
-            plt.savefig(path+"/"+"trace.png")
-            plt.close()
-        else:
-            plt.show()
+            az.plot_trace(idata_sliced,var_names)
+            if save_fig:
+                plt.savefig(path+f"/{feature}"+"trace.png")
+                plt.close()
+            else:
+                plt.show()
 
-        az.plot_pair(self.idata,var_names=var_names)
-        if save_fig:
-            plt.savefig(path+"/"+"pairs.png")
-            plt.close()
-        else:
-            plt.show()
+            az.plot_pair(idata_sliced,var_names=var_names)
+            if save_fig:
+                plt.savefig(path+f"/{feature}"+"pairs.png")
+                plt.close()
+            else:
+                plt.show()
 
-        az.plot_energy(self.idata)
-        if save_fig:
-            plt.savefig(path+"/"+"energy.png")
-            plt.close()
-        else:
-            plt.show()
+            az.plot_energy(idata_sliced)
+            if save_fig:
+                plt.savefig(path+f"/{feature}"+"energy.png")
+                plt.close()
+            else:
+                plt.show()
 
-        az.plot_density(self.idata,group="prior",var_names=var_names)
-        if save_fig:
-            plt.savefig(path+"/"+"prior.png")
-            plt.close()
-        else:
-            plt.show()
+            az.plot_density(idata_sliced,group="prior",var_names=var_names)
+            if save_fig:
+                plt.savefig(path+f"/{feature}"+"prior.png")
+                plt.close()
+            else:
+                plt.show()
 
     def evaluation(self,
                    prior_pred_in:bool = False,
@@ -634,9 +694,10 @@ class ModelGLM3D(AbstractModel):
     the pdf of a normal distribution.
 
     Args:
+        feature_ids (List[int]): List of feature ids in batch.
         z (int): Charge of precursor.
         intensity (NDArrayFloat): Observed intensities
-        scan (NDArrayInt): Observed scan numbers.
+        scan (NDArrayFloat): Observed scan numbers.
         mz (NDArrayFloat): Observed mass to charge ratios.
         peaks (NDArrayInt): Isotopic peaks to consider as numpy nd array.
         ims_mu (float): Hyperprior. Expected value for scan number.
@@ -647,19 +708,21 @@ class ModelGLM3D(AbstractModel):
         mz_sigma (float): Hyperprior. Standard deviation of prior normal
             distribution for monoisotopic peak
         alpha_lam (float): Expected value for scalar.
+        me_sigma (float): Sigma for model error.
         likelihood (str, optional): Likelihood distribution. Currently
             supported: 'Normal', 'StudentT'. Defaults to 'Normal'.
         name (str,optional): Defaults to empty string.
         model (Optional[pm.Model],optional): Defaults to None.
     Raises:
-        NotImplementedError if provided likelihood is not suppored.
+        NotImplementedError if provided likelihood is not supported.
 
     """
 
     def __init__(self,
                  z:int,
+                 feature_ids:List[int],
                  intensity:NDArrayFloat,
-                 scan:NDArrayInt,
+                 scan:NDArrayFloat,
                  mz:NDArrayFloat,
                  peaks:NDArrayInt,
                  ims_mu:float,
@@ -667,48 +730,74 @@ class ModelGLM3D(AbstractModel):
                  mz_mu:float,
                  mz_sigma:float,
                  alpha_lam:float,
+                 me_sigma:float,
                  likelihood:str = "Normal",
                  name:str="",
                  model:pm.Model = None) -> None:
 
-        batch_size = intensity.shape[1]
-        super().__init__(batch_size,name,model)
+        batch_size = len(feature_ids)
+        super().__init__(feature_ids,batch_size,name,model)
         # accessible from outside (data and hyperpriors)
-
+        dims_2d = ["data_point","feature"]
+        dims_3d = ["data_point","feature","isotopic_peak"]
         self.intensity = pm.MutableData("intensity",intensity,
-                                        broadcastable=(False,False))
+                                        broadcastable=(False,False),
+                                        dims=dims_2d)
 
         self.ims_mu = pm.MutableData("ims_mu",ims_mu,
-                                     broadcastable=(True,False))
+                                     broadcastable=(True,False),
+                                        dims=dims_2d)
         self.ims_sigma_max = pm.MutableData("ims_sigma_max",ims_sigma_max,
-                                            broadcastable=(True,False))
+                                            broadcastable=(True,False),
+                                            dims=dims_2d)
         self.scan = pm.MutableData("scan",scan,
-                                   broadcastable=(False,False))
+                                   broadcastable=(False,False),
+                                   dims=dims_2d)
 
         self.alpha_lam = pm.MutableData("alpha_lam",alpha_lam,
-                                        broadcastable=(True,False))
+                                        broadcastable=(True,False),
+                                        dims=dims_2d)
+        self.me_sigma = pm.MutableData("me_sigma",me_sigma,
+                                        broadcastable=(True,False),
+                                        dims=dims_2d)
 
         self.charge = pm.MutableData("charge",z,
-                                     broadcastable=(True,False,True))
+                                     broadcastable=(True,False,True),
+                                     dims=dims_3d)
         self.mz = pm.MutableData("mz",mz,
-                                 broadcastable=(False,False,False))
+                                 broadcastable=(False,False,False),
+                                 dims=dims_3d)
         self.peaks = pm.MutableData("peaks",peaks,
-                                    broadcastable=(False,False,False))
+                                    broadcastable=(False,False,False),
+                                    dims=dims_3d)
         self.mz_mu = pm.MutableData("mz_mu",mz_mu,
-                                    broadcastable=(True,False,True))
+                                    broadcastable=(True,False,True),
+                                    dims=dims_3d)
         self.mz_sigma = pm.MutableData("mz_sigma",mz_sigma,
-                                       broadcastable=(True,False,True))
+                                       broadcastable=(True,False,True),
+                                       dims=dims_3d)
 
 
         # priors
         # IMS
-        self.i_t = pm.Normal("i_t",mu=self.ims_mu,sigma=self.ims_sigma_max/2)
-        self.i_s = pm.Uniform("i_s",lower=0,upper=self.ims_sigma_max)
+        self.i_t = pm.Normal("i_t",
+                             mu=self.ims_mu,
+                             sigma=self.ims_sigma_max/2,
+                             dims=dims_2d)
+        self.i_s = pm.Uniform("i_s",
+                              lower=0,
+                              upper=self.ims_sigma_max,
+                              dims=dims_2d)
 
         # mass spec
-        self.ms_mz = pm.Normal("ms_mz",mu=self.mz_mu,sigma=self.mz_sigma)
+        self.ms_mz = pm.Normal("ms_mz",
+                               mu=self.mz_mu,
+                               sigma=self.mz_sigma,
+                               dims=dims_3d)
         # TODO(Tim) separate mz_sigma
-        self.ms_s = pm.Exponential("ms_s",lam=self.mz_sigma)
+        self.ms_s = pm.Exponential("ms_s",
+                                   lam=self.mz_sigma,
+                                   dims=dims_3d)
         self.pos = self.peaks/(self.charge+1)+self.ms_mz
         self.lam = 0.000594 * (self.charge+1)*self.ms_mz - 0.03091
         self.ws_matrix = self.lam**self.peaks/ \
@@ -716,7 +805,9 @@ class ModelGLM3D(AbstractModel):
                          pmath.exp(-self.lam)
 
         # scalar α
-        self.alpha = pm.Exponential("alpha",lam = self.alpha_lam)
+        self.alpha = pm.Exponential("alpha",
+                                    lam = self.alpha_lam,
+                                    dims=dims_2d)
         # α*f_IMS(t)
         self.pi1 = self.alpha\
                    *pmath.exp(-(self.i_t-self.scan)**2/(2*self.i_s**2))
@@ -727,22 +818,31 @@ class ModelGLM3D(AbstractModel):
                              ,axis=2)
 
         # f(t,mz) = α*f_IMS(t)*f_mass(MZ)
-        self.pi = pm.Deterministic("mu",var=self.pi1*self.pi2,auto=True)
+        self.pi = pm.Deterministic("mu",
+                                   var=self.pi1*self.pi2,
+                                   auto=True,
+                                   dims=dims_2d)
         # debug deterministic:
         # self.pi = self.pi1*self.pi2
         # Model error
-        self.me = pm.HalfNormal("me",sigma=10)
+        self.me = pm.HalfNormal("me",
+                                sigma=self.me_sigma,
+                                dims=dims_2d)
         # Likelihood
         if likelihood == "Normal":
             self.obs = pm.Normal("obs",
                              mu=self.pi,
                              sigma=self.me,
-                             observed=self.intensity)
+                             observed=self.intensity,
+                             dims=dims_2d)
         elif likelihood == "StudentT":
             self.obs = pm.StudentT("obs",
                                    nu=5,
                                    mu=self.pi,
                                    sigma=self.me,
-                                   observed=self.intensity)
+                                   observed=self.intensity,
+                                   dims=dims_2d)
         else:
             Raise(NotImplementedError("This likelihood is not supported"))
+
+        self._initialize_idata()
