@@ -41,7 +41,8 @@ class FeatureLoaderDDA():
     def _get_scan_boundaries(self,datapoints:np.ndarray,
                              ims_model:str="gaussian",
                              cut_off_left:float=0.01,
-                             cut_off_right:float=0.99) -> tuple:
+                             cut_off_right:float=0.99,
+                             skip_zeros:bool=True) -> tuple:
         """Estimate minimum scan and maximum scan.
 
         Args:
@@ -53,6 +54,8 @@ class FeatureLoaderDDA():
               "left side". Defaults to 0.05.
             cut_off_right (float, optional): Probability mass to ignore on
               "right side". Defaults to 0.95.
+            skip_zeros (bool, optional): Wether to ignore zero intensities in
+              monoisotopic_profile. Defaults to True.
 
         Returns:
             tuple (int,int): (lower scan bound, upper scan bound)
@@ -61,7 +64,8 @@ class FeatureLoaderDDA():
         def _gauss(data,a,mu,sig):
             return a/(sig*np.sqrt(2*np.pi))*\
                    np.exp(-0.5*np.power((data-mu)/(sig),2))
-
+        if skip_zeros:
+            datapoints = datapoints[datapoints[:,1]!=0]
         # extract data
         x = datapoints.T[0]
         y = datapoints.T[1]
@@ -191,7 +195,8 @@ class FeatureLoaderDDA():
             ax = scatter_3d.add_subplot(111,projection="3d")
             ax.scatter(mzs,scans,intensity)
         # return as Dataframe
-        return DataFrame({"Scan":scans,"Mz":mzs,"Intensity":intensity})
+        return DataFrame({"Scan":scans,"Mz":mzs,"Intensity":intensity},
+                          dtype="float")
 
 
     def load_hull_data_4d(self):
