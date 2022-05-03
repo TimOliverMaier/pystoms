@@ -51,8 +51,13 @@ for module in important_modules:
                                             check=True,
                                             capture_output=True).stdout
 
-if not os.path.exists(folder_output_path):
-    os.makedirs(folder_output_path)
+folder_output_parallel = folder_output_path+"/parallel/"
+folder_output_single = folder_output_path+"/single/"
+
+if not os.path.exists(folder_output_parallel):
+    os.makedirs(folder_output_parallel)
+if not os.path.exists(folder_output_single):
+    os.makedirs(folder_output_single)
 
 with open(folder_output_path+"/metadata.json","w",encoding="utf_8") as jsonfile:
     json.dump(meta_data,jsonfile,indent=2)
@@ -80,7 +85,7 @@ if __name__ == "__main__":
                                            num_data_points=num_data_points)
     parallel_features\
         .feature_data\
-        .to_netcdf(folder_output_path+"/parallel/input_data.nc")
+        .to_netcdf(folder_output_parallel+"input_data.nc")
     model_1 = parallel_features.generate_model()
     model_1.evaluation(
                 prior_pred_in=True,
@@ -93,8 +98,8 @@ if __name__ == "__main__":
                          "posterior_pred_out"],
                 pred_name_list=["mu","obs"],
                 write_to_file=True,
-                folder_path=folder_output_path+"/parallel/")
-    model_1.arviz_plots(save_fig=True,path=folder_output_path+"/parallel/")
+                folder_path=folder_output_parallel)
+    model_1.arviz_plots(save_fig=True,path=folder_output_parallel)
     # not parallel
     for feature in feature_ids:
         try:
@@ -107,7 +112,7 @@ if __name__ == "__main__":
             continue
         single_feature\
             .feature_data\
-            .to_netcdf(folder_output_path+f"/single/input_data_{feature}.nc")
+            .to_netcdf(folder_output_single+f"input_data_{feature}.nc")
         model_2 = single_feature.generate_model()
         model_2.evaluation(
                 prior_pred_in=True,
@@ -120,5 +125,5 @@ if __name__ == "__main__":
                          "posterior_pred_out"],
                 pred_name_list=["mu","obs"],
                 write_to_file=True,
-                folder_path=folder_output_path+"/single/")
-        model_2.arviz_plots(save_fig=True,path=folder_output_path+"/single/")
+                folder_path=folder_output_single)
+        model_2.arviz_plots(save_fig=True,path=folder_output_single)
