@@ -12,7 +12,8 @@ from logging import warning
 from pyproteolizard.data import PyTimsDataHandle
 
 # user set meta data, please edit:
-folder_output_path ="/home/tim/Master/prototyping/TutorialsAndArchive/evaluation_1_0/old_features/"# pylint: disable=line-too-long
+evaluation_version = "1_0_1"
+folder_output_path ="/home/tim/Master/prototyping/TutorialsAndArchive/evaluation_"+evaluation_version+"/old_features/"# pylint: disable=line-too-long
 description = "Initial Test with hardcoded features"
 data_path = "/home/tim/Master/MassSpecDaten/M210115_001_Slot1-1_1_850.d/"
 random_seed = 29042022
@@ -26,7 +27,7 @@ user_selected_feature_ids = [200,20,2011,2016,506,302,120]
 time_stamp = localtime()
 meta_data = {
 
-    "file_name" : __file__,
+    "evaluation version" : evaluation_version,
     "description" : description,
     "year" : time_stamp.tm_year,
     "month" : time_stamp.tm_mon,
