@@ -11,19 +11,22 @@ from pystoms.aligned_feature_data import AlignedFeatureData
 from logging import warning
 from pyproteolizard.data import PyTimsDataHandle
 
-# user set meta data, please edit:
-evaluation_version = "1_0_1"
-folder_output_path ="/home/tim/Master/prototyping/TutorialsAndArchive/evaluation_"+evaluation_version+"/old_features/"# pylint: disable=line-too-long
-description = "Initial Test with hardcoded features"
-data_path = "/home/tim/Master/MassSpecDaten/M210115_001_Slot1-1_1_850.d/"
-random_seed = 29042022
-number_of_features = 20
-num_data_points = 10
-random_features = False
-user_selected_feature_ids = [200,20,2011,2016,506,302,120]
+# load user defined variables:
+from evaluation_variables import * # pylint: disable=wildcard-import
 
+# test for clean working directory
+class DirtyGitWorkingDirectory(Exception):
+    pass
+wd_status = subprocess.run(
+                        ["git","diff","HEAD"],
+                        text=True,
+                        cwd=sys.modules["pystoms"].__path__[0],
+                        check=True,
+                        capture_output=True).stdout
+if wd_status != "":
+    raise DirtyGitWorkingDirectory("Git working directory seems dirty. Abort.")
 
-# METADATA OF RUN, do not edit below
+# gather meta data of run
 time_stamp = localtime()
 meta_data = {
 
@@ -45,7 +48,7 @@ important_modules = ["pystoms","pyproteolizard","pymc","arviz","aesara"]
 for module in important_modules:
     meta_data[module] = sys.modules[module].__version__
     meta_data[module+"_current_commit"] = subprocess.run(
-                                            ["git","log","-n","1"],
+                                            ["git","rev-parse","HEAD"],
                                             text=True,
                                             cwd=sys.modules[module]\
                                                    .__path__[0],

@@ -2,9 +2,9 @@
 
 /src/pystoms.egg-info/
 *.toml
-# pycache folder
+# pycache folders
 
-src/pystoms/__pycache__/
+__pycache__
 
 # doc build
 docs/build/
@@ -12,3 +12,7 @@ docs/build/
 # jupyter checkpoints anywhere
 
 .ipynb_checkpoints
+
+# configuration file for evaluation script
+
+/docs/source/weekReport/evaluation_variables.py
