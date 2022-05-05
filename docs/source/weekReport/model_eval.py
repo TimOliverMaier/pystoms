@@ -110,7 +110,7 @@ if __name__ == "__main__":
             single_feature = AlignedFeatureData(
                                 data_handle,
                                 ids=[feature],
-                                num_data_points=num_data_points)
+                                is_parallel=False)
         except ValueError:
             warning(f"Skipping feature {feature}.")
             continue
