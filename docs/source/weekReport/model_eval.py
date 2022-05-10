@@ -60,8 +60,12 @@ folder_output_single = folder_output_path+"/single/"
 
 if not os.path.exists(folder_output_parallel):
     os.makedirs(folder_output_parallel)
+if not os.path.exists(f"{folder_output_parallel}/inference_data/"):
+    os.makedirs(f"{folder_output_parallel}/inference_data/")
 if not os.path.exists(folder_output_single):
     os.makedirs(folder_output_single)
+if not os.path.exists(f"{folder_output_single}/inference_data/"):
+    os.makedirs(f"{folder_output_single}/inference_data/")
 
 with open(folder_output_path+"/metadata.json","w",encoding="utf_8") as jsonfile:
     json.dump(meta_data,jsonfile,indent=2)
@@ -91,7 +95,7 @@ if __name__ == "__main__":
         .feature_data\
         .to_netcdf(folder_output_parallel+"input_data.nc")
     model_1 = parallel_features.generate_model()
-    model_1.evaluation(
+    parallel_feature_trace = model_1.evaluation(
                 prior_pred_in=True,
                 prior_pred_out=True,
                 posterior_pred_in=True,
@@ -104,6 +108,11 @@ if __name__ == "__main__":
                 write_to_file=True,
                 folder_path=folder_output_parallel)
     model_1.arviz_plots(save_fig=True,path=folder_output_parallel)
+    parallel_feature_trace.to_netcdf(folder_output_parallel+"/inferencedata.nc")
+    # save inference data
+    for feature in feature_ids:
+        trace = parallel_feature_trace.sel(feature=feature)
+        trace.to_netcdf(f"{folder_output_parallel}/inference_data/inference_data_{feature}")
     # not parallel
     for feature in feature_ids:
         try:
@@ -118,7 +127,7 @@ if __name__ == "__main__":
             .feature_data\
             .to_netcdf(folder_output_single+f"input_data_{feature}.nc")
         model_2 = single_feature.generate_model()
-        model_2.evaluation(
+        trace = model_2.evaluation(
                 prior_pred_in=True,
                 prior_pred_out=True,
                 posterior_pred_in=True,
@@ -131,3 +140,8 @@ if __name__ == "__main__":
                 write_to_file=True,
                 folder_path=folder_output_single)
         model_2.arviz_plots(save_fig=True,path=folder_output_single)
+
+        # save inference data
+        trace.to_netcdf(
+            f"{folder_output_single}/inference_data/inference_data_{feature}"
+            )
