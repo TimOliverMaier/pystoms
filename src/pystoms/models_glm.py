@@ -20,8 +20,7 @@ from aesara import tensor as at
 from aesara.tensor.sharedvar import TensorSharedVariable
 import matplotlib.pyplot as plt
 import os
-
-
+from numpy.typing import ArrayLike
 #typing
 NDArrayFloat = npt.NDArray[np.float64]
 NDArrayInt   = npt.NDArray[np.int64]
@@ -34,11 +33,12 @@ class AbstractModel(pm.Model):
     evaluation methods.
 
     Args:
+        feature_ids(List[int]): List of feature ids in batch.
         batch_size (int): Number of features
             in one batch.
         name (str): Name of model.
-        model (Optional[pm.Model]): PyMC model
-
+        coords (Optional[dict[str,ArrayLike],optional]):
+            Coordinates for dims in model.
     Attributes:
         feature_ids(List[int]): List of feature ids in batch.
         batch_size (int): Number of features in
@@ -50,9 +50,12 @@ class AbstractModel(pm.Model):
     def __init__(self,
                  feature_ids:List[int],
                  batch_size:int,
-                 name:str,model:Optional[pm.Model]) -> None:
+                 name:str,
+                 coords:Optional[dict[str,ArrayLike]] = None) -> None:
         # name and model must be passed to pm.Model
-        super().__init__(name,model)
+        coords = {}
+        coords.setdefault("feature",feature_ids)
+        super().__init__(name,coords=coords)
         # instantiate inference data
         self.feature_ids = feature_ids
         self.batch_size = batch_size
@@ -719,7 +722,8 @@ class ModelGLM3D(AbstractModel):
         likelihood (str, optional): Likelihood distribution. Currently
             supported: 'Normal', 'StudentT'. Defaults to 'Normal'.
         name (str,optional): Defaults to empty string.
-        model (Optional[pm.Model],optional): Defaults to None.
+        coords (Optional[dict[str,ArrayLike]],optional):
+            Coordinates for dims of model.
     Raises:
         NotImplementedError if provided likelihood is not supported.
 
@@ -740,10 +744,10 @@ class ModelGLM3D(AbstractModel):
                  me_sigma:float,
                  likelihood:str = "Normal",
                  name:str="",
-                 model:pm.Model = None) -> None:
+                 coords:Optional[dict[str,ArrayLike]]=None) -> None:
 
         batch_size = len(feature_ids)
-        super().__init__(feature_ids,batch_size,name,model)
+        super().__init__(feature_ids,batch_size,name,coords=coords)
         # accessible from outside (data and hyperpriors)
         dims_2d = ["data_point","feature"]
         dims_3d = ["data_point","feature","isotopic_peak"]
