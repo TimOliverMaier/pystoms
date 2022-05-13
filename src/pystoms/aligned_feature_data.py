@@ -30,6 +30,8 @@ class AlignedFeatureData():
             Note: If only one feature is used, the dimension 'feature'
             still exists, however length of 'datapoint' dimension is
             depending on the feature's size and not on 'num_data_points'
+        accepted_feature_ids (List[int]): List of feature ids, that are
+            stored in feature_data.
     Args:
         data_handle (Union[str,PyTimsDataHandle]): Path to experimental data
             or data_handle.
@@ -46,7 +48,7 @@ class AlignedFeatureData():
                  ids:List[int],
                  is_parallel:bool=True,
                  num_data_points = 10) -> None:
-        accepted_feature_ids = []
+        self.accepted_feature_ids = []
         charges = []
         feature_data = []
         if isinstance(data_handle,str):
@@ -73,10 +75,10 @@ class AlignedFeatureData():
                                                   columns="Intensity"))
             else:
                 feature_data.append(data_tmp)
-            accepted_feature_ids.append(feature_id)
+            self.accepted_feature_ids.append(feature_id)
             charges.append(feature.charge)
 
-        if len(accepted_feature_ids) == 0:
+        if len(self.accepted_feature_ids) == 0:
             raise ValueError("No accepted features. Check chosen features.")
         s,mz,i = self._set_data_parallel(feature_data)
         data_dict = {
@@ -86,7 +88,7 @@ class AlignedFeatureData():
             "Intensity" : (("data_point","feature"),i),
 
         }
-        coord_dict = {"feature":accepted_feature_ids}
+        coord_dict = {"feature":self.accepted_feature_ids}
         self.feature_data = xa.Dataset(data_vars = data_dict,
                                          coords = coord_dict)
 

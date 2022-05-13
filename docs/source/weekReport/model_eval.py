@@ -110,7 +110,8 @@ if __name__ == "__main__":
     model_1.arviz_plots(save_fig=True,path=folder_output_parallel)
     parallel_feature_trace.to_netcdf(folder_output_parallel+"/inferencedata.nc")
     # save inference data
-    for feature in feature_ids:
+    accepted_feature_ids = parallel_features.accepted_feature_ids
+    for feature in accepted_feature_ids:
         trace = parallel_feature_trace.sel(feature=feature)
         trace.to_netcdf(f"{folder_output_parallel}/inference_data/inference_data_{feature}")
     # not parallel
