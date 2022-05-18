@@ -315,8 +315,8 @@ class AbstractModel(pm.Model):
                           ).reset_index()\
                           .astype({"chain":"str"})
         # plotting
-        for i,feature in enumerate(self.feature_ids):
-            fig = px.scatter_3d(data_frame=df_plot[df_plot.feature==i],
+        for feature in self.feature_ids:
+            fig = px.scatter_3d(data_frame=df_plot[df_plot.feature==feature],
                                 x="scan",
                                 y="mz",
                                 z=pred_name,
@@ -324,7 +324,7 @@ class AbstractModel(pm.Model):
                                 opacity=0.1)
             if plot_observed_data:
                 obs_data_trace = self.plot_feature_data(return_fig_trace=True,
-                                                        feature_pos=i)
+                                                        feature_ids=[feature])[0]
                 fig.add_trace(obs_data_trace)
 
             if write_to_file:
@@ -350,35 +350,39 @@ class AbstractModel(pm.Model):
 
     def plot_feature_data(self,
                           return_fig_trace:bool = False,
-                          feature_pos:int = 0,
-                          ) -> Optional[go.Scatter3d]:
+                          feature_ids:Optional[List[int]] = None,
+                          ) -> Optional[List[go.Scatter3d]]:
         """plots model's input feature data.
 
         Args:
             return_fig_trace (bool, optional): Wether to only return
                 plotly 3D scatter trace. Defaults to False.
-            feature_pos (int, optional): Which feature (index in feature_ids)
-                to plot. Defaults to 0.
+            feature_ids (Optional[List[int]], optional): Which features
+                to plot. If None all features are plotted. Defaults to None.
         Returns:
-            Optional[go.Scatter3d]: If `return_fig_trace` is True,
-                then plotly Scatter3d trace with observed data is
+            Optional[List[go.Scatter3d]]: If `return_fig_trace` is True,
+                then list of plotly Scatter3d traces with observed data is
                 returned.
         """
-        data = self.idata.constant_data.isel(feature=feature_pos)
-        x = data.scan.values
-        y = data.mz.values[:,0]
-        z = data.intensity.values
-        fig_trace = go.Scatter3d(x=x,
-                                 y=y,
-                                 z=z,
-                                 mode="markers",
-                                 marker=dict(color="black",size=10))
+        if feature_ids is None:
+            feature_ids = self.feature_ids
+        scatter_traces = []
+        for feature_id in feature_ids:
+            data = self.idata.constant_data.sel(feature=feature_id)
+            x = data.scan.values
+            y = data.mz.values[:,0]
+            z = data.intensity.values
+            fig_trace = go.Scatter3d(x=x,
+                                    y=y,
+                                    z=z,
+                                    mode="markers",
+                                    marker=dict(color="black",size=10))
+            scatter_traces.append(fig_trace)
+            if not return_fig_trace:
+                fig = go.Figure(data=[fig_trace])
+                fig.show()
         if return_fig_trace:
-            return fig_trace
-        else:
-            fig = go.Figure(data=[fig_trace])
-            fig.show()
-
+            return scatter_traces
 
     def _set_grid_data(self) -> None:
         """Set model's pm.MutableData container to grid data
