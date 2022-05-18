@@ -113,7 +113,7 @@ if __name__ == "__main__":
     accepted_feature_ids = parallel_features.accepted_feature_ids
     for feature in accepted_feature_ids:
         trace = parallel_feature_trace.sel(feature=feature)
-        trace.to_netcdf(f"{folder_output_parallel}/inference_data/inference_data_{feature}")
+        trace.to_netcdf(f"{folder_output_parallel}/inference_data/inference_data_{feature}.nc")
     # not parallel
     for feature in feature_ids:
         try:
@@ -144,5 +144,5 @@ if __name__ == "__main__":
 
         # save inference data
         trace.to_netcdf(
-            f"{folder_output_single}/inference_data/inference_data_{feature}"
+            f"{folder_output_single}/inference_data/inference_data_{feature}.nc"
             )
