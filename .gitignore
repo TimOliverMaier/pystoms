@@ -15,4 +15,4 @@ docs/build/
 
 # configuration file for evaluation script
 
-/docs/source/weekReport/evaluation_variables.py
+/scripts/evaluation/evaluation_variables.py
