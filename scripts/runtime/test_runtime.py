@@ -13,7 +13,7 @@ from logging import warning
 # PARAMETERS
 data_path = "/home/tim/Master/MassSpecDaten/M210115_001_Slot1-1_1_850.d/"
 data_handle = PyTimsDataHandle(data_path)
-total_features = 10
+total_features = 100
 feature_ids_flat = np.random.random_integers(1000,4000,size=total_features)
 output_path = "test_runtime_output"
 
@@ -28,7 +28,7 @@ times_cpu = {}
 traces_gpu = {}
 traces_cpu = {}
 
-for n in [1,2,5,10,10]:
+for n in [1,2,5,10,10,100]:
     # distribute 100 features onto {n} batches
     feature_batchs = feature_ids_flat.reshape((n,total_features//n))
 
@@ -49,17 +49,17 @@ for n in [1,2,5,10,10]:
         time_start_gpu = time()
         trace_gpu = sample_numpyro_nuts(model=model,
                                             chain_method="vectorized")
-        trace_gpu.to_netcdf(output_path+"/"+f"trace_batch_{batch_num}_gpu.nc")
+        trace_gpu.to_netcdf(output_path+"/"+f"trace_batch_{n}_{batch_num}_gpu.nc")
         time_end_gpu = time()
         total_time_gpu  += time_end_gpu-time_start_gpu
 
         time_start_cpu = time()
         trace_cpu = pm.sample(model=model)
-        trace_cpu.to_netcdf(output_path+"/"+f"trace_batch_{batch_num}_cpu.nc")
+        trace_cpu.to_netcdf(output_path+"/"+f"trace_batch_{n}_{batch_num}_cpu.nc")
         time_end_cpu = time()
         total_time_cpu = time_end_cpu-time_start_cpu
     times_gpu[n]=total_time_gpu
-    times_cpu[n]=total_time_gpu
+    times_cpu[n]=total_time_cpu
 
 # plot
 plt.style.use("ggplot")
