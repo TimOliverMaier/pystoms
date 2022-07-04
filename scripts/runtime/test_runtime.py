@@ -28,7 +28,7 @@ times_cpu = {}
 traces_gpu = {}
 traces_cpu = {}
 
-for n in [1,2,5,10,10,100]:
+for n in [1,2,5,10,100]:
     # distribute 100 features onto {n} batches
     feature_batchs = feature_ids_flat.reshape((n,total_features//n))
 
