@@ -57,7 +57,7 @@ for n in [1,2,5,10,100]:
         trace_cpu = pm.sample(model=model)
         trace_cpu.to_netcdf(output_path+"/"+f"trace_batch_{n}_{batch_num}_cpu.nc")
         time_end_cpu = time()
-        total_time_cpu = time_end_cpu-time_start_cpu
+        total_time_cpu += time_end_cpu-time_start_cpu
     times_gpu[n]=total_time_gpu
     times_cpu[n]=total_time_cpu
 
