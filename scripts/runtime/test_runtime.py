@@ -22,18 +22,18 @@ output_path = "test_runtime_output"
 if not os.path.exists(output_path):
     os.makedirs(output_path)
 
+batch_n = [1,2,5,10,100]
+times_per_feature_gpu = []
+times_per_feature_cpu = []
+num_eval_features = []
 
-times_gpu = {}
-times_cpu = {}
-traces_gpu = {}
-traces_cpu = {}
-
-for n in [1,2,5,10,100]:
+for n in batch_n:
     # distribute 100 features onto {n} batches
     feature_batchs = feature_ids_flat.reshape((n,total_features//n))
 
     total_time_cpu = 0
     total_time_gpu = 0
+    evaluated_features = 0
     for batch_num,batch in enumerate(feature_batchs):
         try:
             aligned_features = AlignedFeatureData(
@@ -44,7 +44,7 @@ for n in [1,2,5,10,100]:
         except ValueError:
             warning(f"Skipping feature {batch}.")
             continue
-
+        evaluated_features += len(aligned_features.accepted_feature_ids)
         model = aligned_features.generate_model()
         time_start_gpu = time()
         trace_gpu = sample_numpyro_nuts(model=model,
@@ -58,24 +58,24 @@ for n in [1,2,5,10,100]:
         trace_cpu.to_netcdf(output_path+"/"+f"trace_batch_{n}_{batch_num}_cpu.nc")
         time_end_cpu = time()
         total_time_cpu += time_end_cpu-time_start_cpu
-    times_gpu[n]=total_time_gpu
-    times_cpu[n]=total_time_cpu
-
+    times_per_feature_gpu.append(total_time_gpu/evaluated_features)
+    times_per_feature_cpu.append(total_time_cpu/evaluated_features)
+    num_eval_features.append(evaluated_features)
 # plot
 plt.style.use("ggplot")
-batch_sizes = [batch_size for batch_size,t in times_gpu.items()]
-gpu_times = [t/n for batch_size,t in times_gpu.items()]
-cpu_times = [t/n for batch_size,t in times_cpu.items()]
-plot_df = pd.DataFrame({"batch_size":batch_sizes,
-                        "GPU":gpu_times,
-                        "CPU":cpu_times})\
+
+
+plot_df = pd.DataFrame({"batch_number":batch_n,
+                        "GPU":times_per_feature_gpu,
+                        "CPU":times_per_feature_cpu})\
                     .melt(id_vars="batch_size",
                           var_name="Label",
                           value_name="Time")
+
 Fig,ax = plt.subplots()
 Fig.set_dpi(300)
 sns.pointplot(data=plot_df,
-              x="batch_size",
+              x="batch_number",
               y="Time",
               ax=ax,
               hue="Label",
