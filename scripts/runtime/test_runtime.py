@@ -13,7 +13,7 @@ from logging import warning
 # PARAMETERS
 data_path = "/home/tim/Master/MassSpecDaten/M210115_001_Slot1-1_1_850.d/"
 data_handle = PyTimsDataHandle(data_path)
-total_features = 4
+total_features = 100
 feature_ids_flat = np.random.random_integers(1000,4000,size=total_features)
 output_path = "test_runtime_output"
 
@@ -22,7 +22,7 @@ output_path = "test_runtime_output"
 if not os.path.exists(output_path):
     os.makedirs(output_path)
 
-batch_n = [1,2,4]
+batch_n = [1,2,10,100]
 times_per_feature_gpu = []
 times_per_feature_cpu = []
 num_eval_features = []
