@@ -6,8 +6,8 @@
 
 __pycache__
 
-# doc build
-docs/build/
+# local doc build
+docs_src/_build/
 
 # jupyter checkpoints anywhere
 
