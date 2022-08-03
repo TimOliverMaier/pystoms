@@ -9,7 +9,7 @@ from time import localtime
 import numpy as np
 from pystoms.aligned_feature_data import AlignedFeatureData
 from logging import warning
-from pyproteolizard.data import PyTimsDataHandle
+from proteolizarddata.data import PyTimsDataHandle
 
 # load user defined variables:
 from evaluation_variables import * # pylint: disable=wildcard-import

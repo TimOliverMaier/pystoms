@@ -7,7 +7,7 @@ import os
 import numpy as np
 from time import time
 from pystoms.aligned_feature_data import AlignedFeatureData
-from pyproteolizard.data import PyTimsDataHandle
+from proteolizarddata.data import PyTimsDataHandle
 from logging import warning
 
 # PARAMETERS
