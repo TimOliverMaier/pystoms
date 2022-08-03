@@ -7,7 +7,7 @@ and charge of feature as determined during DDA procedure."""
 from cmath import inf
 from scipy.stats import poisson, norm
 from scipy.optimize import curve_fit
-from pyproteolizard.data import PyTimsDataHandle, TimsFrame
+from proteolizarddata.data import PyTimsDataHandle, TimsFrame
 from pystoms.clustering import precursor_dbscan_3d
 from pandas import DataFrame
 import numpy as np

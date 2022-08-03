@@ -5,8 +5,8 @@ detection of 2D peaks in the IMS-MS space.
 """
 
 from sklearn.cluster import DBSCAN
-from pyproteolizard.data import TimsFrame
-from pyproteolizard.utility import peak_width_preserving_mz_transform
+from proteolizarddata.data import TimsFrame
+from proteolizardalgo.utility import peak_width_preserving_mz_transform
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt

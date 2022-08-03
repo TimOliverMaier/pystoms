@@ -1,12 +1,11 @@
 """ Class holding data of one or more features
 """
-
 import xarray as xa
 import pandas as pd
 import numpy as np
 import numpy.typing as npt
 from typing import List,Tuple,Union
-from pyproteolizard.data import PyTimsDataHandle
+from proteolizarddata.data import PyTimsDataHandle
 from pystoms.feature_loader_dda import FeatureLoaderDDA
 from pystoms.models_glm import ModelGLM3D
 from logging import warning
