@@ -16,3 +16,6 @@ docs/build/
 # configuration file for evaluation script
 
 /scripts/evaluation/evaluation_variables.py
+
+# vscode folder
+.vscode
