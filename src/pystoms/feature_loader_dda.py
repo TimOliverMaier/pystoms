@@ -2,7 +2,9 @@
 
 This module is providing a class to load a precursor peptide feature
 aquired by data depending acquistion. The loader recognizes monoisotopic mass
-and charge of feature as determined during DDA procedure."""
+and charge of feature as determined during DDA procedure.
+The feature loader will be transferred to proteolizard-algorithm package
+"""
 
 from cmath import inf
 from scipy.stats import poisson, norm
