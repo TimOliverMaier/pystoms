@@ -24,7 +24,7 @@ class FeatureLoaderDDA():
         """get row data from experiment's precursors table
         """
         raw_data = self.dataset_pointer
-        feature_data_row = raw_data.get_precursor_by_id(self.precursor_id)
+        feature_data_row = raw_data.get_selected_precursor_by_id(self.precursor_id)
         self.monoisotopic_mz = feature_data_row["MonoisotopicMz"].values[0]
         self.charge = feature_data_row["Charge"].values[0]
         self.scan_number = feature_data_row["ScanNumber"].values[0]
