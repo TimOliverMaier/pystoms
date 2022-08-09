@@ -1,13 +1,13 @@
 import numpy as np
 from pystoms.aligned_feature_data import AlignedFeatureData
 from pystoms.models_glm import ModelGLM3D
-from proteolizarddata.data import PyTimsDataHandle
+from proteolizarddata.data import PyTimsDataHandleDDA
 
 import pytest
 
 # PARAMETERS
 data_path = "/home/tim/Master/MassSpecDaten/M210115_001_Slot1-1_1_850.d/"
-data_handle = PyTimsDataHandle(data_path)
+data_handle = PyTimsDataHandleDDA(data_path)
 total_features = 2
 feature_ids = np.random.random_integers(1000,4000,size=total_features)
 
