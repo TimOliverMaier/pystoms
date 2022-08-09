@@ -4,9 +4,8 @@
 
 """
 
-from ast import Raise
 from logging import warning
-from typing import List
+from typing import List,Optional
 import pandas as pd
 import pymc as pm
 import pymc.math as pmath
@@ -14,7 +13,6 @@ import numpy as np
 import numpy.typing as npt
 import plotly.graph_objects as go
 import plotly.express as px
-from typing import Optional
 import arviz as az
 from aesara import tensor as at
 from aesara.tensor.sharedvar import TensorSharedVariable
@@ -858,6 +856,6 @@ class ModelGLM3D(AbstractModel):
                                    observed=self.intensity,
                                    dims=dims_2d)
         else:
-            Raise(NotImplementedError("This likelihood is not supported"))
+            raise NotImplementedError("This likelihood is not supported")
 
         self._initialize_idata()

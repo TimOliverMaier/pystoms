@@ -19,3 +19,6 @@ docs/build/
 
 # vscode folder
 .vscode
+
+# model binaries
+*.pkl
