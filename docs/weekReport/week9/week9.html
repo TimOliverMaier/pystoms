@@ -14,37 +14,37 @@
     <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery-dataframe.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery-rendered-html.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo-extensions.css?digest=30d1aed668e5c3a91c3e3bf6a60b675221979f0e" />
-    
-    
+
+
 
 
 <style>
   body {
     --color-code-background: #f8f8f8;
   --color-code-foreground: black;
-  
+
   }
   @media not print {
     body[data-theme="dark"] {
       --color-code-background: #202020;
   --color-code-foreground: #d0d0d0;
-  
+
     }
     @media (prefers-color-scheme: dark) {
       body:not([data-theme="light"]) {
         --color-code-background: #202020;
   --color-code-foreground: #d0d0d0;
-  
+
       }
     }
   }
 </style></head>
   <body>
-    
+
     <script>
       document.body.dataset.theme = localStorage.getItem("theme") || "auto";
     </script>
-    
+
 
 <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
   <symbol id="svg-toc" viewBox="0 0 24 24">
@@ -146,15 +146,15 @@
   </header>
   <aside class="sidebar-drawer">
     <div class="sidebar-container">
-      
+
       <div class="sidebar-sticky"><a class="sidebar-brand centered" href="../../index.html">
-  
+
   <div class="sidebar-logo-container">
     <img class="sidebar-logo" src="../../_static/pystomsLogo.png" alt="Logo"/>
   </div>
-  
+
   <span class="sidebar-brand-text">PystoMS v0.1</span>
-  
+
 </a><form class="sidebar-search-container" method="get" action="../../search.html" role="search">
   <input class="sidebar-search" placeholder=Search name="q" aria-label="Search">
   <input type="hidden" name="check_keywords" value="yes">
@@ -181,7 +181,7 @@
 </div>
 
       </div>
-      
+
     </div>
   </aside>
   <div class="main">
@@ -208,7 +208,7 @@
           </label>
         </div>
         <article role="main">
-          
+
 <style>
 /* CSS for nbsphinx extension */
 
@@ -505,7 +505,7 @@ typical workstation CPU to it’s limits. However graphical processing units (GP
 </div>
 <p>To assay the runtime behaviour over time 640 datasets were created with 10 and 20 datapoints each. These datasets were passed to the artificial model set with increasing degree of parallelization. The tested numbers of submodels were 1,10,20,40,80,160,320 and 640, i.e. in the first case all datasets were regarded sequentially and in the last case parallely. For both CPU and GPU execution the runtimes were recorded. Python scripts for CPU and GPU samping can be downloaded
 (<a class="reference external" href="data/pymcCPUtest.py">CPU</a> and <a class="reference external" href="data/pymcGPUtest.py">GPU</a>). Due to crashing CPU execution in PyMC v4, CPU python program was executed with PyMC v3. Execution on GPU failed repeatedly for higher parallelization degrees with 20 datapoint datasets. —</p>
-<div style="background-color:white"><p><img alt="b36c442dbb11415ab98c8193e053bc51" src="../../_images/modelGraphviz.svg" /></p>
+<div style="background-color:white"><p><img alt="d09a470635434a669f4482e00c154c28" src="../../_images/modelGraphviz.svg" /></p>
 </div><figcaption style="font-weight:bold;font-size:small"><p>Fig 1: Visualization of artificial Model spanning 10 submodels each receiving an independent dataset of normally distributed data of unknown mean. Visualization was created with python-graphviz <span id="id6">[<a class="reference internal" href="#id15" title="Emden R. Gansner and Stephen C. North. An open graph visualization system and its applications to software engineering. SOFTWARE - PRACTICE AND EXPERIENCE, 30(11):1203–1233, 2000.">7</a>]</span>.</p>
 </figcaption><div style="background-color:rgba(256, 76, 76,0.4)",height="200">
 <br>
@@ -722,18 +722,18 @@ typical workstation CPU to it’s limits. However graphical processing units (GP
         </article>
       </div>
       <footer>
-        
+
         <div class="related-pages">
-          
+
           <a class="prev-page" href="../week10/week10.html">
               <svg><use href="#svg-arrow-right"></use></svg>
               <div class="page-info">
                 <div class="context">
                   <span>Previous</span>
                 </div>
-                
+
                 <div class="title">Week 10</div>
-                
+
               </div>
             </a>
         </div>
@@ -743,23 +743,23 @@ typical workstation CPU to it’s limits. However graphical processing units (GP
                 Copyright &#169; 2022, Tim Maier
             </div>
             Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
-            
+
             <a href="https://github.com/pradyunsg/furo">Furo</a>
-            
+
           </div>
           <div class="right-details">
             <div class="icons">
-              
+
             </div>
           </div>
         </div>
-        
+
       </footer>
     </div>
     <aside class="toc-drawer no-toc">
-      
-      
-      
+
+
+
     </aside>
   </div>
 </div><script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>

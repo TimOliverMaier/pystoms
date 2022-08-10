@@ -4,6 +4,6 @@
 
 .. currentmodule:: pystoms
 
-.. automodule:: pystoms.models
+.. automodule:: pystoms.models_2d.models
     :members:
 ```

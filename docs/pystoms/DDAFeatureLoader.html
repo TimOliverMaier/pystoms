@@ -14,37 +14,37 @@
     <link rel="stylesheet" type="text/css" href="../_static/sg_gallery-dataframe.css" />
     <link rel="stylesheet" type="text/css" href="../_static/sg_gallery-rendered-html.css" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?digest=30d1aed668e5c3a91c3e3bf6a60b675221979f0e" />
-    
-    
+
+
 
 
 <style>
   body {
     --color-code-background: #f8f8f8;
   --color-code-foreground: black;
-  
+
   }
   @media not print {
     body[data-theme="dark"] {
       --color-code-background: #202020;
   --color-code-foreground: #d0d0d0;
-  
+
     }
     @media (prefers-color-scheme: dark) {
       body:not([data-theme="light"]) {
         --color-code-background: #202020;
   --color-code-foreground: #d0d0d0;
-  
+
       }
     }
   }
 </style></head>
   <body>
-    
+
     <script>
       document.body.dataset.theme = localStorage.getItem("theme") || "auto";
     </script>
-    
+
 
 <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
   <symbol id="svg-toc" viewBox="0 0 24 24">
@@ -146,15 +146,15 @@
   </header>
   <aside class="sidebar-drawer">
     <div class="sidebar-container">
-      
+
       <div class="sidebar-sticky"><a class="sidebar-brand centered" href="../index.html">
-  
+
   <div class="sidebar-logo-container">
     <img class="sidebar-logo" src="../_static/pystomsLogo.png" alt="Logo"/>
   </div>
-  
+
   <span class="sidebar-brand-text">PystoMS v0.1</span>
-  
+
 </a><form class="sidebar-search-container" method="get" action="../search.html" role="search">
   <input class="sidebar-search" placeholder=Search name="q" aria-label="Search">
   <input type="hidden" name="check_keywords" value="yes">
@@ -181,7 +181,7 @@
 </div>
 
       </div>
-      
+
     </div>
   </aside>
   <div class="main">
@@ -208,109 +208,14 @@
           </label>
         </div>
         <article role="main">
-          <section id="module-pystoms.feature_loader_dda">
-<span id="dda-feature-loader"></span><h1>DDA Feature Loader<a class="headerlink" href="#module-pystoms.feature_loader_dda" title="Permalink to this heading">#</a></h1>
-<p>Module for loading DDA precursor data</p>
-<p>This module is providing a class to load a precursor peptide feature
-aquired by data depending acquistion. The loader recognizes monoisotopic mass
-and charge of feature as determined during DDA procedure.</p>
-<dl class="py class">
-<dt class="sig sig-object py" id="pystoms.feature_loader_dda.FeatureLoaderDDA">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pystoms.feature_loader_dda.</span></span><span class="sig-name descname"><span class="pre">FeatureLoaderDDA</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_handle</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">PyTimsDataHandle</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">precursor_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pystoms.feature_loader_dda.FeatureLoaderDDA" title="Permalink to this definition">#</a></dt>
-<dd><p>Class to load a precursor peptide feature
-by it’s Id from a DDA dataset.</p>
-<dl class="py method">
-<dt class="sig sig-object py" id="pystoms.feature_loader_dda.FeatureLoaderDDA.get_monoisotopic_profile">
-<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_monoisotopic_profile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">monoisotopic_mz</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scan_number</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frame_slice</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">TimsFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scan_range</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">20</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mz_range</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.05</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="headerlink" href="#pystoms.feature_loader_dda.FeatureLoaderDDA.get_monoisotopic_profile" title="Permalink to this definition">#</a></dt>
-<dd><p>Gets profile of monoisotopic peak in IMS dimension.</p>
-<p>Sums up peaks per scan that have a mz value close enough (mz_range)
-to monoisotopic peak mz.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>monoisotopic_mz</strong> (<em>float</em>) – Mz value of peak.</p></li>
-<li><p><strong>scan_number</strong> (<em>float</em>) – ScanNumber of peak.</p></li>
-<li><p><strong>frame_slice</strong> (<em>TimsFrame</em>) – Slice of monoisotopic peak</p></li>
-<li><p><strong>scan_range</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of scans to consider.
-Defaults to 20.</p></li>
-<li><p><strong>mz_range</strong> (<em>float</em><em>, </em><em>optional</em>) – Maximal distance of a peak
-to monoisotopic mz to be considered in calculation.
-Defaults to 0.05.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>2D Array of structure [[scan,intensity],…]</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>np.ndarray</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="pystoms.feature_loader_dda.FeatureLoaderDDA.get_num_peaks">
-<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_num_peaks</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">monoisotopic_mz</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">charge</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prob_mass_target</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.95</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span><a class="headerlink" href="#pystoms.feature_loader_dda.FeatureLoaderDDA.get_num_peaks" title="Permalink to this definition">#</a></dt>
-<dd><p>Calculation of number of isotopic peaks
-by averagine model.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>monoisotopic_mz</strong> (<em>float</em>) – Position of monoisotopic peak.</p></li>
-<li><p><strong>charge</strong> (<em>int</em>) – Charge of peptide</p></li>
-<li><p><strong>prob_mass_target</strong> (<em>float</em><em>, </em><em>optional</em>) – Minimum probability mass
-of poisson distribtuion, that shall be covered
-(beginning with monoisotopic peak). Defaults to 0.95.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Number of relevant peaks</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>int</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="pystoms.feature_loader_dda.FeatureLoaderDDA.load_hull_data_3d">
-<span class="sig-name descname"><span class="pre">load_hull_data_3d</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">intensity_min</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ims_model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'gaussian'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mz_peak_width</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">averagine_prob_target</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.95</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_feature</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scan_range</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">80</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">DataFrame</span></span></span><a class="headerlink" href="#pystoms.feature_loader_dda.FeatureLoaderDDA.load_hull_data_3d" title="Permalink to this definition">#</a></dt>
-<dd><p>Estimate convex hull of feature and return datapoints inside hull.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>intensity_min</strong> (<em>int</em><em>, </em><em>optional</em>) – Minimal peak intensity considered
-as signal. Defaults to 10.</p></li>
-<li><p><strong>ims_model</strong> (<em>str</em><em>, </em><em>optional</em>) – Model use in estimation of feature’s
-width in IMS dimension. Defaults to “gaussian”.</p></li>
-<li><p><strong>mz_peak_width</strong> (<em>float</em><em>, </em><em>optional</em>) – Expected width of a peak in mz
-dimension. Defaults to 0.1.</p></li>
-<li><p><strong>averagine_prob_target</strong> (<em>float</em><em>, </em><em>optional</em>) – Probability mass
-of averagine model’s poisson distribution covered with
-extracted isotopic peaks . Defaults to 0.95.</p></li>
-<li><p><strong>plot_feature</strong> (<em>bool</em><em>, </em><em>optional</em>) – If true a scatterplot of
-feature is printed. Defaults to False.</p></li>
-<li><p><strong>scan_range</strong> (<em>int</em><em>, </em><em>optional</em>) – This parameter is handling
-the number of scans used to infer the scan bounadaries
-of the monoisotopic peak. Defaults to 80.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Dataframe with points in convex hull (scan,mz,intensity)</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>DataFrame</p>
-</dd>
-</dl>
-</dd></dl>
-
-</dd></dl>
-
+          <section id="dda-feature-loader">
+<h1>DDA Feature Loader<a class="headerlink" href="#dda-feature-loader" title="Permalink to this heading">#</a></h1>
 </section>
 
         </article>
       </div>
       <footer>
-        
+
         <div class="related-pages">
           <a class="next-page" href="GLM.html">
               <div class="page-info">
@@ -327,9 +232,9 @@ of the monoisotopic peak. Defaults to 80.</p></li>
                 <div class="context">
                   <span>Previous</span>
                 </div>
-                
+
                 <div class="title">Home</div>
-                
+
               </div>
             </a>
         </div>
@@ -339,23 +244,23 @@ of the monoisotopic peak. Defaults to 80.</p></li>
                 Copyright &#169; 2022, Tim Maier
             </div>
             Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
-            
+
             <a href="https://github.com/pradyunsg/furo">Furo</a>
-            
+
           </div>
           <div class="right-details">
             <div class="icons">
-              
+
             </div>
           </div>
         </div>
-        
+
       </footer>
     </div>
     <aside class="toc-drawer no-toc">
-      
-      
-      
+
+
+
     </aside>
   </div>
 </div><script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
