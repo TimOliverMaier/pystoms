@@ -7,7 +7,7 @@ import numpy.typing as npt
 from typing import List,Tuple,Union
 from proteolizarddata.data import PyTimsDataHandle
 from proteolizardalgo.feature_loader_dda import FeatureLoaderDDA
-from pystoms.models_glm import ModelGLM3D
+from pystoms.models_3d.models_glm import ModelGLM3D
 from logging import warning
 
 #typing

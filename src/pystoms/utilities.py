@@ -2,7 +2,7 @@ from matplotlib import pyplot as plt
 import numpy as np
 import scipy.stats as sps
 from pystoms.synthetics import SyntheticPeptideFeature
-from pystoms import models
+from pystoms.models_2d import models
 import pandas as pd
 import os
 from numpy.typing import ArrayLike
@@ -24,7 +24,7 @@ class CategoryDist():
         >>>my_fair_coin = CategoryDist(["Coin","Head"],[0.5,0.5])
         >>>print(my_fair_coin.rvs())
         "Head"
-        
+
     """
     def __init__(self,categories:ArrayLike,probabilites:ArrayLike):
         """Inits categorical distribution.
@@ -59,7 +59,7 @@ class CategoryDist():
         sample = np.random.choice(self.categories,n,True,self.probabilites)
         if n == 1:
             sample = sample[0]
-            
+
         return sample
 
 class SyntheticsSet():
@@ -70,7 +70,7 @@ class SyntheticsSet():
     of synthetic feature data.
 
     Attributes:
-        SetName: Name of the synthetics set. 
+        SetName: Name of the synthetics set.
         SPF_args_stats: Dictionary of syntheticPeptideFature parameters
             and their distributions, if they are considered a random variable.
         syns: List of synthetic peptide features.
@@ -82,8 +82,8 @@ class SyntheticsSet():
     """
 
 
-    # This class variable stores default settings of 
-    # SyntheticsSet. All instances of 
+    # This class variable stores default settings of
+    # SyntheticsSet. All instances of
     # pySTOMS.synthetics.SyntheticPeptideFeature
     # within a SyntheticSet are either passed fixed or
     # random parameters, drawn from a specified distribution.
@@ -136,14 +136,14 @@ class SyntheticsSet():
             params = self._getSynParams()
             self.syns[i] = SyntheticPeptideFeature(**params)
             self.syn_names.append(SetName+"_"+str(i))
-        
+
 
     def _getSynParams(self):
         """Generating parameter dictionary to pass to
             pySTOMS.synthetics.SyntheticPeptideFeature
 
         Returns:
-            dictionary: Dictionary with parameters of 
+            dictionary: Dictionary with parameters of
                 pySTOMS.synthetics.SyntheticPeptideFeature
                 as key and their value as values.
         """
@@ -173,7 +173,7 @@ class SyntheticsSet():
         Raises:
             NotImplementedError: If provided model not known or not yet supported
         """
-        
+
         print("Assigning models to synthetics...")
 
         # First we need to sample data from synthetics for fit:
@@ -184,7 +184,7 @@ class SyntheticsSet():
         # Then we initialize bayesian models for each sample
         print("Initializing models.")
         zipper = zip(samples,self.syns,self.syn_names)
-        
+
         # Retention time models
         print("Initialize RT models")
         if rt_model == "ModelEMG":
@@ -203,7 +203,7 @@ class SyntheticsSet():
             self.modelsMZ = [models.ModelChargePoissonIsotopicPattern(s["m/z"],syn=o,name=n+"_"+mz_model) for s,o,n in zipper]
         elif mz_model == "ModelChargeIsotopicPattern":
             self.modelsMZ = [models.ModelChargeIsotopicPattern(s["m/z"],syn=o,name=n+"_"+mz_model) for s,o,n in zipper]
-        elif mz_model == "ModelIsotopicPattern": 
+        elif mz_model == "ModelIsotopicPattern":
             self.modelsMZ = [models.ModelIsotopicPattern(s["m/z"],z=o.charge,syn=o,name=n+"_"+mz_model) for s,o,n in zipper]
         else:
             raise NotImplementedError("Isotopic Model not supported")
@@ -226,7 +226,7 @@ class SyntheticsSet():
                 Defaults to "Evaluation_Set".
         """
 
-        # evaluation method of models returns arviz summary of 
+        # evaluation method of models returns arviz summary of
         # model fit. Those are stored in below lists to display
         # SyntheticsSet summary.
         self.summariesRT = []
@@ -267,11 +267,11 @@ class SyntheticsSet():
 
         # bring summaries of each model together
         # to two (Retention Time models and Isotopic models)
-        # big dataframes       
+        # big dataframes
         summariesRT_conc = pd.concat(self.summariesRT)
         summariesMZ_conc = pd.concat(self.summariesMZ)
 
-        # plotting deviations to mean and position 
+        # plotting deviations to mean and position
         # of reference values in posteriors
         # for retention time models
         summariesRT_conc_view = summariesRT_conc.pivot(index="model_name",columns="variable",values=["ref_pos_(%)","deviation_(%)"])
@@ -296,7 +296,7 @@ class SyntheticsSet():
             plt.close()
         else:
             plt.show()
-        
+
         # plotting deviations to mean and position
         # of reference values in posteriors
         # for isotopic models

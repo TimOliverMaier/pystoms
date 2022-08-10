@@ -22,3 +22,9 @@ docs/build/
 
 # model binaries
 *.pkl
+
+# mypy type checker
+.mypy_cache/
+
+# pytest
+.pytest_cache/
