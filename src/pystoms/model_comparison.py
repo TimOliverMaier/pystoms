@@ -9,7 +9,8 @@ import os
 import pandas as pd
 from typing import Dict
 
-def read_idata_directory(directory_path:str) -> Dict[str,az.InferenceData]:
+
+def read_idata_directory(directory_path: str) -> Dict[str, az.InferenceData]:
     """Reads all nc files in given directory as InferenceData.
 
     Args:
@@ -29,8 +30,10 @@ def read_idata_directory(directory_path:str) -> Dict[str,az.InferenceData]:
             inference_data_dic[feature_id] = idata
     return inference_data_dic
 
-def compare_feature_model(models_to_compare:Dict[str,str],
-                          plot:bool = True)->pd.DataFrame:
+
+def compare_feature_model(
+    models_to_compare: Dict[str, str], plot: bool = True
+) -> pd.DataFrame:
     """Compares the performance of two
     or more peptide feature models
 
@@ -43,12 +46,12 @@ def compare_feature_model(models_to_compare:Dict[str,str],
     """
     idata_of_models = {}
     # read in data
-    for model_name,dir_path in models_to_compare.items():
+    for model_name, dir_path in models_to_compare.items():
         idata_of_models[model_name] = read_idata_directory(dir_path)
     # from {"model_name":{"feature_id":idata, …}, …}
     # to {"feature_id":{"model_name":idata, …}, …}
     comparisons = {}
-    for model_name,idata_dict in idata_of_models.items():
+    for model_name, idata_dict in idata_of_models.items():
         for feature_id in idata_dict:
             if feature_id not in comparisons:
                 comparisons[feature_id] = {}
@@ -61,16 +64,10 @@ def compare_feature_model(models_to_compare:Dict[str,str],
         comp_data.append(comp)
     comp_df = pd.concat(comp_data)
     comp_df.reset_index(inplace=True)
-    comp_df.rename(columns={"index":"model_name"},inplace=True)
+    comp_df.rename(columns={"index": "model_name"}, inplace=True)
     if plot:
-        sns.violinplot(x="model_name",
-                       y="loo",
-                       data = comp_df)
+        sns.violinplot(x="model_name", y="loo", data=comp_df)
         plt.show()
-        sns.boxplot(x="model_name",
-                    y="loo",
-                    data = comp_df,
-                    showfliers=False)
+        sns.boxplot(x="model_name", y="loo", data=comp_df, showfliers=False)
         plt.show()
     return comp_df
-

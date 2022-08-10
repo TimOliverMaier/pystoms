@@ -16,3 +16,15 @@ docs_src/_build/
 # configuration file for evaluation script
 
 /scripts/evaluation/evaluation_variables.py
+
+# vscode folder
+.vscode
+
+# model binaries
+*.pkl
+
+# mypy type checker
+.mypy_cache/
+
+# pytest
+.pytest_cache/
