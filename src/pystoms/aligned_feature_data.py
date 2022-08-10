@@ -1,14 +1,15 @@
 """ Class holding data of one or more features
 """
+from logging import warning
+from typing import List, Tuple, Union
 import xarray as xa
 import pandas as pd
 import numpy as np
 import numpy.typing as npt
-from typing import List, Tuple, Union
-from proteolizarddata.data import PyTimsDataHandle
+from proteolizarddata.data import PyTimsDataHandleDDA
 from proteolizardalgo.feature_loader_dda import FeatureLoaderDDA
 from pystoms.models_3d.models_glm import ModelGLM3D
-from logging import warning
+
 
 # typing
 NDArrayFloat = npt.NDArray[np.float64]
@@ -33,7 +34,7 @@ class AlignedFeatureData:
         accepted_feature_ids (List[int]): List of feature ids, that are
             stored in feature_data.
     Args:
-        data_handle (Union[str,PyTimsDataHandle]): Path to experimental data
+        data_handle (Union[str,PyTimsDataHandleDDA]): Path to experimental data
             or data_handle.
         ids (List[int]): List with feature ids.
         is_parallel (bool, optional): Wether several features are to
@@ -46,7 +47,7 @@ class AlignedFeatureData:
 
     def __init__(
         self,
-        data_handle: Union[str, PyTimsDataHandle],
+        data_handle: Union[str, PyTimsDataHandleDDA],
         ids: List[int],
         is_parallel: bool = True,
         num_data_points=10,
@@ -56,7 +57,7 @@ class AlignedFeatureData:
         feature_data = []
         if isinstance(data_handle, str):
             data_path = data_handle
-            data_handle = PyTimsDataHandle(data_path)
+            data_handle = PyTimsDataHandleDDA(data_path)
         for feature_id in ids:
             feature = FeatureLoaderDDA(data_handle, feature_id)
             if np.isnan(feature.monoisotopic_mz):
@@ -139,7 +140,7 @@ class AlignedFeatureData:
         mzs = dataset.Mz.values.reshape((num_data_points, num_features, 1))
         charges = dataset.Charge.values
         feature_ids = dataset.feature.values
-        # hyperpriors
+        # hyper priors
         if standardize:
             pass
         else:
