@@ -6,6 +6,7 @@ import xarray as xa
 import pandas as pd
 import numpy as np
 import numpy.typing as npt
+from scipy.special import factorial
 from proteolizarddata.data import PyTimsDataHandleDDA
 from proteolizardalgo.feature_loader_dda import FeatureLoaderDDA
 from pystoms.models_3d.models_glm import ModelGLM3D
@@ -167,6 +168,7 @@ class AlignedFeatureData:
             peaks = np.arange(num_isotopic_peaks)
             peaks = peaks.reshape((1, 1, num_isotopic_peaks))
             peaks_tile = np.tile(peaks, (num_data_points, num_features, 1))
+            factorials = factorial(peaks_tile)
 
         return ModelGLM3D(
             z,
@@ -175,6 +177,7 @@ class AlignedFeatureData:
             scans,
             mzs_tile,
             peaks_tile,
+            factorials,
             ims_mu,
             ims_sigma_max,
             mz_mu,
