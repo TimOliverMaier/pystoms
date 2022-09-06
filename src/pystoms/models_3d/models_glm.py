@@ -14,6 +14,7 @@ import numpy.typing as npt
 import plotly.graph_objects as go
 import plotly.express as px
 import arviz as az
+from scipy.special import factorial
 from aesara import tensor as at
 from aesara.tensor.sharedvar import TensorSharedVariable
 import matplotlib.pyplot as plt
@@ -454,6 +455,7 @@ class AbstractModel(pm.Model):
                 "mz_sigma": mz_sigma,
                 "alpha_lam": alpha_lam,
                 "me_sigma": me_sigma,
+                "factorials": factorial(peaks),
             },
             model=self,
         )
@@ -505,6 +507,7 @@ class AbstractModel(pm.Model):
                 "mz_sigma": mz_sigma,
                 "alpha_lam": alpha_lam,
                 "me_sigma": me_sigma,
+                "factorials": factorial(peaks),
             },
             model=self,
         )
@@ -788,6 +791,9 @@ class ModelGLM3D(AbstractModel):
         self.peaks = pm.MutableData(
             "peaks", peaks, broadcastable=(False, False, False), dims=dims_3d
         )
+        self.factorials = pm.MutableData(
+            "factorials", factorial(peaks), broadcastable=(False, False, False), dims=dims_3d
+        )
         self.mz_mu = pm.MutableData(
             "mz_mu", mz_mu, broadcastable=(True, False, True), dims=dims_3d
         )
@@ -811,7 +817,7 @@ class ModelGLM3D(AbstractModel):
         self.pos = self.peaks / (self.charge) + self.ms_mz
         self.lam = 0.000594 * (self.charge) * self.ms_mz - 0.03091
         self.ws_matrix = (
-            self.lam**self.peaks / at.gamma(self.peaks + 1) * pmath.exp(-self.lam)
+            self.lam**self.peaks / self.factorials * pmath.exp(-self.lam)
         )
 
         # scalar α
