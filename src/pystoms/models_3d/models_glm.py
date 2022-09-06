@@ -715,7 +715,6 @@ class ModelGLM3D(AbstractModel):
         scan (NDArrayFloat): Observed scan numbers.
         mz (NDArrayFloat): Observed mass to charge ratios.
         peaks (NDArrayInt): Isotopic peaks to consider as numpy nd array.
-        factorials (NDArrayInt): factorial of peaks.
         ims_mu (float): Hyperprior. Expected value for scan number.
         ims_sigma_max (float): Hyperprior. Maximal expected standard deviation
             for scan number.
@@ -743,7 +742,6 @@ class ModelGLM3D(AbstractModel):
         scan: NDArrayFloat,
         mz: NDArrayFloat,
         peaks: NDArrayInt,
-        factorials: NDArrayInt,
         ims_mu: float,
         ims_sigma_max: float,
         mz_mu: float,
@@ -790,9 +788,6 @@ class ModelGLM3D(AbstractModel):
         self.peaks = pm.MutableData(
             "peaks", peaks, broadcastable=(False, False, False), dims=dims_3d
         )
-        self.factorials = pm.MutableData(
-            "factorials", factorials, broadcastable=(False, False, False), dims=dims_3d
-        )
         self.mz_mu = pm.MutableData(
             "mz_mu", mz_mu, broadcastable=(True, False, True), dims=dims_3d
         )
@@ -816,7 +811,7 @@ class ModelGLM3D(AbstractModel):
         self.pos = self.peaks / (self.charge) + self.ms_mz
         self.lam = 0.000594 * (self.charge) * self.ms_mz - 0.03091
         self.ws_matrix = (
-            self.lam**self.peaks / self.factorials * pmath.exp(-self.lam)
+            self.lam**self.peaks / at.gamma(self.peaks + 1) * pmath.exp(-self.lam)
         )
 
         # scalar α
