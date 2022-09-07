@@ -55,6 +55,9 @@ class ModelM1(AbstractModel):
         batch_size = len(feature_ids)
         super().__init__(feature_ids, batch_size, name, coords=coords)
         self.setup_mutable_data(features)
+        # TODO is there a nicer way to share this between init and setup_mutable_data()
+        dims_2d = ["data_point", "feature"]
+        dims_3d = ["data_point", "feature", "isotopic_peak"]
         # priors
         # IMS
         self.i_t = pm.Normal(
