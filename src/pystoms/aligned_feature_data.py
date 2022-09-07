@@ -8,7 +8,7 @@ import numpy as np
 import numpy.typing as npt
 from proteolizarddata.data import PyTimsDataHandleDDA
 from proteolizardalgo.feature_loader_dda import FeatureLoaderDDA
-from pystoms.models_3d.models_glm import ModelGLM3D
+from pystoms.models_3d.model_3d_m1 import ModelM1
 
 
 # typing
@@ -118,7 +118,7 @@ class AlignedFeatureData:
 
     def generate_model(
         self, num_isotopic_peaks: int = 6, standardize: bool = False
-    ) -> ModelGLM3D:
+    ) -> ModelM1:
         """Generate 3D GLM model from 'feature_data'
 
         Args:
@@ -128,7 +128,7 @@ class AlignedFeatureData:
                 Defaults to False.
 
         Returns:
-            ModelGLM3D: pystoms 3D GLM model
+            ModelM1: pystoms 3D GLM model
         """
         # get dimensions
         dataset = self.feature_data
@@ -168,7 +168,7 @@ class AlignedFeatureData:
             peaks = peaks.reshape((1, 1, num_isotopic_peaks))
             peaks_tile = np.tile(peaks, (num_data_points, num_features, 1))
 
-        return ModelGLM3D(
+        return ModelM1(
             z,
             feature_ids,
             intensities,

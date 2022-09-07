@@ -7,12 +7,12 @@ import os
 import numpy as np
 from time import time
 from pystoms.aligned_feature_data import AlignedFeatureData
-from proteolizarddata.data import PyTimsDataHandle
+from proteolizarddata.data import PyTimsDataHandleDDA
 from logging import warning
 
 # PARAMETERS
 data_path = "/home/tim/Master/MassSpecDaten/M210115_001_Slot1-1_1_850.d/"
-data_handle = PyTimsDataHandle(data_path)
+data_handle = PyTimsDataHandleDDA(data_path)
 total_features = 100
 feature_ids_flat = np.random.random_integers(1000, 4000, size=total_features)
 output_path = "test_runtime_output"
