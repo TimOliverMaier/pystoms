@@ -7,6 +7,7 @@ import pymc as pm
 import pymc.math as pmath
 import numpy as np
 import numpy.typing as npt
+from pystoms.aligned_feature_data import AlignedFeatureData
 from scipy.special import factorial
 from numpy.typing import ArrayLike
 from pystoms.models_3d.abstract_3d import AbstractModel
@@ -19,7 +20,7 @@ NDArrayInt = npt.NDArray[np.int64]
 class ModelM1(AbstractModel):
     """3D model of precursor feature
 
-    GLM model fitting the 2D function
+    Model fitting the 2D function
 
     .. math::
 
@@ -30,21 +31,8 @@ class ModelM1(AbstractModel):
     the pdf of a normal distribution.
 
     Args:
-        feature_ids (List[int]): List of feature ids in batch.
-        z (int): Charge of precursor.
-        intensity (NDArrayFloat): Observed intensities
-        scan (NDArrayFloat): Observed scan numbers.
-        mz (NDArrayFloat): Observed mass to charge ratios.
-        peaks (NDArrayInt): Isotopic peaks to consider as numpy nd array.
-        ims_mu (float): Hyperprior. Expected value for scan number.
-        ims_sigma_max (float): Hyperprior. Maximal expected standard deviation
-            for scan number.
-        mz_mu (float): Hyperprior. Expected value for monoisotopic
-            mass to charge ratio.
-        mz_sigma (float): Hyperprior. Standard deviation of prior normal
-            distribution for monoisotopic peak
-        alpha_lam (float): Expected value for scalar.
-        me_sigma (float): Sigma for model error.
+        features (AlignedFeatureData): Feature's data wrapped in
+            pystoms.AlignedFeatureData container.
         likelihood (str, optional): Likelihood distribution. Currently
             supported: 'Normal', 'StudentT'. Defaults to 'Normal'.
         name (str,optional): Defaults to empty string.
@@ -57,71 +45,16 @@ class ModelM1(AbstractModel):
 
     def __init__(
         self,
-        z: int,
-        feature_ids: List[int],
-        intensity: NDArrayFloat,
-        scan: NDArrayFloat,
-        mz: NDArrayFloat,
-        peaks: NDArrayInt,
-        ims_mu: float,
-        ims_sigma_max: float,
-        mz_mu: float,
-        mz_sigma: float,
-        alpha_lam: float,
-        me_sigma: float,
+        features: AlignedFeatureData,
         likelihood: str = "Normal",
         name: str = "",
         coords: Optional[dict[str, ArrayLike]] = None,
     ) -> None:
 
+        feature_ids = features.feature_data.feature.values
         batch_size = len(feature_ids)
         super().__init__(feature_ids, batch_size, name, coords=coords)
-        # accessible from outside (data and hyperpriors)
-        dims_2d = ["data_point", "feature"]
-        dims_3d = ["data_point", "feature", "isotopic_peak"]
-        self.intensity = pm.MutableData(
-            "intensity", intensity, broadcastable=(False, False), dims=dims_2d
-        )
-
-        self.ims_mu = pm.MutableData(
-            "ims_mu", ims_mu, broadcastable=(True, False), dims=dims_2d
-        )
-        self.ims_sigma_max = pm.MutableData(
-            "ims_sigma_max", ims_sigma_max, broadcastable=(True, False), dims=dims_2d
-        )
-        self.scan = pm.MutableData(
-            "scan", scan, broadcastable=(False, False), dims=dims_2d
-        )
-
-        self.alpha_lam = pm.MutableData(
-            "alpha_lam", alpha_lam, broadcastable=(True, False), dims=dims_2d
-        )
-        self.me_sigma = pm.MutableData(
-            "me_sigma", me_sigma, broadcastable=(True, False), dims=dims_2d
-        )
-
-        self.charge = pm.MutableData(
-            "charge", z, broadcastable=(True, False, True), dims=dims_3d
-        )
-        self.mz = pm.MutableData(
-            "mz", mz, broadcastable=(False, False, False), dims=dims_3d
-        )
-        self.peaks = pm.MutableData(
-            "peaks", peaks, broadcastable=(False, False, False), dims=dims_3d
-        )
-        self.factorials = pm.MutableData(
-            "factorials",
-            factorial(peaks),
-            broadcastable=(False, False, False),
-            dims=dims_3d,
-        )
-        self.mz_mu = pm.MutableData(
-            "mz_mu", mz_mu, broadcastable=(True, False, True), dims=dims_3d
-        )
-        self.mz_sigma = pm.MutableData(
-            "mz_sigma", mz_sigma, broadcastable=(True, False, True), dims=dims_3d
-        )
-
+        self.setup_mutable_data(features)
         # priors
         # IMS
         self.i_t = pm.Normal(
@@ -178,6 +111,96 @@ class ModelM1(AbstractModel):
             raise NotImplementedError("This likelihood is not supported")
 
         self._initialize_idata()
+
+    def setup_mutable_data(
+        self,
+        features: AlignedFeatureData,
+        num_isotopic_peaks: int = 6,
+        standardize: bool = False,
+    ) -> None:
+
+        # get dimensions
+        dataset = features.feature_data
+        num_features = dataset.dims["feature"]
+        num_data_points = dataset.dims["data_point"]
+        # get observed data
+        scan = dataset.Scan.values
+        intensity = dataset.Intensity.values
+        mz = dataset.Mz.values.reshape((num_data_points, num_features, 1))
+        charge = dataset.Charge.values
+
+        # hyper priors
+        if standardize:
+            pass
+        else:
+            # reshape is necessary here, because average deletes first
+            # dimension
+            ims_mu = np.average(scan, axis=0, weights=intensity).reshape(
+                (1, num_features)
+            )
+            ims_sigma_max = np.max(scan, axis=0) - np.min(scan, axis=0).reshape(
+                (1, num_features)
+            )
+            mz_mu = np.average(
+                mz.reshape((num_data_points, num_features)),
+                axis=0,
+                weights=intensity,
+            ).reshape((1, num_features, 1))
+            mz_sigma = np.ones((1, num_features, 1), dtype="float") * 10
+            alpha_lam = (
+                np.ones((1, num_features), dtype="float") * 1 / intensity.max(axis=0)
+            )
+            me_sigma = np.ones((1, num_features), dtype="float") * 10
+            z = np.array(charge).reshape((1, num_features, 1))
+            mz_tile = np.tile(mz, (1, 1, num_isotopic_peaks))
+            peaks = np.arange(num_isotopic_peaks)
+            peaks = peaks.reshape((1, 1, num_isotopic_peaks))
+            peaks_tile = np.tile(peaks, (num_data_points, num_features, 1))
+
+        dims_2d = ["data_point", "feature"]
+        dims_3d = ["data_point", "feature", "isotopic_peak"]
+        self.intensity = pm.MutableData(
+            "intensity", intensity, broadcastable=(False, False), dims=dims_2d
+        )
+
+        self.ims_mu = pm.MutableData(
+            "ims_mu", ims_mu, broadcastable=(True, False), dims=dims_2d
+        )
+        self.ims_sigma_max = pm.MutableData(
+            "ims_sigma_max", ims_sigma_max, broadcastable=(True, False), dims=dims_2d
+        )
+        self.scan = pm.MutableData(
+            "scan", scan, broadcastable=(False, False), dims=dims_2d
+        )
+
+        self.alpha_lam = pm.MutableData(
+            "alpha_lam", alpha_lam, broadcastable=(True, False), dims=dims_2d
+        )
+        self.me_sigma = pm.MutableData(
+            "me_sigma", me_sigma, broadcastable=(True, False), dims=dims_2d
+        )
+
+        self.charge = pm.MutableData(
+            "charge", z, broadcastable=(True, False, True), dims=dims_3d
+        )
+        self.mz = pm.MutableData(
+            "mz", mz_tile, broadcastable=(False, False, False), dims=dims_3d
+        )
+        self.peaks = pm.MutableData(
+            "peaks", peaks_tile, broadcastable=(False, False, False), dims=dims_3d
+        )
+        self.factorials = pm.MutableData(
+            "factorials",
+            factorial(peaks_tile),
+            broadcastable=(False, False, False),
+            dims=dims_3d,
+        )
+        self.mz_mu = pm.MutableData(
+            "mz_mu", mz_mu, broadcastable=(True, False, True), dims=dims_3d
+        )
+        self.mz_sigma = pm.MutableData(
+            "mz_sigma", mz_sigma, broadcastable=(True, False, True), dims=dims_3d
+        )
 
     def _set_grid_data(self) -> None:
         """Set model's pm.MutableData container to grid data

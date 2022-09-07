@@ -5,6 +5,7 @@ from pystoms.models_3d.model_3d_m1 import ModelM1
 from proteolizarddata.data import PyTimsDataHandleDDA
 from numpy.random import MT19937
 from numpy.random import RandomState, SeedSequence
+from xarray import Dataset
 
 rs = RandomState(MT19937(SeedSequence(123456789)))
 file_path = os.path.dirname(__file__)
@@ -21,5 +22,4 @@ class TestAlignedFeatureData:
         aligned_features = AlignedFeatureData(
             data_handle, ids=feature_ids, is_parallel=True
         )
-        model = aligned_features.generate_model()
-        assert isinstance(model, ModelM1)
+        assert isinstance(aligned_features.feature_data, Dataset)
