@@ -2,7 +2,7 @@
 model M2
 """
 
-from typing import List, Optional
+from typing import Optional
 import pymc as pm
 import pymc.math as pmath
 import numpy as np
@@ -70,13 +70,19 @@ class ModelM2(AbstractModel):
             "ms_mz", mu=self.mz_mu, sigma=self.mz_sigma, dims=dims_3d
         )
 
-        self.ms_s = pm.Gamma("ms_s", alpha=2, beta=2, dims=dims_3d) * self.ms_s_scale
+        self.ms_s = (
+            pm.Gamma("ms_s", alpha=self.ms_s_alpha, beta=2, dims=dims_3d)
+            * self.ms_s_scale
+        )
         self.pos = self.peaks / (self.charge) + self.ms_mz
         self.lam = 0.000594 * (self.charge) * self.ms_mz - 0.03091
         self.ws_matrix = self.lam**self.peaks / self.factorials * pmath.exp(-self.lam)
 
         # scalar α
-        self.alpha = pm.Gamma("alpha", alpha=2, beta=2, dims=dims_2d) * self.alpha_scale
+        self.alpha = (
+            pm.Gamma("alpha", alpha=self.alpha_alpha, beta=2, dims=dims_2d)
+            * self.alpha_scale
+        )
         # α*f_IMS(t)
         self.pi1 = self.alpha * pmath.exp(
             -((self.i_t - self.scan) ** 2) / (2 * self.i_s**2)
@@ -151,9 +157,11 @@ class ModelM2(AbstractModel):
             ).reshape((1, num_features, 1))
             mz_sigma = np.ones((1, num_features, 1), dtype="float") * 10
             ms_s_scale = np.ones((1, num_features, 1), dtype="float") * 0.05
+            ms_s_alpha = np.ones((1, num_features, 1), dtype="float") * 2
             alpha_scale = np.ones((1, num_features), dtype="float") * intensity.max(
                 axis=0
             )
+            alpha_alpha = np.ones((1, num_features), dtype="float") * 2
             me_sigma = np.ones((1, num_features), dtype="float") * 10
             z = np.array(charge).reshape((1, num_features, 1))
             mz_tile = np.tile(mz, (1, 1, num_isotopic_peaks))
@@ -179,10 +187,12 @@ class ModelM2(AbstractModel):
         self.alpha_scale = pm.MutableData(
             "alpha_scale", alpha_scale, broadcastable=(True, False), dims=dims_2d
         )
+        self.alpha_alpha = pm.MutableData(
+            "alpha_alpha", alpha_alpha, broadcastable=(True, False), dims=dims_2d
+        )
         self.me_sigma = pm.MutableData(
             "me_sigma", me_sigma, broadcastable=(True, False), dims=dims_2d
         )
-
         self.charge = pm.MutableData(
             "charge", z, broadcastable=(True, False, True), dims=dims_3d
         )
@@ -206,6 +216,9 @@ class ModelM2(AbstractModel):
         )
         self.ms_s_scale = pm.MutableData(
             "ms_s_scale", ms_s_scale, broadcastable=(True, False, True), dims=dims_3d
+        )
+        self.ms_s_alpha = pm.MutableData(
+            "ms_s_alpha", ms_s_alpha, broadcastable=(True, False, True), dims=dims_3d
         )
 
     def _set_grid_data(self) -> None:
@@ -272,8 +285,11 @@ class ModelM2(AbstractModel):
         mz_mu = data.mz_mu.isel(slice_3d).values.reshape(s_3d)
         mz_sigma = data.mz_sigma.isel(slice_3d).values.reshape(s_3d)
         ms_s_scale = data.ms_s_scale.isel(slice_3d).values.reshape(s_3d)
+        ms_s_alpha = data.ms_s_alpha.isel(slice_3d).values.reshape(s_3d)
         alpha_scale = data.alpha_scale.isel(slice_2d).values.reshape(s_2d)
+        alpha_alpha = data.alpha_alpha.isel(slice_2d).values.reshape(s_2d)
         me_sigma = data.me_sigma.isel(slice_2d).values.reshape(s_2d)
+
         pm.set_data(
             {
                 "scan": scan_grids,
@@ -286,7 +302,9 @@ class ModelM2(AbstractModel):
                 "mz_mu": mz_mu,
                 "mz_sigma": mz_sigma,
                 "ms_s_scale": ms_s_scale,
+                "ms_s_alpha": ms_s_alpha,
                 "alpha_scale": alpha_scale,
+                "alpha_alpha": alpha_alpha,
                 "me_sigma": me_sigma,
                 "factorials": factorial(peaks),
             },
@@ -326,7 +344,9 @@ class ModelM2(AbstractModel):
         mz_mu = data.mz_mu.isel(slice_3d).values.reshape(s_3d)
         mz_sigma = data.mz_sigma.isel(slice_3d).values.reshape(s_3d)
         ms_s_scale = data.ms_s_scale.isel(slice_3d).values.reshape(s_3d)
+        ms_s_alpha = data.ms_s_alpha.isel(slice_3d).values.reshape(s_3d)
         alpha_scale = data.alpha_scale.isel(slice_2d).values.reshape(s_2d)
+        alpha_alpha = data.alpha_alpha.isel(slice_2d).values.reshape(s_2d)
         me_sigma = data.me_sigma.isel(slice_2d).values.reshape(s_2d)
         pm.set_data(
             {
@@ -340,7 +360,9 @@ class ModelM2(AbstractModel):
                 "mz_mu": mz_mu,
                 "mz_sigma": mz_sigma,
                 "ms_s_scale": ms_s_scale,
+                "ms_s_alpha": ms_s_alpha,
                 "alpha_scale": alpha_scale,
+                "alpha_alpha": alpha_alpha,
                 "me_sigma": me_sigma,
                 "factorials": factorial(peaks),
             },
