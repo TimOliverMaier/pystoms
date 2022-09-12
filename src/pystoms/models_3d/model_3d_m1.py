@@ -2,7 +2,7 @@
 model M1
 """
 
-from typing import List, Optional
+from typing import Dict, Optional
 import pymc as pm
 import pymc.math as pmath
 import numpy as np
@@ -33,6 +33,8 @@ class ModelM1(AbstractModel):
     Args:
         features (AlignedFeatureData): Feature's data wrapped in
             pystoms.AlignedFeatureData container.
+        model_parameters (Dictionary, optional): parameters for 
+            priors and hyperpriors. Defaults to None.
         likelihood (str, optional): Likelihood distribution. Currently
             supported: 'Normal', 'StudentT'. Defaults to 'Normal'.
         name (str,optional): Defaults to empty string.
@@ -46,6 +48,7 @@ class ModelM1(AbstractModel):
     def __init__(
         self,
         features: AlignedFeatureData,
+        model_parameters: Optional[Dict] = None,
         likelihood: str = "Normal",
         name: str = "",
         coords: Optional[dict[str, ArrayLike]] = None,
@@ -53,6 +56,9 @@ class ModelM1(AbstractModel):
 
         feature_ids = features.feature_data.feature.values
         batch_size = len(feature_ids)
+        self.model_parameters = model_parameters
+        if self.model_parameters is None:
+            self.model_parameters = {}
         super().__init__(feature_ids, batch_size, name, coords=coords)
         self.setup_mutable_data(features)
         # TODO is there a nicer way to share this between init and setup_mutable_data()
@@ -149,11 +155,12 @@ class ModelM1(AbstractModel):
                 axis=0,
                 weights=intensity,
             ).reshape((1, num_features, 1))
-            mz_sigma = np.ones((1, num_features, 1), dtype="float") * 10
-            alpha_lam = (
-                np.ones((1, num_features), dtype="float") * 1 / intensity.max(axis=0)
-            )
-            me_sigma = np.ones((1, num_features), dtype="float") * 10
+            self.model_parameters.setdefault("mz_sigma",10)
+            mz_sigma = np.ones((1, num_features, 1), dtype="float") * self.model_parameters["mz_sigma"]
+            self.model_parameters.setdefault("alpha_lam",* 1 / intensity.max(axis=0))
+            alpha_lam = np.ones((1, num_features), dtype="float") * self.model_parameters["alpha_lam"]
+            self.model_parameters.setdefault("me_sigma",10)
+            me_sigma = np.ones((1, num_features), dtype="float") * self.model_parameters["me_sigma"]
             z = np.array(charge).reshape((1, num_features, 1))
             mz_tile = np.tile(mz, (1, 1, num_isotopic_peaks))
             peaks = np.arange(num_isotopic_peaks)

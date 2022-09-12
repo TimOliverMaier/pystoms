@@ -5,8 +5,14 @@ from pystoms.aligned_feature_data import AlignedFeatureData
 
 # construct output path
 file_path = os.path.dirname(__file__)
-relative_output_path = "../output_data/plots"
+relative_output_path = "../output_data/"
 output_path = os.path.join(file_path,relative_output_path)
+plot_path = os.path.join(output_path,"plots")
+metrics_path = os.path.join(output_path,"metrics")
+if not os.path.exists(plot_path):
+    os.mkdir(plot_path)
+if not os.path.exists(metrics_path):
+    os.mkdir(metrics_path)
 # construct path to params.yaml file
 relative_param_path = "../params.yaml"
 param_path = os.path.join(file_path,relative_param_path)
@@ -31,13 +37,14 @@ for feature_id in feature_ids:
         model = ModelM2(aligned_features)
     else:
         raise ValueError("Unknown model name.")
-    model.evaluation(prior_pred_in=True,
+    model_trace = model.evaluation(prior_pred_in=True,
                      prior_pred_out=True,
                      posterior_pred_in=True,
                      posterior_pred_out=True,
                      plots =  ["prior_pred_in","prior_pred_out", "posterior_pred_in","posterior_pred_out"],
                      write_to_file=True,
-                     folder_path=output_path)
-    model.arviz_plots(path=output_path)
+                     folder_path=plot_path)
+    model.arviz_plots(path=plot_path)
+    model_trace.to_json(f"{metrics_path}/{feature_id}_idata.json")
 
 
