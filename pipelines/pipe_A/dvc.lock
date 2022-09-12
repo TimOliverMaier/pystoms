@@ -1,0 +1,33 @@
+schema: '2.0'
+stages:
+  run_model:
+    cmd: python scripts/run_model_pipe_A.py
+    deps:
+    - path: ../../src/
+      md5: aaf5efa65569058b0b148adc0a647ecb.dir
+      size: 163654
+      nfiles: 19
+    - path: /home/tim/Workspaces/proteolizard-algorithm/python/
+      md5: 35df3aeb4a7f76f43c0008a5181bf3dd.dir
+      size: 361127
+      nfiles: 19
+    - path: /home/tim/Workspaces/proteolizard-data/python/
+      md5: 7b673cd05765ec8c854e48685a36427b.dir
+      size: 778912
+      nfiles: 10
+    - path: scripts/run_model_pipe_A.py
+      md5: a2df6daf8fc9949f716104f70a621e8b
+      size: 1583
+    params:
+      params.yaml:
+        run_model.data_path: /home/tim/Workspaces/MassSpecDaten/M210115_001_Slot1-1_1_850.d
+        run_model.feature_ids:
+        - 2015
+        - 329
+        - 2300
+        run_model.model_name: M1
+    outs:
+    - path: output_data/plots
+      md5: 518e1e4f788a011806af6c7aeae0d4ca.dir
+      size: 89201884
+      nfiles: 27

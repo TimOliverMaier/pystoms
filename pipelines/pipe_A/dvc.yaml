@@ -1,0 +1,14 @@
+stages:
+  run_model:
+    cmd: python scripts/run_model_pipe_A.py
+    deps:
+    - ../../src/
+    - /home/tim/Workspaces/proteolizard-algorithm/python/
+    - /home/tim/Workspaces/proteolizard-data/python/
+    - scripts/run_model_pipe_A.py
+    params:
+    - run_model.data_path
+    - run_model.feature_ids
+    - run_model.model_name
+    plots:
+    - output_data/plots

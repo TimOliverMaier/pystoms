@@ -5,7 +5,7 @@ from pystoms.aligned_feature_data import AlignedFeatureData
 
 # construct output path
 file_path = os.path.dirname(__file__)
-relative_output_path = "../output_data/"
+relative_output_path = "../output_data/plots"
 output_path = os.path.join(file_path,relative_output_path)
 # construct path to params.yaml file
 relative_param_path = "../params.yaml"
