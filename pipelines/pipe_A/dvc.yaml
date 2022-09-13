@@ -10,5 +10,13 @@ stages:
     - run_model.data_path
     - run_model.feature_ids
     - run_model.model_name
+    - run_model.save_traces
     plots:
+    - output_data/plot_metrics/metrics_plot_dict.json:
+        template: plot_templates/histogram_template.json
+        x: step_size
     - output_data/plots
+    metrics:
+    - output_data/metrics/metrics.json
+    outs:
+    - output_data/inference_data

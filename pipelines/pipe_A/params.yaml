@@ -5,3 +5,4 @@ run_model:
   - 2300
   data_path: /home/tim/Workspaces/MassSpecDaten/M210115_001_Slot1-1_1_850.d
   model_name: M1
+  save_traces: false
