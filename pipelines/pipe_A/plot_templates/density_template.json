@@ -1,0 +1,32 @@
+{
+    "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+    "data": {
+        "values": "<DVC_METRIC_DATA>"
+    },
+    "title": "<DVC_METRIC_TITLE>",
+    "width": 300,
+    "height": 300,
+    "mark": {
+        "type": "area"
+    },
+    "transform": [
+        {
+            "density": "<DVC_METRIC_X>",
+            "groupby": ["feature_id"],
+            "extent": [0,1]
+        }
+    ],
+    "encoding": {
+        "x": {
+            "field": "value",
+            "type":"quantitative",
+            "title": "<DVC_METRIC_X_LABEL>"
+        },
+        "y": {
+            "field":"density",
+            "type": "quantitative",
+            "stack": "zero",
+            "title": "Density"
+        }
+    }
+}
