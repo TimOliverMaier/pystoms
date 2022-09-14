@@ -42,5 +42,5 @@ plots:
   histogram_st:
     title: "Histogram of Sampling Times"
     y:
-      output_data/plot_metrics/sampling_times.json
+      output_data/plot_metrics/sampling_times.json: "sampling_time"
     template: pipelines/pipe_A/plot_templates/histogram_template.json
