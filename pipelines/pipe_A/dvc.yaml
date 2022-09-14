@@ -16,6 +16,7 @@ stages:
     - output_data/plot_metrics/metrics_plot_dict.json:
         x: acceptance_rate
         y: n_steps
+        template: scatter
     metrics:
     - output_data/metrics/metrics.json
     outs:

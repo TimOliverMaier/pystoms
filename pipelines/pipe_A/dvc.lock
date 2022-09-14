@@ -16,7 +16,7 @@ stages:
       size: 778912
       nfiles: 10
     - path: scripts/run_model_pipe_A.py
-      md5: 66dfed0985372c7d003ef21cc7a51b73
+      md5: 78bb5e0a7016a09093e782e9ae26bc90
       size: 3432
     params:
       params.yaml:
@@ -31,16 +31,16 @@ stages:
       size: 0
       nfiles: 0
     - path: output_data/metrics/metrics.json
-      md5: d221797ef2500f8a74955f90d60459d6
+      md5: 7a82adf129554b529e5713ffe083a4dc
       size: 95
     - path: output_data/plot_metrics/metrics_plot_dict.json
-      md5: cf2f8ea103acb7fdbf42ff3e45a8f842
-      size: 828114
+      md5: a31964a68e3f553c712b3666dc6ef023
+      size: 830868
     - path: output_data/plotly
-      md5: 4d075f7894252af95f326a273914e896.dir
-      size: 29782926
+      md5: 9163b7a4ffbe77fb200a61e164fd9aeb.dir
+      size: 29779025
       nfiles: 4
     - path: output_data/plots
-      md5: a6f564c8e9d5138bb73f72a67d4d6a11.dir
-      size: 802420
+      md5: 46c24bc54455c54886ddec5ab64dfaa3.dir
+      size: 784229
       nfiles: 5

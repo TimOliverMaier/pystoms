@@ -69,7 +69,7 @@ for feature_id in feature_ids:
     tree_depth = stats.tree_depth.values.flatten().tolist()
     n_steps = stats.n_steps.values.flatten().tolist()
     step_size = stats.step_size.values.flatten().tolist()
-    metrics_plot_list += [{"feature_id":str(feature_id),"tree_depth":td,"acceptance_rate":ar,"n_steps":ns,"step_size":ss} for (td,ar,ns,ss) in zip(acc_rate,tree_depth,n_steps,step_size) ]
+    metrics_plot_list += [{"feature_id":str(feature_id),"tree_depth":td,"acceptance_rate":ar,"n_steps":ns,"step_size":ss} for (td,ar,ns,ss) in zip(tree_depth,acc_rate,n_steps,step_size) ]
     
     
     
