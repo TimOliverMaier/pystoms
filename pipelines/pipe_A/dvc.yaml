@@ -13,16 +13,28 @@ stages:
     - run_model.save_traces
     plots:
     - output_data/plots
-    - output_data/plot_metrics/metrics_plot_dict.json:
-        y: acceptance_rate
-        template: pipelines/pipe_A/plot_templates/histogram_template.json
-    - output_data/plot_metrics/test.json:
-        x: x
-        y: y
-        # template path relative to .dvc folder!
-        template: pipelines/pipe_A/plot_templates/bar_template.json
     metrics:
     - output_data/metrics/metrics.json
     outs:
     - output_data/inference_data    
     - output_data/plotly
+    - output_data/plot_metrics/metrics_plot_dict.json
+    - output_data/plot_metrics/divergencies.json
+plots:
+  histogram_ar:
+    title: "Histogram of Acceptance Probabilities"
+    y:  
+      output_data/plot_metrics/metrics_plot_dict.json: acceptance_rate
+    y_label: Acceptance Probability
+    template: pipelines/pipe_A/plot_templates/histogram_template.json
+  histogram_ns:
+    title: "Histogram of Number of Leap Frog Steps"
+    y:  
+      output_data/plot_metrics/metrics_plot_dict.json: n_steps
+    y_label: n
+    template: pipelines/pipe_A/plot_templates/histogram_template.json
+  historgram_div:
+    title: "Histogram of Divergencies"
+    y: 
+      output_data/plot_metrics/divergencies.json: divergencies
+    template: pipelines/pipe_A/plot_templates/histogram_template.json

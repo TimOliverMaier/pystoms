@@ -16,8 +16,8 @@ stages:
       size: 778912
       nfiles: 10
     - path: scripts/run_model_pipe_A.py
-      md5: 1f88fd9c347b8c39565ffda4e0b29cc2
-      size: 3704
+      md5: 0dea8bf3d722525fe738d6c7397cfd5e
+      size: 3727
     params:
       params.yaml:
         run_model.data_path: /home/tim/Workspaces/MassSpecDaten/M210115_001_Slot1-1_1_850.d
@@ -31,19 +31,19 @@ stages:
       size: 0
       nfiles: 0
     - path: output_data/metrics/metrics.json
-      md5: d6f00f3517e2a6741b92520c4475de2b
+      md5: bde79b27640e9c388480850ce71d6ce2
       size: 95
+    - path: output_data/plot_metrics/divergencies.json
+      md5: 8fcca088a8a44def28f6a935ed9786d4
+      size: 107
     - path: output_data/plot_metrics/metrics_plot_dict.json
-      md5: 53dcd7728cc301260b68acaac4a3b9cc
-      size: 830418
-    - path: output_data/plot_metrics/test.json
-      md5: 174ae057d26f363c89d55dfe1bb17d0f
-      size: 264
+      md5: c5d2619dd3036959fefbb633fc106a8f
+      size: 830721
     - path: output_data/plotly
-      md5: b42a150d1240c1afbd49fe4e99f1fd93.dir
-      size: 29771487
+      md5: 34576ae2bf82785fc05d8b07976b9d8c.dir
+      size: 29788362
       nfiles: 4
     - path: output_data/plots
-      md5: cd38cd83806830a5acf5eefe70f54817.dir
-      size: 717813
+      md5: 4ba2668b6bff0478df41f1f5021b73f2.dir
+      size: 818130
       nfiles: 5

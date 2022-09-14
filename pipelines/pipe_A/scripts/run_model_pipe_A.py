@@ -36,6 +36,7 @@ save_traces = params["save_traces"]
 dh = PyTimsDataHandleDDA(dp)
 metrics_dictionary = {}
 metrics_plot_list = []
+divergencies_list =  []
 for feature_id in feature_ids:
     aligned_features = AlignedFeatureData(
                                 dh,
@@ -70,7 +71,7 @@ for feature_id in feature_ids:
     n_steps = stats.n_steps.values.flatten().tolist()
     step_size = stats.step_size.values.flatten().tolist()
     metrics_plot_list += [{"feature_id":str(feature_id),"tree_depth":td,"acceptance_rate":ar,"n_steps":ns,"step_size":ss} for (td,ar,ns,ss) in zip(tree_depth,acc_rate,n_steps,step_size) ]
-    
+    divergencies_list.append({"feature_id":str(feature_id),"divergencies":feature_dictionary["divergences"]})
     
     
 with open(f"{metrics_path}/metrics.json", "w") as json_file:
@@ -81,13 +82,8 @@ with open(f"{plot_metrics_path}/metrics_plot_dict.json","w") as json_file:
         "plot_metrics": metrics_plot_list
     },indent=4)
     json_file.write(jf)
-with open(f"{plot_metrics_path}/test.json","w") as json_file:
+with open(f"{plot_metrics_path}/divergencies.json","w") as json_file:
     jf = json.dumps({
-        "bar": [
-            {"x":1,"y":20},
-            {"x":2,"y":10},
-            {"x":3,"y":50},
-            {"x":4,"y":2},
-                ]   
+        "divs": divergencies_list
     },indent=4)
     json_file.write(jf)
