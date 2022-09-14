@@ -17,7 +17,8 @@ stages:
     - output_data/plot_metrics/test.json:
         x: x
         y: y
-        template: plot_templates/bar_template.json
+        # template path relative to .dvc folder!
+        template: pipelines/pipe_A/plot_templates/bar_template.json
     metrics:
     - output_data/metrics/metrics.json
     outs:
