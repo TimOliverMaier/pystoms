@@ -23,6 +23,10 @@
         "y": {
             "aggregate":"count",
             "title": "Count"
+        },
+        "color": {
+            "field": "feature_id",
+            "type": "nominal"
         }
     }
 }

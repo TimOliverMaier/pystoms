@@ -13,22 +13,11 @@ stages:
     - run_model.save_traces
     plots:
     - output_data/plots
+    - output_data/plot_metrics/metrics_plot_dict.json:
+        x: acceptance_rate
+        y: n_steps
     metrics:
     - output_data/metrics/metrics.json
     outs:
     - output_data/inference_data    
-    - output_data/plot_metrics/metrics_plot_dict.json
     - output_data/plotly
-plots:
-  histogram_acc_r:
-    template: plot_templates/histogram_template.json
-    y: 
-      output_data/plot_metrics/metrics_plot_dict.json: feature_id
-    y_label: Acceptance_Rate
-    title: Histogram
-  density_acc_r:
-    template: plot_templates/density_template.json
-    y: 
-      output_data/plot_metrics/metrics_plot_dict.json: feature_id
-    y_label: Acceptance_Rate
-    title: Density

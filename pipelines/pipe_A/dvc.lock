@@ -4,8 +4,8 @@ stages:
     cmd: python scripts/run_model_pipe_A.py
     deps:
     - path: ../../src/
-      md5: aaf5efa65569058b0b148adc0a647ecb.dir
-      size: 163654
+      md5: 8311766cbd852612f6469fcb8b66ec13.dir
+      size: 165691
       nfiles: 19
     - path: /home/tim/Workspaces/proteolizard-algorithm/python/
       md5: 35df3aeb4a7f76f43c0008a5181bf3dd.dir
@@ -16,18 +16,31 @@ stages:
       size: 778912
       nfiles: 10
     - path: scripts/run_model_pipe_A.py
-      md5: a2df6daf8fc9949f716104f70a621e8b
-      size: 1583
+      md5: 66dfed0985372c7d003ef21cc7a51b73
+      size: 3432
     params:
       params.yaml:
         run_model.data_path: /home/tim/Workspaces/MassSpecDaten/M210115_001_Slot1-1_1_850.d
         run_model.feature_ids:
         - 2015
-        - 329
-        - 2300
         run_model.model_name: M1
+        run_model.save_traces: false
     outs:
+    - path: output_data/inference_data
+      md5: d751713988987e9331980363e24189ce.dir
+      size: 0
+      nfiles: 0
+    - path: output_data/metrics/metrics.json
+      md5: d221797ef2500f8a74955f90d60459d6
+      size: 95
+    - path: output_data/plot_metrics/metrics_plot_dict.json
+      md5: cf2f8ea103acb7fdbf42ff3e45a8f842
+      size: 828114
+    - path: output_data/plotly
+      md5: 4d075f7894252af95f326a273914e896.dir
+      size: 29782926
+      nfiles: 4
     - path: output_data/plots
-      md5: 518e1e4f788a011806af6c7aeae0d4ca.dir
-      size: 89201884
-      nfiles: 27
+      md5: a6f564c8e9d5138bb73f72a67d4d6a11.dir
+      size: 802420
+      nfiles: 5

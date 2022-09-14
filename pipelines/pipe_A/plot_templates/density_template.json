@@ -27,6 +27,10 @@
             "type": "quantitative",
             "stack": "zero",
             "title": "Density"
+        },
+        "color": {
+            "field": "feature_id",
+            "type": "nominal"
         }
     }
 }
