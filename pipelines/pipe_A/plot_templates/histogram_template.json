@@ -9,11 +9,6 @@
     "mark": {
         "type": "bar"
     },
-    "transform": [
-        {
-            "groupby": ["feature_id"]
-        }
-    ],
     "encoding": {
         "x": {
             "bin": true,
@@ -24,9 +19,5 @@
             "aggregate":"count",
             "title": "Count"
         },
-        "color": {
-            "field": "feature_id",
-            "type": "nominal"
-        }
     }
 }

@@ -13,10 +13,11 @@ stages:
     - run_model.save_traces
     plots:
     - output_data/plots
-    - output_data/plot_metrics/metrics_plot_dict.json:
-        x: acceptance_rate
-        y: n_steps
-        template: scatter
+    - output_data/plot_metrics/metrics_plot_dict.json
+    - output_data/plot_metrics/test.json:
+        x: x
+        y: y
+        template: plot_templates/bar_template.json
     metrics:
     - output_data/metrics/metrics.json
     outs:

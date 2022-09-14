@@ -81,3 +81,13 @@ with open(f"{plot_metrics_path}/metrics_plot_dict.json","w") as json_file:
         "plot_metrics": metrics_plot_list
     },indent=4)
     json_file.write(jf)
+with open(f"{plot_metrics_path}/test.json","w") as json_file:
+    jf = json.dumps({
+        "bar": [
+            {"x":1,"y":20},
+            {"x":2,"y":10},
+            {"x":3,"y":50},
+            {"x":4,"y":2},
+                ]   
+    },indent=4)
+    json_file.write(jf)
