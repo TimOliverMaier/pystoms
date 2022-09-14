@@ -20,6 +20,7 @@ stages:
     - output_data/plotly
     - output_data/plot_metrics/metrics_plot_dict.json
     - output_data/plot_metrics/divergencies.json
+    - output_data/plot_metrics/sampling_times.json
 plots:
   histogram_ar:
     title: "Histogram of Acceptance Probabilities"
@@ -37,4 +38,9 @@ plots:
     title: "Histogram of Divergencies"
     y: 
       output_data/plot_metrics/divergencies.json: divergencies
+    template: pipelines/pipe_A/plot_templates/histogram_template.json
+  histogram_st:
+    title: "Histogram of Sampling Times"
+    y:
+      output_data/plot_metrics/sampling_times.json
     template: pipelines/pipe_A/plot_templates/histogram_template.json

@@ -6,6 +6,11 @@
     "title": "<DVC_METRIC_TITLE>",
     "width": 300,
     "height": 300,
+    "transform": [
+        {
+            "groupby": ["feature_id"]
+        }
+    ],
     "mark": {
         "type": "bar"
     },
@@ -18,6 +23,13 @@
         "y": {
             "aggregate":"count",
             "title": "Count"
+        },
+        "color": {
+            "field": "feature_id",
+            "type": "nominal"
+        },
+        "column": {
+            "field": "rev"
         }
     }
 }

@@ -32,11 +32,13 @@ dp = params["data_path"]
 feature_ids = params["feature_ids"]
 model_name = params["model_name"]
 save_traces = params["save_traces"]
+model_parameters = params["model_parameters"]
 # load data
 dh = PyTimsDataHandleDDA(dp)
 metrics_dictionary = {}
 metrics_plot_list = []
 divergencies_list =  []
+sampling_times = []
 for feature_id in feature_ids:
     try:
         aligned_features = AlignedFeatureData(
@@ -47,13 +49,13 @@ for feature_id in feature_ids:
         continue
     if model_name == "M1":
         from pystoms.models_3d.model_3d_m1 import ModelM1
-        model = ModelM1(aligned_features)
+        model = ModelM1(aligned_features,model_parameters)
     elif model_name == "M2":
         from pystoms.models_3d.model_3d_m2 import ModelM2
-        model = ModelM2(aligned_features)
+        model = ModelM2(aligned_features,model_parameters)
     else:
         raise ValueError("Unknown model name.")
-    model_trace: InferenceData = model.evaluation(prior_pred_in=True,
+    model_trace, sampling_time = model.evaluation(prior_pred_in=True,
                      prior_pred_out=True,
                      posterior_pred_in=True,
                      posterior_pred_out=True,
@@ -75,7 +77,7 @@ for feature_id in feature_ids:
     step_size = stats.step_size.values.flatten().tolist()
     metrics_plot_list += [{"feature_id":str(feature_id),"tree_depth":td,"acceptance_rate":ar,"n_steps":ns,"step_size":ss} for (td,ar,ns,ss) in zip(tree_depth,acc_rate,n_steps,step_size) ]
     divergencies_list.append({"feature_id":str(feature_id),"divergencies":feature_dictionary["divergences"]})
-    
+    sampling_times.append({"feature_id":str(feature_id),"sampling_time":sampling_time})
     
 with open(f"{metrics_path}/metrics.json", "w") as json_file:
     jf = json.dumps(metrics_dictionary,indent=4)
@@ -88,5 +90,10 @@ with open(f"{plot_metrics_path}/metrics_plot_dict.json","w") as json_file:
 with open(f"{plot_metrics_path}/divergencies.json","w") as json_file:
     jf = json.dumps({
         "divs": divergencies_list
+    },indent=4)
+    json_file.write(jf)
+with open(f"{plot_metrics_path}/sampling_times.json","w") as json_file:
+    jf = json.dumps({
+        "times": sampling_times
     },indent=4)
     json_file.write(jf)

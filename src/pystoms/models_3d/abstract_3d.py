@@ -2,7 +2,7 @@
 """
 
 from logging import warning
-from typing import List, Optional
+from typing import List, Optional, Tuple
 import pandas as pd
 import pymc as pm
 import pymc.math as pmath
@@ -17,7 +17,7 @@ from aesara.tensor.sharedvar import TensorSharedVariable
 import matplotlib.pyplot as plt
 import os
 from numpy.typing import ArrayLike
-
+from time import time
 # typing
 NDArrayFloat = npt.NDArray[np.float64]
 NDArrayInt = npt.NDArray[np.int64]
@@ -480,7 +480,7 @@ class AbstractModel(pm.Model):
         progressbar: bool = True,
         pred_name_list: Optional[List[str]] = None,
         **plot_kwargs,
-    ) -> az.InferenceData:
+    ) -> Tuple[az.InferenceData,float]:
         """Evaluate precursor feature model.
 
         This function is wrapping several steps
@@ -509,12 +509,15 @@ class AbstractModel(pm.Model):
             **plot_kwargs: Keyword Arguments passed to
                 `visualize_predictions_scatter` method.
         Returns:
-            az.InferenceData: Inference data of model.
+            Tuple(az.InferenceData, float): Inference data of model and
+                sampling time
         """
 
         if reset_idata:
             self.idata = az.InferenceData()
+        start_sampling = time()
         self._sample(progressbar=progressbar)
+        end_sampling = time()
 
         if pred_name_list is None:
             pred_name_list = ["obs"]
@@ -557,4 +560,4 @@ class AbstractModel(pm.Model):
                     plot_kwargs["pred_name"] = pred_name
                     self.visualize_predictions_scatter(in_sample=False, **plot_kwargs)
 
-        return self.idata.copy()
+        return (self.idata.copy(),end_sampling-start_sampling)
