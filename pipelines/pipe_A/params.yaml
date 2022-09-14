@@ -1,8 +1,15 @@
 run_model:
   feature_ids:
   - 2015
-  #- 329
-  #- 2300
+  - 329
+  - 2300
+  - 3022
+  - 200
+  - 6543
+  - 4289
+  - 7089
+  - 10021
+  - 1072
   data_path: /home/tim/Workspaces/MassSpecDaten/M210115_001_Slot1-1_1_850.d
   model_name: M1
   save_traces: false

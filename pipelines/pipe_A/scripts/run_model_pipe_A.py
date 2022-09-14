@@ -38,10 +38,13 @@ metrics_dictionary = {}
 metrics_plot_list = []
 divergencies_list =  []
 for feature_id in feature_ids:
-    aligned_features = AlignedFeatureData(
+    try:
+        aligned_features = AlignedFeatureData(
                                 dh,
                                 ids=[feature_id],
                                 is_parallel=False)
+    except ValueError:
+        continue
     if model_name == "M1":
         from pystoms.models_3d.model_3d_m1 import ModelM1
         model = ModelM1(aligned_features)
