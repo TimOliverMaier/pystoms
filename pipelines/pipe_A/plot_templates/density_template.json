@@ -11,7 +11,7 @@
     },
     "transform": [
         {
-            "density": "<DVC_METRIC_X>",
+            "density": "<DVC_METRIC_Y>",
             "groupby": ["feature_id"],
             "extent": [0,1]
         }
@@ -20,7 +20,7 @@
         "x": {
             "field": "value",
             "type":"quantitative",
-            "title": "<DVC_METRIC_X_LABEL>"
+            "title": "<DVC_METRIC_Y_LABEL>"
         },
         "y": {
             "field":"density",

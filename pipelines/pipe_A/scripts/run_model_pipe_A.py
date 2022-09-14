@@ -12,6 +12,7 @@ plot_path = os.path.join(output_path,"plots")
 metrics_path = os.path.join(output_path,"metrics")
 idata_path = os.path.join(output_path,"inference_data")
 plot_metrics_path = os.path.join(output_path,"plot_metrics")
+plotly_path = os.path.join(output_path,"plotly")
 if not os.path.exists(plot_path):
     os.mkdir(plot_path)
 if not os.path.exists(metrics_path):
@@ -20,6 +21,8 @@ if not os.path.exists(idata_path):
     os.mkdir(idata_path)
 if not os.path.exists(plot_metrics_path):
     os.mkdir(plot_metrics_path)
+if not os.path.exists(plotly_path):
+    os.mkdir(plotly_path)
 # construct path to params.yaml file
 relative_param_path = "../params.yaml"
 param_path = os.path.join(file_path,relative_param_path)
@@ -52,7 +55,7 @@ for feature_id in feature_ids:
                      posterior_pred_out=True,
                      plots =  ["prior_pred_in","prior_pred_out", "posterior_pred_in","posterior_pred_out"],
                      write_to_file=True,
-                     folder_path=plot_path)
+                     folder_path=plotly_path)
     model.arviz_plots(path=plot_path)
     if save_traces:
         model_trace.to_netcdf(f"{idata_path}/{feature_id}_idata.nc")
@@ -66,7 +69,7 @@ for feature_id in feature_ids:
     tree_depth = stats.tree_depth.values.flatten().tolist()
     n_steps = stats.n_steps.values.flatten().tolist()
     step_size = stats.step_size.values.flatten().tolist()
-    metrics_plot_list += [{"feature_id":feature_id,"tree_depth":td,"acceptance_rate":ar,"n_steps":ns,"step_size":ss} for (td,ar,ns,ss) in zip(acc_rate,tree_depth,n_steps,step_size) ]
+    metrics_plot_list += [{"feature_id":str(feature_id),"tree_depth":td,"acceptance_rate":ar,"n_steps":ns,"step_size":ss} for (td,ar,ns,ss) in zip(acc_rate,tree_depth,n_steps,step_size) ]
     
     
     

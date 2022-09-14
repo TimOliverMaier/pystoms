@@ -9,15 +9,20 @@
     "mark": {
         "type": "bar"
     },
+    "transform": [
+        {
+            "groupby": ["feature_id"]
+        }
+    ],
     "encoding": {
         "x": {
             "bin": true,
-            "field": "<DVC_METRIC_X>",
-            "title": "<DVC_METRIC_X_LABEL>"
+            "field": "<DVC_METRIC_Y>",
+            "title": "<DVC_METRIC_Y_LABEL>"
         },
         "y": {
             "aggregate":"count",
-            "title": "<DVC_METRIC_Y_LABEL>"
+            "title": "Count"
         }
     }
 }
