@@ -1,10 +1,12 @@
 import os
+from random import random
 import yaml
 import json
 from proteolizarddata.data import PyTimsDataHandleDDA
 from pystoms.aligned_feature_data import AlignedFeatureData
-from arviz import InferenceData
-# construct output path
+from numpy.random import default_rng
+
+# construct output paths
 file_path = os.path.dirname(__file__)
 relative_output_path = "../output_data/"
 output_path = os.path.join(file_path,relative_output_path)
@@ -33,6 +35,8 @@ feature_ids = params["feature_ids"]
 model_name = params["model_name"]
 save_traces = params["save_traces"]
 model_parameters = params["model_parameters"]
+random_seed = params["random_seed"]
+rng = default_rng(random_seed)
 # load data
 dh = PyTimsDataHandleDDA(dp)
 metrics_dictionary = {}
@@ -49,10 +53,10 @@ for feature_id in feature_ids:
         continue
     if model_name == "M1":
         from pystoms.models_3d.model_3d_m1 import ModelM1
-        model = ModelM1(aligned_features,model_parameters)
+        model = ModelM1(aligned_features,model_parameters, random_number_generator = rng)
     elif model_name == "M2":
         from pystoms.models_3d.model_3d_m2 import ModelM2
-        model = ModelM2(aligned_features,model_parameters)
+        model = ModelM2(aligned_features,model_parameters, random_number_generator = rng)
     else:
         raise ValueError("Unknown model name.")
     model_trace, sampling_time = model.evaluation(prior_pred_in=True,

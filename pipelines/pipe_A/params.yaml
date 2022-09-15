@@ -13,5 +13,6 @@ run_model:
   data_path: /home/tim/Workspaces/MassSpecDaten/M210115_001_Slot1-1_1_850.d
   model_name: M1
   save_traces: false
+  random_seed: 2022
   model_parameters:
     mz_s_scale: 0.1

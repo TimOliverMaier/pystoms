@@ -33,15 +33,18 @@ class AbstractModel(pm.Model):
         feature_ids(List[int]): List of feature ids in batch.
         batch_size (int): Number of features
             in one batch.
-        name (str): Name of model.
-        coords (Optional[dict[str,ArrayLike],optional]):
+        name (str, optional): Name of model. Defaults to empty string.
+        coords (dict[str,ArrayLike],optional):
             Coordinates for dims in model.
+        random_number_generator (np.random.Generator,optional): Random number generator.
+            Defaults to None.
     Attributes:
         feature_ids(List[int]): List of feature ids in batch.
         batch_size (int): Number of features in
             one batch.
         idata (az.InferenceData):
           inferenceData of current model.
+        rng (Optional[np.random.Generator]): Random Number generator
 
     """
 
@@ -49,7 +52,8 @@ class AbstractModel(pm.Model):
         self,
         feature_ids: List[int],
         batch_size: int,
-        name: str,
+        random_number_generator: np.random.Generator = None,
+        name: Optional[str] = "",
         coords: Optional[dict[str, ArrayLike]] = None,
     ) -> None:
         # name and model must be passed to pm.Model
@@ -60,13 +64,14 @@ class AbstractModel(pm.Model):
         self.feature_ids = feature_ids
         self.batch_size = batch_size
         self.idata = az.InferenceData()
+        self.rng = random_number_generator
 
     def _reset_idata(self) -> None:
         self.idata = az.InferenceData()
 
     def _initialize_idata(self):
         """Inits InferenceData with constant_data group"""
-        prior_idata = pm.sample_prior_predictive(5, model=self)
+        prior_idata = pm.sample_prior_predictive(5, model=self, random_seed=self.rng)
         self.idata.add_groups({"constant_data": prior_idata.constant_data})
 
     def _get_model_shared_data(
@@ -112,6 +117,8 @@ class AbstractModel(pm.Model):
             **kwargs: Keyword arguments passed to predictive sampler.
         """
 
+        # set random number generator in kwargs if not user specified
+        kwargs.setdefault("random_seed", self.rng)
         # for overview on arviz inferenceData groups visit
         # https://arviz-devs.github.io/arviz/schema/schema.html
 
@@ -383,7 +390,10 @@ class AbstractModel(pm.Model):
         Returns:
             az.InferenceData: Sample trace as InferenceData.
         """
+        # ? I think this is not necessary anymore in pymc 4
         kwargs.setdefault("return_inferencedata", True)
+
+        kwargs.setdefault("random_seed", self.rng)
         trace = pm.sample(**kwargs, model=self)
         self.idata.extend(trace)
         return trace

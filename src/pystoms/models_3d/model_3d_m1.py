@@ -37,6 +37,8 @@ class ModelM1(AbstractModel):
             priors and hyperpriors. Defaults to None.
         likelihood (str, optional): Likelihood distribution. Currently
             supported: 'Normal', 'StudentT'. Defaults to 'Normal'.
+        random_number_generator(np.random.Generator, optional): random number
+            generator for pymc sampling processes. Defaults to None.
         name (str,optional): Defaults to empty string.
         coords (Optional[dict[str,ArrayLike]],optional):
             Coordinates for dims of model.
@@ -50,6 +52,7 @@ class ModelM1(AbstractModel):
         features: AlignedFeatureData,
         model_parameters: Optional[Dict] = None,
         likelihood: str = "Normal",
+        random_number_generator: Optional[np.random.Generator] = None,
         name: str = "",
         coords: Optional[dict[str, ArrayLike]] = None,
     ) -> None:
@@ -59,7 +62,7 @@ class ModelM1(AbstractModel):
         self.model_parameters = model_parameters
         if self.model_parameters is None:
             self.model_parameters = {}
-        super().__init__(feature_ids, batch_size, name, coords=coords)
+        super().__init__(feature_ids, batch_size, random_number_generator, name, coords=coords)
         self.setup_mutable_data(features)
         # TODO is there a nicer way to share this between init and setup_mutable_data()
         dims_2d = ["data_point", "feature"]

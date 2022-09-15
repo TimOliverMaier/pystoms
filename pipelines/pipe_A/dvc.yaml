@@ -11,14 +11,15 @@ stages:
     - run_model.feature_ids
     - run_model.model_name
     - run_model.save_traces
+    - run_model.random_seed
     - run_model.model_parameters
     plots:
     - output_data/plots
+    - output_data/plotly
     metrics:
     - output_data/metrics/metrics.json
     outs:
     - output_data/inference_data    
-    - output_data/plotly
     - output_data/plot_metrics/metrics_plot_dict.json
     - output_data/plot_metrics/divergencies.json
     - output_data/plot_metrics/sampling_times.json
