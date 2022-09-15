@@ -40,22 +40,22 @@ stages:
       size: 0
       nfiles: 0
     - path: output_data/metrics/metrics.json
-      md5: bcfc9836da7c76ae4dbffb2b6abaad42
-      size: 937
+      md5: 11e0a2ddbbdeacdfaab4bbc3768d9fbd
+      size: 933
     - path: output_data/plot_metrics/divergencies.json
-      md5: 83a6bf5bd0dc1789a278cc1a9bda3010
-      size: 877
+      md5: 55e66f01162f0e836fee8b4bea329984
+      size: 875
     - path: output_data/plot_metrics/metrics_plot_dict.json
-      md5: 58cae7c056c2e5fc8bb4c2a8dcb41de7
-      size: 8312051
+      md5: 26bd03a75687ef654e4f85329b4fddde
+      size: 8318587
     - path: output_data/plot_metrics/sampling_times.json
-      md5: 2eef53c1eb072d5b4118896e71d2270f
-      size: 1042
+      md5: 1b4193532ce703163ab35634598aa9e2
+      size: 1044
     - path: output_data/plotly
-      md5: dd891a56a5fbb6fbbbb7c9cdf50bf1a5.dir
-      size: 282759662
+      md5: 4d521c43d5c39c267c4887473bb17639.dir
+      size: 282759131
       nfiles: 40
     - path: output_data/plots
-      md5: c85c9d3df63537e44e6d82a572fecdea.dir
-      size: 10911397
+      md5: 20b42b9ce0ea63a51f2ba5082886d72c.dir
+      size: 11156129
       nfiles: 50
