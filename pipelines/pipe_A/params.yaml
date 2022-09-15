@@ -14,4 +14,4 @@ run_model:
   model_name: M1
   save_traces: false
   model_parameters:
-    mz_s_scale: 0.05
+    mz_s_scale: 0.1

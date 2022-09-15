@@ -11,6 +11,7 @@ stages:
     - run_model.feature_ids
     - run_model.model_name
     - run_model.save_traces
+    - run_model.model_parameters
     plots:
     - output_data/plots
     metrics:
