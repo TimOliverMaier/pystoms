@@ -4,8 +4,8 @@ stages:
     cmd: python scripts/run_model_pipe_A.py
     deps:
     - path: ../../src/
-      md5: b0d0830289411f05f2eafd21343a454a.dir
-      size: 166040
+      md5: 3bbe4dfabfc4aa1592d696f09c917037.dir
+      size: 167726
       nfiles: 19
     - path: /home/tim/Workspaces/proteolizard-algorithm/python/
       md5: 35df3aeb4a7f76f43c0008a5181bf3dd.dir
@@ -16,8 +16,8 @@ stages:
       size: 778912
       nfiles: 10
     - path: scripts/run_model_pipe_A.py
-      md5: 80ce87848cc63431ebea77f9f6b91ec9
-      size: 4129
+      md5: 447d11e1ba6ad63beb912ef6ceeb2507
+      size: 4291
     params:
       params.yaml:
         run_model.data_path: /home/tim/Workspaces/MassSpecDaten/M210115_001_Slot1-1_1_850.d
@@ -33,6 +33,9 @@ stages:
         - 10021
         - 1072
         run_model.model_name: M1
+        run_model.model_parameters:
+          mz_s_scale: 0.1
+        run_model.random_seed: 2022
         run_model.save_traces: false
     outs:
     - path: output_data/inference_data
@@ -40,22 +43,22 @@ stages:
       size: 0
       nfiles: 0
     - path: output_data/metrics/metrics.json
-      md5: 11e0a2ddbbdeacdfaab4bbc3768d9fbd
-      size: 933
+      md5: 0d6cfe345e6daa42b3a806a019f152c3
+      size: 931
     - path: output_data/plot_metrics/divergencies.json
-      md5: 55e66f01162f0e836fee8b4bea329984
+      md5: 13225c29a64c4d0e9318b13ee3b08b61
       size: 875
     - path: output_data/plot_metrics/metrics_plot_dict.json
-      md5: 26bd03a75687ef654e4f85329b4fddde
-      size: 8318587
+      md5: 57fc5dabc2a54122a613f44875ffa8a9
+      size: 8311772
     - path: output_data/plot_metrics/sampling_times.json
-      md5: 1b4193532ce703163ab35634598aa9e2
-      size: 1044
+      md5: 5182993114223d03ee748c3b0e1f6418
+      size: 1045
     - path: output_data/plotly
-      md5: 4d521c43d5c39c267c4887473bb17639.dir
-      size: 282759131
+      md5: 76063cd570a3cfb7e3c51f4b66e56b85.dir
+      size: 282795207
       nfiles: 40
     - path: output_data/plots
-      md5: 20b42b9ce0ea63a51f2ba5082886d72c.dir
-      size: 11156129
+      md5: 09ec95083a186cc88e5d84ab950ee2f6.dir
+      size: 10661898
       nfiles: 50
