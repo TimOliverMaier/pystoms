@@ -23,6 +23,7 @@ stages:
     - output_data/plot_metrics/metrics_plot_dict.json
     - output_data/plot_metrics/divergencies.json
     - output_data/plot_metrics/sampling_times.json
+    - output_data/plot_metrics/loo.json
 plots:
   histogram_ar:
     title: "Histogram of Acceptance Probabilities"
@@ -46,3 +47,11 @@ plots:
     y:
       output_data/plot_metrics/sampling_times.json: "sampling_time"
     template: pipelines/pipe_A/plot_templates/histogram_template.json
+  bar_loo:
+    title: "ELPD comparison"
+    x: feature_id
+    x_label: Feature ID
+    y: 
+      output_data/plot_metrics/loo.json: elpd
+    y_label: ELPD
+    template: pipelines/pipe_A/plot_templates/bar_template.json

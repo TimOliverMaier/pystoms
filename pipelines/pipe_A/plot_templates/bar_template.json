@@ -7,12 +7,12 @@
     "width": 300,
     "height": 300,
     "mark": {
-        "type": "mark"
+        "type": "bar"
     },
     "encoding": {
         "x": {
             "field": "<DVC_METRIC_X>",
-            "type": "quantitative",
+            "type": "nominal",
             "title": "<DVC_METRIC_X_LABEL>"
         },
         "y": {

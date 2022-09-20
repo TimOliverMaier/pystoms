@@ -2,6 +2,7 @@ import os
 from random import random
 import yaml
 import json
+import arviz as az
 from proteolizarddata.data import PyTimsDataHandleDDA
 from pystoms.aligned_feature_data import AlignedFeatureData
 from numpy.random import default_rng
@@ -43,6 +44,7 @@ metrics_dictionary = {}
 metrics_plot_list = []
 divergencies_list =  []
 sampling_times = []
+loo_list = []
 for feature_id in feature_ids:
     try:
         aligned_features = AlignedFeatureData(
@@ -83,6 +85,12 @@ for feature_id in feature_ids:
     divergencies_list.append({"feature_id":str(feature_id),"divergencies":feature_dictionary["divergences"]})
     sampling_times.append({"feature_id":str(feature_id),"sampling_time":sampling_time})
     
+    elpd_data = az.loo(model_trace).to_dict()
+    loo_list.append({"feature_id":str(feature_id),
+                     "elpd":elpd_data["loo"],
+                     "se": elpd_data["loo_se"],
+                     "shape_warn": elpd_data["warning"]})
+
 with open(f"{metrics_path}/metrics.json", "w") as json_file:
     jf = json.dumps(metrics_dictionary,indent=4)
     json_file.write(jf)
@@ -99,5 +107,10 @@ with open(f"{plot_metrics_path}/divergencies.json","w") as json_file:
 with open(f"{plot_metrics_path}/sampling_times.json","w") as json_file:
     jf = json.dumps({
         "times": sampling_times
+    },indent=4)
+    json_file.write(jf)
+with open(f"{plot_metrics_path}/loo.json","w") as json_file:
+    jf = json.dumps({
+        "loo": loo_list
     },indent=4)
     json_file.write(jf)
