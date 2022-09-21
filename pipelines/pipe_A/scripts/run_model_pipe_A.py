@@ -110,22 +110,22 @@ with open(f"{metrics_path}/metrics.json", "w") as json_file:
 with open(f"{plot_metrics_path}/metrics_plot_dict.json","w") as json_file:
     jf = json.dumps({
         "plot_metrics": metrics_plot_list
-    },indent=4)
+    }, indent=4)
     json_file.write(jf)
 with open(f"{plot_metrics_path}/divergencies.json","w") as json_file:
     jf = json.dumps({
         "divs": divergencies_list
-    },indent=4)
+    }, indent=4)
     json_file.write(jf)
 with open(f"{plot_metrics_path}/sampling_times.json","w") as json_file:
     jf = json.dumps({
         "times": sampling_times
-    },indent=4)
+    }, indent=4)
     json_file.write(jf)
 with open(f"{plot_metrics_path}/loo.json","w") as json_file:
     jf = json.dumps({
         "loo": loo_list
-    },indent=4)
+    }, indent=4)
     json_file.write(jf)
 with open(f"{metrics_path}/metadata.json","w") as json_file:
     # get pystoms git info
@@ -154,5 +154,5 @@ with open(f"{metrics_path}/metadata.json","w") as json_file:
         },
         "python_env_path":python_interpreter,
         "pymc_stable_version": pymc_stable_version
-    })
+    }, indent=4)
     json_file.write(jf)
