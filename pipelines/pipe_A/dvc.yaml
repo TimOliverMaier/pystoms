@@ -15,7 +15,6 @@ stages:
     - run_model.model_parameters
     plots:
     - output_data/plots
-    - output_data/plotly
     metrics:
     - output_data/metrics/metrics.json
     outs:
@@ -24,6 +23,7 @@ stages:
     - output_data/plot_metrics/divergencies.json
     - output_data/plot_metrics/sampling_times.json
     - output_data/plot_metrics/loo.json
+    - output_data/plotly
 plots:
   histogram_ar:
     title: "Histogram of Acceptance Probabilities"

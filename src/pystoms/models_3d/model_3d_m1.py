@@ -160,7 +160,7 @@ class ModelM1(AbstractModel):
             ).reshape((1, num_features, 1))
             self.model_parameters.setdefault("mz_sigma",10)
             mz_sigma = np.ones((1, num_features, 1), dtype="float") * self.model_parameters["mz_sigma"]
-            self.model_parameters.setdefault("alpha_lam",* 1 / intensity.max(axis=0))
+            self.model_parameters.setdefault("alpha_lam", 1 / intensity.max(axis=0))
             alpha_lam = np.ones((1, num_features), dtype="float") * self.model_parameters["alpha_lam"]
             self.model_parameters.setdefault("me_sigma",10)
             me_sigma = np.ones((1, num_features), dtype="float") * self.model_parameters["me_sigma"]

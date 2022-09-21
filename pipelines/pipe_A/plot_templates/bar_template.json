@@ -23,6 +23,9 @@
                 "zero": false
             }
         },
+        "xOffset":{
+            "field": "rev"
+        },
         "color": {
             "field": "rev",
             "type": "nominal"
