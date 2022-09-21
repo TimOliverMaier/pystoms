@@ -9,13 +9,13 @@ import gitinfo
 from proteolizarddata.data import PyTimsDataHandleDDA
 from pystoms.aligned_feature_data import AlignedFeatureData
 from pystoms.plotting import plot_marginals
+file_path = os.path.dirname(__file__)
 # dependency paths for metadata metrics
-prot_data_path = "../../../../proteolizard-data/"
-prot_algo_path = "../../../../proteolizard-algorithm"
-pymc_path = "../../../../pymc"
+prot_data_path = os.path.join(file_path,"../../../../proteolizard-data/")
+prot_algo_path = os.path.join(file_path,"../../../../proteolizard-algorithm")
+pymc_path = os.path.join(file_path,"../../../../pymc")
 
 # construct output paths
-file_path = os.path.dirname(__file__)
 relative_output_path = "../output_data/"
 output_path = os.path.join(file_path,relative_output_path)
 plot_path = os.path.join(output_path,"plots")
@@ -141,16 +141,16 @@ with open(f"{metrics_path}/metadata.json","w") as json_file:
                 "commit":pystoms_git["commit"]
         },
         "proteolizard-data":{
-                "message":pystoms_git["message"],
-                "commit":pystoms_git["commit"]
+                "message":prot_data_git["message"],
+                "commit":prot_data_git["commit"]
         },
         "proteolizard-algo":{
-                "message":pystoms_git["message"],
-                "commit":pystoms_git["commit"]
+                "message":prot_algo_git["message"],
+                "commit":prot_algo_git["commit"]
         },
         "pymc":{
-                "message":pystoms_git["message"],
-                "commit":pystoms_git["commit"]
+                "message":pymc_git["message"],
+                "commit":pymc_git["commit"]
         },
         "python_env_path":python_interpreter,
         "pymc_stable_version": pymc_stable_version
