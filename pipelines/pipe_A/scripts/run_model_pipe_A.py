@@ -1,12 +1,18 @@
 import os
-from random import random
+import sys
 import yaml
 import json
+import pymc as pm
 import arviz as az
+from numpy.random import default_rng
+import gitinfo
 from proteolizarddata.data import PyTimsDataHandleDDA
 from pystoms.aligned_feature_data import AlignedFeatureData
 from pystoms.plotting import plot_marginals
-from numpy.random import default_rng
+# dependency paths for metadata metrics
+prot_data_path = "../../../../proteolizard-data/"
+prot_algo_path = "../../../../proteolizard-algorithm"
+pymc_path = "../../../../pymc"
 
 # construct output paths
 file_path = os.path.dirname(__file__)
@@ -121,3 +127,31 @@ with open(f"{plot_metrics_path}/loo.json","w") as json_file:
         "loo": loo_list
     },indent=4)
     json_file.write(jf)
+with open(f"{metrics_path}/metadata.json","w") as json_file:
+    # get pystoms git info
+    pystoms_git = gitinfo.get_git_info()
+    prot_data_git = gitinfo.get_git_info(prot_data_path)
+    prot_algo_git = gitinfo.get_git_info(prot_algo_path)
+    pymc_git = gitinfo.get_git_info(pymc_path)
+    python_interpreter = sys.executable
+    pymc_stable_version = pm.__version__
+    jf = json.dumps({
+        "pystoms": {
+                "message":pystoms_git["message"],
+                "commit":pystoms_git["commit"]
+        },
+        "proteolizard-data":{
+                "message":pystoms_git["message"],
+                "commit":pystoms_git["commit"]
+        },
+        "proteolizard-algo":{
+                "message":pystoms_git["message"],
+                "commit":pystoms_git["commit"]
+        },
+        "pymc":{
+                "message":pystoms_git["message"],
+                "commit":pystoms_git["commit"]
+        },
+        "python_env_path":python_interpreter,
+        "pymc_stable_version": pymc_stable_version
+    })

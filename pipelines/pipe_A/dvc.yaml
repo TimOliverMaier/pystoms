@@ -17,6 +17,7 @@ stages:
     - output_data/plots
     metrics:
     - output_data/metrics/metrics.json
+    - output_data/metrics/metadata.json
     outs:
     - output_data/inference_data    
     - output_data/plot_metrics/metrics_plot_dict.json
