@@ -27,3 +27,6 @@ docs/build/
 
 # pytest
 .pytest_cache/
+
+# output of dvc plots
+dvc_plots/
