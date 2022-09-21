@@ -5,6 +5,7 @@ import json
 import arviz as az
 from proteolizarddata.data import PyTimsDataHandleDDA
 from pystoms.aligned_feature_data import AlignedFeatureData
+from pystoms.plotting import plot_marginals
 from numpy.random import default_rng
 
 # construct output paths
@@ -61,6 +62,7 @@ for feature_id in feature_ids:
         model = ModelM2(aligned_features,model_parameters, random_number_generator = rng)
     else:
         raise ValueError("Unknown model name.")
+    # sample posterior
     model_trace, sampling_time = model.evaluation(prior_pred_in=True,
                      prior_pred_out=True,
                      posterior_pred_in=True,
@@ -68,9 +70,14 @@ for feature_id in feature_ids:
                      plots =  ["prior_pred_in","prior_pred_out", "posterior_pred_in","posterior_pred_out"],
                      write_to_file=True,
                      folder_path=plotly_path)
+    # generate png plot files
     model.arviz_plots(path=plot_path)
+    # generate feature plot
+    plot_marginals(aligned_features,plot_path=plot_path)
+    # store recorded traces to files, if desired
     if save_traces:
         model_trace.to_netcdf(f"{idata_path}/{feature_id}_idata.nc")
+    # record plot metrics for dvc plots
     stats = model_trace.sample_stats
     feature_dictionary = {}
     feature_dictionary["divergences"] = int(stats.diverging.values.sum())
@@ -84,7 +91,7 @@ for feature_id in feature_ids:
     metrics_plot_list += [{"feature_id":str(feature_id),"tree_depth":td,"acceptance_rate":ar,"n_steps":ns,"step_size":ss} for (td,ar,ns,ss) in zip(tree_depth,acc_rate,n_steps,step_size) ]
     divergencies_list.append({"feature_id":str(feature_id),"divergencies":feature_dictionary["divergences"]})
     sampling_times.append({"feature_id":str(feature_id),"sampling_time":sampling_time})
-    
+
     elpd_data = az.loo(model_trace).to_dict()
     loo_list.append({"feature_id":str(feature_id),
                      "elpd":elpd_data["loo"],
