@@ -155,3 +155,4 @@ with open(f"{metrics_path}/metadata.json","w") as json_file:
         "python_env_path":python_interpreter,
         "pymc_stable_version": pymc_stable_version
     })
+    json_file.write(jf)
