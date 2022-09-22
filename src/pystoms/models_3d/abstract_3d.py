@@ -482,8 +482,9 @@ class AbstractModel(pm.Model):
                 plt.show()
 
             # posterior predictive lm
-            az.plot_lm(y=idata_sliced.observed_data.obs,
-                       y_hat=idata_sliced.posterior_predictive.obs,
+            idata_feature_sliced = self.idata.isel(feature=idx)
+            az.plot_lm(y=idata_feature_sliced.observed_data.obs,
+                       y_hat=idata_feature_sliced.posterior_predictive.obs,
                        num_samples=500)
             if save_fig:
                 plt.savefig(feature_path + "posterior_predictive_lm.png")
@@ -493,8 +494,8 @@ class AbstractModel(pm.Model):
 
             # prior predictive lm
             fig,ax = plt.subplots(1,1)
-            az.plot_lm(y=idata_sliced.observed_data.obs,
-                       y_hat=idata_sliced.prior_predictive.obs,
+            az.plot_lm(y=idata_feature_sliced.observed_data.obs,
+                       y_hat=idata_feature_sliced.prior_predictive.obs,
                        num_samples=500,
                        legend=False,
                        axes=ax)
