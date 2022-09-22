@@ -506,16 +506,16 @@ class AbstractModel(pm.Model):
             ax.legend(h,l)
             if save_fig:
                 fig.savefig(feature_path + "prior_predictive_lm.png")
-                fig.close()
+                plt.close()
             else:
-                fig.show()
+                plt.show()
 
             az.plot_parallel(idata_sliced,norm_method="minmax")
             if save_fig:
                 fig.savefig(feature_path + "plot_parallel.png")
-                fig.close()
+                plt.close()
             else:
-                fig.show()
+                plt.show()
             
 
 
