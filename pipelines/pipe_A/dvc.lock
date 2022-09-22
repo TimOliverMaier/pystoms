@@ -4,8 +4,8 @@ stages:
     cmd: python scripts/run_model_pipe_A.py
     deps:
     - path: ../../src/
-      md5: 628ecf85eaf3a0a8504311c2212872f9.dir
-      size: 171715
+      md5: f89b214f316d87cc75a13979d3fe9ae0.dir
+      size: 174058
       nfiles: 21
     - path: /home/tim/Workspaces/proteolizard-algorithm/python/
       md5: 35df3aeb4a7f76f43c0008a5181bf3dd.dir
@@ -43,8 +43,8 @@ stages:
       size: 0
       nfiles: 0
     - path: output_data/metrics/metadata.json
-      md5: 4e9000996af83b178f638ea36c094a8a
-      size: 772
+      md5: cc0bfd2e47ba9890f8517d7108b9214b
+      size: 789
     - path: output_data/metrics/metrics.json
       md5: e24df3cb52042fae1451d5f330a413cb
       size: 933
@@ -58,13 +58,13 @@ stages:
       md5: 90956e6e14f817ea38f8d7b83e1110b1
       size: 8305470
     - path: output_data/plot_metrics/sampling_times.json
-      md5: ea13020ab12e9ce82c37326832ee96af
-      size: 1045
+      md5: 118f00b2c574a8949f7ff3d4dd7d4474
+      size: 1044
     - path: output_data/plotly
-      md5: 6224e7de015abaafbba801a359cac20d.dir
-      size: 282819503
+      md5: 7b52aee88a3df9fb4994b823ee397182.dir
+      size: 282827005
       nfiles: 40
     - path: output_data/plots
-      md5: 994d28fae4cd908ade72a3970389c6ff.dir
-      size: 11830806
-      nfiles: 60
+      md5: ba3b37500f55ec81b5cf5c386fb067e2.dir
+      size: 15571114
+      nfiles: 90

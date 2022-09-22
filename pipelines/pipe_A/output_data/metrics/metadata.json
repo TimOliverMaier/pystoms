@@ -1,7 +1,7 @@
 {
     "pystoms": {
-        "message": "ggplot themed plots pipeA",
-        "commit": "891d998658a69f14a030ecf0c691275e9bfa98e4"
+        "message": "bug not saving parallel plot to file fixed",
+        "commit": "c9e076bbded32670b8739d5887bb56106d4563cf"
     },
     "proteolizard-data": {
         "message": "added VectorizedSlice and zero_indexed_tensor return",
