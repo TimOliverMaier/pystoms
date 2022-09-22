@@ -16,7 +16,7 @@
     },
     "encoding": {
         "x": {
-            "bin": true,
+            "bin": {"maxbins":50},
             "field": "<DVC_METRIC_Y>",
             "title": "<DVC_METRIC_Y_LABEL>"
         },

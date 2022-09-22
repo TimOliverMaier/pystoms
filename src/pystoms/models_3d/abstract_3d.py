@@ -481,6 +481,43 @@ class AbstractModel(pm.Model):
             else:
                 plt.show()
 
+            # posterior predictive lm
+            az.plot_lm(y=idata_sliced.observed_data.obs,
+                       y_hat=idata_sliced.posterior_predictive.obs,
+                       num_samples=500)
+            if save_fig:
+                plt.savefig(feature_path + "posterior_predictive_lm.png")
+                plt.close()
+            else:
+                plt.show()
+
+            # prior predictive lm
+            fig,ax = plt.subplots(1,1)
+            az.plot_lm(y=idata_sliced.observed_data.obs,
+                       y_hat=idata_sliced.prior_predictive.obs,
+                       num_samples=500,
+                       legend=False,
+                       axes=ax)
+            h,l = ax.get_legend_handles_labels()
+            for idx,lab in enumerate(l):
+                if lab == "Posterior predictive samples":
+                    l[idx] = "Prior predictive samples"
+            ax.legend(h,l)
+            if save_fig:
+                fig.savefig(feature_path + "prior_predictive_lm.png")
+                fig.close()
+            else:
+                fig.show()
+
+            az.plot_parallel(idata_sliced,norm_method="minmax")
+            if save_fig:
+                fig.savefig(feature_path + "plot_parallel.png")
+                fig.close()
+            else:
+                fig.show()
+            
+
+
     def evaluation(
         self,
         prior_pred_in: bool = True,
