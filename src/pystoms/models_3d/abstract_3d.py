@@ -451,7 +451,7 @@ class AbstractModel(pm.Model):
             else:
                 plt.show()
 
-            az.plot_trace(idata_sliced, var_names)
+            az.plot_trace(idata_sliced, var_names, legend=True, chain_prop={"linestyle": ("solid", "dotted", "dashed", "dashdot"),"color":("black","blue","green","red")})
             if save_fig:
                 plt.tight_layout()
                 plt.savefig(feature_path + "trace.png")
@@ -483,7 +483,7 @@ class AbstractModel(pm.Model):
 
     def evaluation(
         self,
-        prior_pred_in: bool = False,
+        prior_pred_in: bool = True,
         posterior_pred_in: bool = True,
         prior_pred_out: bool = False,
         posterior_pred_out: bool = False,
