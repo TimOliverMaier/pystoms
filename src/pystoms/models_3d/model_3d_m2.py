@@ -59,7 +59,7 @@ class ModelM2(AbstractModel):
 
         feature_ids = features.feature_data.feature.values
         batch_size = len(feature_ids)
-        self.model_parameters = model_parameters
+        self.model_parameters = model_parameters.copy()
         if self.model_parameters is None:
             self.model_parameters = {}
         super().__init__(feature_ids, batch_size, random_number_generator, name, coords=coords)
