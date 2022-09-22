@@ -1,7 +1,7 @@
 {
     "pystoms": {
-        "message": "fix model parameters mutable bug",
-        "commit": "e3f66d53eba6cf0a7aa78fac66acb559f35b2d75"
+        "message": "ggplot themed plots pipeA",
+        "commit": "891d998658a69f14a030ecf0c691275e9bfa98e4"
     },
     "proteolizard-data": {
         "message": "added VectorizedSlice and zero_indexed_tensor return",
