@@ -512,7 +512,7 @@ class AbstractModel(pm.Model):
 
             az.plot_parallel(idata_sliced,norm_method="minmax")
             if save_fig:
-                fig.savefig(feature_path + "plot_parallel.png")
+                plt.savefig(feature_path + "plot_parallel.png")
                 plt.close()
             else:
                 plt.show()
