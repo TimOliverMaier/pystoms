@@ -4,12 +4,14 @@ import yaml
 import json
 import pymc as pm
 import arviz as az
+import matplotlib.pyplot as plt
 from numpy.random import default_rng
 import gitinfo
 from proteolizarddata.data import PyTimsDataHandleDDA
 from pystoms.aligned_feature_data import AlignedFeatureData
 from pystoms.plotting import plot_marginals
 file_path = os.path.dirname(__file__)
+plt.style.use("ggplot")
 # dependency paths for metadata metrics
 prot_data_path = os.path.join(file_path,"../../../../proteolizard-data/")
 prot_algo_path = os.path.join(file_path,"../../../../proteolizard-algorithm")

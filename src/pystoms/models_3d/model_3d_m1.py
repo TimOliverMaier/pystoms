@@ -59,9 +59,9 @@ class ModelM1(AbstractModel):
 
         feature_ids = features.feature_data.feature.values
         batch_size = len(feature_ids)
+        if model_parameters is None:
+            model_parameters = {}
         self.model_parameters = model_parameters.copy()
-        if self.model_parameters is None:
-            self.model_parameters = {}
         super().__init__(feature_ids, batch_size, random_number_generator, name, coords=coords)
         self.setup_mutable_data(features)
         # TODO is there a nicer way to share this between init and setup_mutable_data()

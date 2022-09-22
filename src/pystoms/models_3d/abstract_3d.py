@@ -453,9 +453,11 @@ class AbstractModel(pm.Model):
 
             az.plot_trace(idata_sliced, var_names)
             if save_fig:
+                plt.tight_layout()
                 plt.savefig(feature_path + "trace.png")
                 plt.close()
             else:
+                plt.tight_layout()
                 plt.show()
 
             az.plot_pair(idata_sliced, var_names=var_names)
