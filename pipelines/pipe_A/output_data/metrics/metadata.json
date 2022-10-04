@@ -1,7 +1,7 @@
 {
     "pystoms": {
-        "message": "bug not saving parallel plot to file fixed",
-        "commit": "c9e076bbded32670b8739d5887bb56106d4563cf"
+        "message": "new model 3d M3\n1. New 3D model M3 with model error exp distributed    and more informative prior on monoiso mass.2. pipe_A else if case for 3D model M3",
+        "commit": "cfb6ec937b64babfda4ec7eda8c98b07e6199557"
     },
     "proteolizard-data": {
         "message": "added VectorizedSlice and zero_indexed_tensor return",

@@ -4,9 +4,9 @@ stages:
     cmd: python scripts/run_model_pipe_A.py
     deps:
     - path: ../../src/
-      md5: f89b214f316d87cc75a13979d3fe9ae0.dir
-      size: 174058
-      nfiles: 21
+      md5: 2a052131fb849e897f0d4edb15b90689.dir
+      size: 197930
+      nfiles: 23
     - path: /home/tim/Workspaces/proteolizard-algorithm/python/
       md5: 35df3aeb4a7f76f43c0008a5181bf3dd.dir
       size: 361127
@@ -16,8 +16,8 @@ stages:
       size: 778912
       nfiles: 10
     - path: scripts/run_model_pipe_A.py
-      md5: 3aa941262c611f0ab15cd5fd81488a49
-      size: 6375
+      md5: 9784dd5d56a4c3384253c7996aff3451
+      size: 6552
     params:
       params.yaml:
         run_model.data_path: /home/tim/Workspaces/MassSpecDaten/M210115_001_Slot1-1_1_850.d
@@ -32,7 +32,7 @@ stages:
         - 7089
         - 10021
         - 1072
-        run_model.model_name: M1
+        run_model.model_name: M3
         run_model.model_parameters:
           mz_s_scale: 0.1
         run_model.random_seed: 2022
@@ -43,28 +43,28 @@ stages:
       size: 0
       nfiles: 0
     - path: output_data/metrics/metadata.json
-      md5: cc0bfd2e47ba9890f8517d7108b9214b
-      size: 789
+      md5: b09363124691c7bd62415c5599e05046
+      size: 900
     - path: output_data/metrics/metrics.json
-      md5: e24df3cb52042fae1451d5f330a413cb
-      size: 933
+      md5: 28db4e847960428f6e50f442657629d8
+      size: 931
     - path: output_data/plot_metrics/divergencies.json
-      md5: 03c60c9e6004145cf47c9c88fbbedd2d
-      size: 875
+      md5: a4db6c9f22e51bf4e8ad92bb80edef4e
+      size: 874
     - path: output_data/plot_metrics/loo.json
-      md5: 9a3f80c17530b3184611a1fc642ae3e3
-      size: 1658
+      md5: 9d959b7b3828f6d84828e43ae91605b1
+      size: 1659
     - path: output_data/plot_metrics/metrics_plot_dict.json
-      md5: 90956e6e14f817ea38f8d7b83e1110b1
-      size: 8305470
+      md5: 04515300f7070d346df46bc83b53b7aa
+      size: 8301908
     - path: output_data/plot_metrics/sampling_times.json
-      md5: 118f00b2c574a8949f7ff3d4dd7d4474
-      size: 1044
+      md5: 4db348a25d2bb1b17c9102cd20b38b46
+      size: 1042
     - path: output_data/plotly
-      md5: 7b52aee88a3df9fb4994b823ee397182.dir
-      size: 282827005
+      md5: 3a17e28a3efd4023c02a8dd934662208.dir
+      size: 283512016
       nfiles: 40
     - path: output_data/plots
-      md5: ba3b37500f55ec81b5cf5c386fb067e2.dir
-      size: 15571114
+      md5: c9981246d569967f5e6e732b71857234.dir
+      size: 15601811
       nfiles: 90
