@@ -68,6 +68,9 @@ for feature_id in feature_ids:
     elif model_name == "M2":
         from pystoms.models_3d.model_3d_m2 import ModelM2
         model = ModelM2(aligned_features,model_parameters, random_number_generator = rng)
+    elif model_name == "M3":
+        from pystoms.models_3d.model_3d_m3 import ModelM3
+        model = ModelM3(aligned_features,model_parameters, random_number_generator = rng)
     else:
         raise ValueError("Unknown model name.")
     # sample posterior
