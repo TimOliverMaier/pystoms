@@ -57,7 +57,8 @@ class AbstractModel(pm.Model):
         coords: Optional[dict[str, ArrayLike]] = None,
     ) -> None:
         # name and model must be passed to pm.Model
-        coords = {}
+        if coords is None:
+            coords = {}
         coords.setdefault("feature", feature_ids)
         super().__init__(name, coords=coords)
         # instantiate inference data
@@ -570,7 +571,7 @@ class AbstractModel(pm.Model):
         end_sampling = time()
 
         if pred_name_list is None:
-            pred_name_list = ["obs"]
+            pred_name_list = ["obs","mu"]
 
         if plots is None:
             # make 'in' operator available for plots
@@ -578,6 +579,7 @@ class AbstractModel(pm.Model):
 
         if prior_pred_in:
             # prior predictive analysis in-sample
+            # here var_names = None, otherwise prior group will use variables
             self._sample_predictive(is_prior=True)
             if "prior_pred_in" in plots:
                 for pred_name in pred_name_list:
@@ -586,7 +588,7 @@ class AbstractModel(pm.Model):
 
         if prior_pred_out:
             # prior predictive analysis out-of-sample
-            self._sample_predictive(is_prior=True, is_grid_predictive=True)
+            self._sample_predictive(is_prior=True, is_grid_predictive=True, var_names=pred_name_list)
             if "prior_pred_out" in plots:
                 for pred_name in pred_name_list:
                     plot_kwargs["pred_name"] = pred_name
@@ -596,7 +598,7 @@ class AbstractModel(pm.Model):
 
         if posterior_pred_in:
             # posterior predictive analysis in-sample
-            self._sample_predictive(progressbar=progressbar)
+            self._sample_predictive(progressbar=progressbar, var_names=pred_name_list)
             if "posterior_pred_in" in plots:
                 for pred_name in pred_name_list:
                     plot_kwargs["pred_name"] = pred_name
@@ -604,7 +606,7 @@ class AbstractModel(pm.Model):
 
         if posterior_pred_out:
             # posterior predictive analysis out-of-sample
-            self._sample_predictive(is_grid_predictive=True, progressbar=progressbar)
+            self._sample_predictive(is_grid_predictive=True, progressbar=progressbar, var_names=pred_name_list)
             if "posterior_pred_out" in plots:
                 for pred_name in pred_name_list:
                     plot_kwargs["pred_name"] = pred_name
