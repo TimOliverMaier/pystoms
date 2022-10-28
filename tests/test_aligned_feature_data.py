@@ -1,13 +1,10 @@
 import numpy as np
 import os
 from pystoms.aligned_feature_data import AlignedFeatureData
-from pystoms.models_3d.model_3d_m1 import ModelM1
 from proteolizarddata.data import PyTimsDataHandleDDA
-from numpy.random import MT19937
-from numpy.random import RandomState, SeedSequence
 from xarray import Dataset
 
-rs = RandomState(MT19937(SeedSequence(123456789)))
+rng = np.random.default_rng(2022)
 file_path = os.path.dirname(__file__)
 rel_data_path = "../../MassSpecDaten/M210115_001_Slot1-1_1_850.d/"
 data_path = os.path.join(file_path, rel_data_path)
