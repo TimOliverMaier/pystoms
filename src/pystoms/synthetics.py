@@ -34,7 +34,7 @@ class Isotopic_Averagine_Distribution(rv_continuous):
 
     """
 
-    def __init__(self, averagine_style):
+    def __init__(self, averagine_style:str ="averagine"):
         super().__init__()
         self.averagine_style = averagine_style
 
