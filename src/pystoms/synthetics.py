@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 from scipy.stats import exponnorm, norm, rv_continuous
 import pandas as pd
 import os
+from typing import Union,Optional
 
 
 class Isotopic_Averagine_Distribution(rv_continuous):
@@ -117,12 +118,14 @@ class Isotopic_Averagine_Distribution(rv_continuous):
         samples from normal distribution of the given component.
 
         Args:
-            mass : _description_
-            charge : _description_
-            sigma : _description_
-            num_peaks : _description_
-            size : _description_. Defaults to None.
-            random_state : _description_. Defaults to None.
+            mass: Monoisotopic mass of the peptide [Da].
+            charge: Charge of peptide.
+            sigma: Standard deviation of gauss bells.
+            num_peaks: Number of peaks to consider.
+            size : Sample Size. Defaults to None.
+                If None, size is set to `(1,)`
+            random_state : e.g. numpy random number generator. Defaults to None.
+                If None, random_state is set to `self.random_state`
 
         Returns:
             np.ndarray[float]: Samples from distribution.
@@ -134,18 +137,123 @@ class Isotopic_Averagine_Distribution(rv_continuous):
             >>> print(y)
             [301.19520469 301.07622945 301.18164187 301.22961325 301.05343757]
         """
+        if len(size) == 0 or size == None:
+            size = (1,)
+        if random_state==None:
+            random_state = self.random_state
+
         us = random_state.uniform(size=size)
         devs = random_state.normal(scale=sigma,size=size)
         weights = self._averagine_isotopic(mass,num_peaks).cumsum()
+
         def _get_component(u:float,weights_cum_sum:ArrayLike=weights) -> int:
             for idx,weight_sum in enumerate(weights_cum_sum):
                 if u < weight_sum:
                     return idx
+
         comps = np.zeros_like(us)
         for idx,u in enumerate(us):
             comps[idx] = _get_component(u)
         values = comps/charge+devs
         return values
+
+    def rvs_to_intensities(self,
+                           loc:float,
+                           mass:float,
+                           charge:int,
+                           sigma:float,
+                           num_peaks:int,
+                           bin_width:float,
+                           signal_per_molecule:float=1,
+                           detection_limit:float=0,
+                           size:int=1000,
+                           random_state:np.random.RandomState=None,
+                           full_return:bool = False) -> Union[tuple[list[list[float]],list[tuple[float]],list[float]],tuple[list[float],list[float]]]:
+        """Simulates (m/z, intensity) data.
+
+            The method draws `size` samples from `.rvs()` and bins theses samples based on `bin_width`.
+            Each sample is considered a single molecule that contributes `signal_per_molecule` arbitrary units
+            to intensity of it's bin.
+
+        Args:
+            loc (float): Mass to charge ratio of monoisotopic peak.
+            mass (float): Mass of monoisotopic peak.
+            charge (int): Charge of peptide.
+            sigma (float): Standard deviation of gauss bells.
+            num_peaks (int): Number of (isotopic) peaks to consider.
+            bin_width (float): Size of bins that are reduced to an intensity.
+            signal_per_molecule (float, optional): Number of added arbitrary units to intensity per molecule.
+                Defaults to 1.
+            detection_limit (float, optional): Minimal intensity that can be detected.
+                Defaults to 0.
+            size (int, optional): Sample Size. Defaults to 1000.
+            random_state (Optional[np.random.RandomState],optional) : e.g. numpy random number generator. Defaults to None.
+                If None, random_state is set to `self.random_state`
+            full_return (bool, optional): Wether to return list of bins and list of bin's start and end values.
+                Defaults to False.
+
+        Returns:
+            Union[tuple[list[list[float]],list[tuple[float]],list[float]],tuple[list[float],list[float]]]: If `full_return` is set to true
+                tuple of three lists is returned: `bins`, `bins_start_end` and `bins_intensities`. `bins` is a list of bins that are themselves
+                lists with sampled mass-to-charge ratios. `bins_intensities` is a list of the calculated intensity of each bin and `bins_start_end` stores
+                the bins mass-to-charge ratio boundaries as tuple `[begin,end)`.
+
+                If `full_return` is set to false, a list of the bin's positions (mean of start and end) together with the list of
+                calculated intensities is returned.
+        """
+        samples_mz = self.rvs(loc=loc, mass=mass, charge=charge, sigma=sigma, num_peaks=num_peaks, size=size, random_state=random_state)
+        samples_mz.sort()
+
+        bins = []
+        s_idx = 0
+        current_bin_start = samples_mz[s_idx]
+        current_bin_end = current_bin_start+bin_width
+        bins_start_end = []
+        bins_position = []
+        current_bin_intensity = 0
+        bins_intensities = []
+        current_bin = []
+
+        while s_idx < size:
+            s = samples_mz[s_idx]
+            while s < current_bin_end:
+                # append sample to currently open bin
+                current_bin.append(s)
+                current_bin_intensity += signal_per_molecule
+
+                # advance
+                s_idx += 1
+                if s_idx < size:
+                    s = samples_mz[s_idx]
+                    continue
+                else:
+                    break
+            # store
+            if current_bin_intensity >= detection_limit:
+                bins.append(current_bin.copy())
+                bins_start_end.append((current_bin_start,current_bin_end))
+                bins_position.append((current_bin_start+current_bin_end)/2)
+                current_bin.append(s)
+                bins_intensities.append(current_bin_intensity)
+
+            else:
+                # no recording, intensity too low
+                pass
+
+            # reset
+            current_bin.clear()
+            current_bin_start = s
+            current_bin_end = current_bin_start + bin_width
+            current_bin_intensity = 0
+            current_bin_intensity += signal_per_molecule
+
+            # advance
+            s_idx += 1
+
+        if full_return:
+            return (bins,bins_start_end,bins_intensities)
+        else:
+            return (np.array(bins_position),np.array(bins_intensities))
 
     @staticmethod
     def _averagine_isotopic(mass: np.ndarray, num_peaks: int):
