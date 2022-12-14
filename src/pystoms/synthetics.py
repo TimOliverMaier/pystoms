@@ -168,7 +168,7 @@ class Isotopic_Averagine_Distribution(rv_continuous):
                            detection_limit:float=0,
                            size:int=1000,
                            random_state:np.random.RandomState=None,
-                           full_return:bool = False) -> Union[tuple[list[list[float]],list[tuple[float]],list[float]],tuple[list[float],list[float]]]:
+                           full_return:bool = False) -> Union[tuple[list[list[float]],list[tuple[float]],list[float]],tuple[np.ndarray[float],np.ndarray[float]]]:
         """Simulates (m/z, intensity) data.
 
             The method draws `size` samples from `.rvs()` and bins theses samples based on `bin_width`.
@@ -193,12 +193,12 @@ class Isotopic_Averagine_Distribution(rv_continuous):
                 Defaults to False.
 
         Returns:
-            Union[tuple[list[list[float]],list[tuple[float]],list[float]],tuple[list[float],list[float]]]: If `full_return` is set to true
+            Union[tuple[list[list[float]],list[tuple[float]],list[float]],tuple[np.ndarray[float],np.ndarray[float]]]: If `full_return` is set to true
                 tuple of three lists is returned: `bins`, `bins_start_end` and `bins_intensities`. `bins` is a list of bins that are themselves
                 lists with sampled mass-to-charge ratios. `bins_intensities` is a list of the calculated intensity of each bin and `bins_start_end` stores
                 the bins mass-to-charge ratio boundaries as tuple `[begin,end)`.
 
-                If `full_return` is set to false, a list of the bin's positions (mean of start and end) together with the list of
+                If `full_return` is set to false (default), a numpy array of the bin's positions (mean of start and end) together with the a numpy array of
                 calculated intensities is returned.
         """
         samples_mz = self.rvs(loc=loc, mass=mass, charge=charge, sigma=sigma, num_peaks=num_peaks, size=size, random_state=random_state)
