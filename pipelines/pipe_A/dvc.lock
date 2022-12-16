@@ -1,0 +1,70 @@
+schema: '2.0'
+stages:
+  run_model:
+    cmd: python scripts/run_model_pipe_A.py
+    deps:
+    - path: ../../src/
+      md5: 2a052131fb849e897f0d4edb15b90689.dir
+      size: 197930
+      nfiles: 23
+    - path: /home/tim/Workspaces/proteolizard-algorithm/python/
+      md5: 35df3aeb4a7f76f43c0008a5181bf3dd.dir
+      size: 361127
+      nfiles: 19
+    - path: /home/tim/Workspaces/proteolizard-data/python/
+      md5: 7b673cd05765ec8c854e48685a36427b.dir
+      size: 778912
+      nfiles: 10
+    - path: scripts/run_model_pipe_A.py
+      md5: 9784dd5d56a4c3384253c7996aff3451
+      size: 6552
+    params:
+      params.yaml:
+        run_model.data_path: /home/tim/Workspaces/MassSpecDaten/M210115_001_Slot1-1_1_850.d
+        run_model.feature_ids:
+        - 2015
+        - 329
+        - 2300
+        - 3022
+        - 200
+        - 6543
+        - 4289
+        - 7089
+        - 10021
+        - 1072
+        run_model.model_name: M3
+        run_model.model_parameters:
+          mz_s_scale: 0.1
+        run_model.random_seed: 2022
+        run_model.save_traces: false
+    outs:
+    - path: output_data/inference_data
+      md5: d751713988987e9331980363e24189ce.dir
+      size: 0
+      nfiles: 0
+    - path: output_data/metrics/metadata.json
+      md5: b09363124691c7bd62415c5599e05046
+      size: 900
+    - path: output_data/metrics/metrics.json
+      md5: 28db4e847960428f6e50f442657629d8
+      size: 931
+    - path: output_data/plot_metrics/divergencies.json
+      md5: a4db6c9f22e51bf4e8ad92bb80edef4e
+      size: 874
+    - path: output_data/plot_metrics/loo.json
+      md5: 9d959b7b3828f6d84828e43ae91605b1
+      size: 1659
+    - path: output_data/plot_metrics/metrics_plot_dict.json
+      md5: 04515300f7070d346df46bc83b53b7aa
+      size: 8301908
+    - path: output_data/plot_metrics/sampling_times.json
+      md5: 4db348a25d2bb1b17c9102cd20b38b46
+      size: 1042
+    - path: output_data/plotly
+      md5: 3a17e28a3efd4023c02a8dd934662208.dir
+      size: 283512016
+      nfiles: 40
+    - path: output_data/plots
+      md5: c9981246d569967f5e6e732b71857234.dir
+      size: 15601811
+      nfiles: 90

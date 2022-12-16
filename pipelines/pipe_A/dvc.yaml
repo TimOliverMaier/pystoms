@@ -1,0 +1,59 @@
+stages:
+  run_model:
+    cmd: python scripts/run_model_pipe_A.py
+    deps:
+    - ../../src/
+    - /home/tim/Workspaces/proteolizard-algorithm/python/
+    - /home/tim/Workspaces/proteolizard-data/python/
+    - scripts/run_model_pipe_A.py
+    params:
+    - run_model.data_path
+    - run_model.feature_ids
+    - run_model.model_name
+    - run_model.save_traces
+    - run_model.random_seed
+    - run_model.model_parameters
+    plots:
+    - output_data/plots
+    metrics:
+    - output_data/metrics/metrics.json
+    - output_data/metrics/metadata.json:
+        cache: false
+    outs:
+    - output_data/inference_data    
+    - output_data/plot_metrics/metrics_plot_dict.json
+    - output_data/plot_metrics/divergencies.json
+    - output_data/plot_metrics/sampling_times.json
+    - output_data/plot_metrics/loo.json
+    - output_data/plotly
+plots:
+  histogram_ar:
+    title: "Histogram of Acceptance Probabilities"
+    y:  
+      output_data/plot_metrics/metrics_plot_dict.json: acceptance_rate
+    y_label: Acceptance Probability
+    template: pipelines/pipe_A/plot_templates/histogram_template.json
+  histogram_ns:
+    title: "Histogram of Number of Leap Frog Steps"
+    y:  
+      output_data/plot_metrics/metrics_plot_dict.json: n_steps
+    y_label: n
+    template: pipelines/pipe_A/plot_templates/histogram_template.json
+  historgram_div:
+    title: "Histogram of Divergencies"
+    y: 
+      output_data/plot_metrics/divergencies.json: divergencies
+    template: pipelines/pipe_A/plot_templates/histogram_template.json
+  histogram_st:
+    title: "Histogram of Sampling Times"
+    y:
+      output_data/plot_metrics/sampling_times.json: "sampling_time"
+    template: pipelines/pipe_A/plot_templates/histogram_template.json
+  bar_loo:
+    title: "ELPD comparison"
+    x: feature_id
+    x_label: Feature ID
+    y: 
+      output_data/plot_metrics/loo.json: elpd
+    y_label: ELPD
+    template: pipelines/pipe_A/plot_templates/bar_template.json

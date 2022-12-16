@@ -1,7 +1,6 @@
-# egg-info, toml is created when pip building
+# egg-info
 
 /src/pystoms.egg-info/
-*.toml
 # pycache folders
 
 __pycache__
@@ -28,3 +27,6 @@ docs_src/_build/
 
 # pytest
 .pytest_cache/
+
+# output of dvc plots
+dvc_plots/

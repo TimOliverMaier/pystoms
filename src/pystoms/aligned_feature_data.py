@@ -8,8 +8,6 @@ import numpy as np
 import numpy.typing as npt
 from proteolizarddata.data import PyTimsDataHandleDDA
 from proteolizardalgo.feature_loader_dda import FeatureLoaderDDA
-from pystoms.models_3d.models_glm import ModelGLM3D
-
 
 # typing
 NDArrayFloat = npt.NDArray[np.float64]
@@ -115,70 +113,3 @@ class AlignedFeatureData:
         )
 
         return (s, mz, i)
-
-    def generate_model(
-        self, num_isotopic_peaks: int = 6, standardize: bool = False
-    ) -> ModelGLM3D:
-        """Generate 3D GLM model from 'feature_data'
-
-        Args:
-            num_isotopic_peaks (int, optional): Number of isotopic peaks
-                (MI inclusive) to consider. Defaults to 6.
-            standardize (bool, optional): Wether to standardize data.
-                Defaults to False.
-
-        Returns:
-            ModelGLM3D: pystoms 3D GLM model
-        """
-        # get dimensions
-        dataset = self.feature_data
-        num_features = dataset.dims["feature"]
-        num_data_points = dataset.dims["data_point"]
-        # get observed data
-        scans = dataset.Scan.values
-        intensities = dataset.Intensity.values
-        mzs = dataset.Mz.values.reshape((num_data_points, num_features, 1))
-        charges = dataset.Charge.values
-        feature_ids = dataset.feature.values
-        # hyper priors
-        if standardize:
-            pass
-        else:
-            # reshape is necessary here, because average deletes first
-            # dimension
-            ims_mu = np.average(scans, axis=0, weights=intensities).reshape(
-                (1, num_features)
-            )
-            ims_sigma_max = np.max(scans, axis=0) - np.min(scans, axis=0).reshape(
-                (1, num_features)
-            )
-            mz_mu = np.average(
-                mzs.reshape((num_data_points, num_features)),
-                axis=0,
-                weights=intensities,
-            ).reshape((1, num_features, 1))
-            mz_sigma = np.ones((1, num_features, 1), dtype="float") * 10
-            alpha_lam = (
-                np.ones((1, num_features), dtype="float") * 1 / intensities.max(axis=0)
-            )
-            model_error = np.ones((1, num_features), dtype="float") * 10
-            z = np.array(charges).reshape((1, num_features, 1))
-            mzs_tile = np.tile(mzs, (1, 1, num_isotopic_peaks))
-            peaks = np.arange(num_isotopic_peaks)
-            peaks = peaks.reshape((1, 1, num_isotopic_peaks))
-            peaks_tile = np.tile(peaks, (num_data_points, num_features, 1))
-
-        return ModelGLM3D(
-            z,
-            feature_ids,
-            intensities,
-            scans,
-            mzs_tile,
-            peaks_tile,
-            ims_mu,
-            ims_sigma_max,
-            mz_mu,
-            mz_sigma,
-            alpha_lam,
-            model_error,
-        )

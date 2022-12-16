@@ -1,0 +1,20 @@
+{
+    "pystoms": {
+        "message": "new model 3d M3\n1. New 3D model M3 with model error exp distributed    and more informative prior on monoiso mass.2. pipe_A else if case for 3D model M3",
+        "commit": "cfb6ec937b64babfda4ec7eda8c98b07e6199557"
+    },
+    "proteolizard-data": {
+        "message": "added VectorizedSlice and zero_indexed_tensor return",
+        "commit": "b54c1a97e6ddfa16922377175885eaded63fdf3d"
+    },
+    "proteolizard-algo": {
+        "message": "Merge pull request #5 from TimOliverMaier/read_requirements_from_file\nread requirements from txt file",
+        "commit": "dfe2f620b5b41bc8f8c2ca0f23df5e6ea3977c02"
+    },
+    "pymc": {
+        "message": "Enable dist API for DensityDist",
+        "commit": "6804c96cf2039780e167328d7476dc92f043554f"
+    },
+    "python_env_path": "/home/tim/miniconda3/envs/pymc_stable/bin/python",
+    "pymc_stable_version": "4.1.7"
+}

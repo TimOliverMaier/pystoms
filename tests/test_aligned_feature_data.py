@@ -1,12 +1,13 @@
 import numpy as np
+import os
 from pystoms.aligned_feature_data import AlignedFeatureData
-from pystoms.models_3d.models_glm import ModelGLM3D
 from proteolizarddata.data import PyTimsDataHandleDDA
+from xarray import Dataset
 
-import pytest
-
-# PARAMETERS
-data_path = "/home/tim/Master/MassSpecDaten/M210115_001_Slot1-1_1_850.d/"
+rng = np.random.default_rng(2022)
+file_path = os.path.dirname(__file__)
+rel_data_path = "../../MassSpecDaten/M210115_001_Slot1-1_1_850.d/"
+data_path = os.path.join(file_path, rel_data_path)
 data_handle = PyTimsDataHandleDDA(data_path)
 total_features = 2
 feature_ids = np.random.random_integers(1000, 4000, size=total_features)
@@ -18,5 +19,4 @@ class TestAlignedFeatureData:
         aligned_features = AlignedFeatureData(
             data_handle, ids=feature_ids, is_parallel=True
         )
-        model = aligned_features.generate_model()
-        assert isinstance(model, ModelGLM3D)
+        assert isinstance(aligned_features.feature_data, Dataset)

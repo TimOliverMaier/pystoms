@@ -2,7 +2,6 @@
 format using cloudpickle"""
 import numpy as np
 from pystoms.aligned_feature_data import AlignedFeatureData
-from pystoms.models_3d.models_glm import ModelGLM3D
 from proteolizarddata.data import PyTimsDataHandleDDA
 import cloudpickle
 
