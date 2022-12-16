@@ -327,6 +327,7 @@ class SyntheticPeptideFeature:
 
     Elution curve column can be discarded to yield typical 3D
     format. Intensity is calculated by function :math:`I(rt,mz)`:
+
     .. math::
 
         I(rt,mz) &= (EMG(rt)+X_{EMG})*(IAD(mz)+X_{IAD})
