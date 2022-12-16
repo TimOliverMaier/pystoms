@@ -2,49 +2,49 @@
 <html class="no-js" lang="en">
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
-    <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+    <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 <link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" /><link rel="prev" title="Week 10" href="../week10/week10.html" />
 
-    <meta name="generator" content="sphinx-5.0.2, furo 2022.06.21"/>
+    <!-- Generated with Sphinx 5.3.0 and Furo 2022.12.07 -->
         <title>Week 9 - PystoMS v0.1</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?digest=40978830699223671f4072448e654b5958f38b89" />
+    <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?digest=91d0f0d1c444bdcb17a68e833c7a53903343c195" />
     <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery-binder.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery-dataframe.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/sg_gallery-rendered-html.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo-extensions.css?digest=30d1aed668e5c3a91c3e3bf6a60b675221979f0e" />
-
-
+    
+    
 
 
 <style>
   body {
     --color-code-background: #f8f8f8;
   --color-code-foreground: black;
-
+  
   }
   @media not print {
     body[data-theme="dark"] {
       --color-code-background: #202020;
   --color-code-foreground: #d0d0d0;
-
+  
     }
     @media (prefers-color-scheme: dark) {
       body:not([data-theme="light"]) {
         --color-code-background: #202020;
   --color-code-foreground: #d0d0d0;
-
+  
       }
     }
   }
 </style></head>
   <body>
-
+    
     <script>
       document.body.dataset.theme = localStorage.getItem("theme") || "auto";
     </script>
-
+    
 
 <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
   <symbol id="svg-toc" viewBox="0 0 24 24">
@@ -146,27 +146,24 @@
   </header>
   <aside class="sidebar-drawer">
     <div class="sidebar-container">
-
+      
       <div class="sidebar-sticky"><a class="sidebar-brand centered" href="../../index.html">
-
+  
   <div class="sidebar-logo-container">
     <img class="sidebar-logo" src="../../_static/pystomsLogo.png" alt="Logo"/>
   </div>
-
+  
   <span class="sidebar-brand-text">PystoMS v0.1</span>
-
+  
 </a><form class="sidebar-search-container" method="get" action="../../search.html" role="search">
-  <input class="sidebar-search" placeholder=Search name="q" aria-label="Search">
+  <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
   <input type="hidden" name="check_keywords" value="yes">
   <input type="hidden" name="area" value="default">
 </form>
 <div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
   <p class="caption" role="heading"><span class="caption-text">Documentation:</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../pystoms/DDAFeatureLoader.html">DDA Feature Loader</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../pystoms/GLM.html">3D Model</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../pystoms/clustering.html">Clustering</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../pystoms/googleTest.html">Google-Test</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../pystoms/models.html">2D Models</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../pystoms/synthetics.html">Generate Synthetic Data</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../pystoms/utilities.html">Handling many instances of feature data</a></li>
@@ -181,7 +178,7 @@
 </div>
 
       </div>
-
+      
     </div>
   </aside>
   <div class="main">
@@ -194,7 +191,8 @@
           <span>Back to top</span>
         </a>
         <div class="content-icon-container">
-          <div class="theme-toggle-container theme-toggle-content">
+          
+<div class="theme-toggle-container theme-toggle-content">
             <button class="theme-toggle">
               <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
               <svg class="theme-icon-when-auto"><use href="#svg-sun-half"></use></svg>
@@ -208,7 +206,7 @@
           </label>
         </div>
         <article role="main">
-
+          
 <style>
 /* CSS for nbsphinx extension */
 
@@ -318,10 +316,11 @@ div.nboutput.container div.prompt > div {
     }
 }
 
-/* disable scrollbars on prompts */
+/* disable scrollbars and line breaks on prompts */
 div.nbinput.container div.prompt pre,
 div.nboutput.container div.prompt pre {
     overflow: hidden;
+    white-space: pre;
 }
 
 /* input/output area */
@@ -486,14 +485,14 @@ implemented a jax backend making it possible to run the No-U-Turn Sampler (NUTS)
 </div><hr class="docutils" />
 <p>After developing on methods for feature extraction from data-dependent-acquisition datasets, the next step in a prototype framework for a bayesian precursor feature analysis is the data transfer to the model. Regarding model parameters as probabilistic entities that cannot be displayes as single values, but need to be described by their underlying probability distribution is one of the key features of bayesian statistics is. However, this produces typical long runtimes for bayesian statistical
 analyses. But since the evaluation of two datasets, e.g. peptide feature data, can be performed independently, parallelization might help overcome this drawback. We need to keep in mind here, that the evaluation of a single feature necessarily gives rise to multiple threads corresponding to the number of chains used for convergence control <span id="id1">[<a class="reference internal" href="#id10" title="Andrew Gelman and Donald B. Rubin. Inference from Iterative Simulation Using Multiple Sequences. Statistical Science, 7(4):457 – 472, 1992. URL: https://doi.org/10.1214/ss/1177011136, doi:10.1214/ss/1177011136.">1</a>]</span>. It is thereby obvious that running multiple feature evaluations parallely - each running e.g. 4 chains parallely - quickly pushes the
-typical workstation CPU to it’s limits. However graphical processing units (GPU) might be of help here, since they employ a significant higher number of processing cores (e.g. The here used Nvidia Geforce GTX 1080Ti employing 3584 CUDA cores <span id="id2">[<a class="reference internal" href="#id11" title="\url https://www.nvidia.com/en-sg/geforce/products/10series/geforce-gtx-1080-ti/.">2</a>]</span>). Fitting many models at once on a GPU might speed up the sampling process signifincantly.</p>
+typical workstation CPU to it’s limits. However graphical processing units (GPU) might be of help here, since they employ a significant higher number of processing cores (e.g. The here used Nvidia Geforce GTX 1080Ti employing 3584 CUDA cores <span id="id2">[<a class="reference internal" href="#id11" title="https://www.nvidia.com/en-sg/geforce/products/10series/geforce-gtx-1080-ti/.">2</a>]</span>). Fitting many models at once on a GPU might speed up the sampling process signifincantly.</p>
 <hr class="docutils" />
 <div style="background-color:rgba(256, 76, 76,0.4)",height="200">
 <br>
 <H4>Methods and Material</H4>
 <br>
 </div><hr class="docutils" />
-<p>The probabilistic models are written with the probabilistic programming library PyMC <span id="id3">[<a class="reference internal" href="#id9" title="John Salvatier, Thomas V Wiecki, and Christopher Fonnesbeck. Probabilistic programming in python using pymc3. PeerJ Computer Science, 2:e55, 2016.">3</a>]</span>. The PyMC developers recently reported a sampling speed up by employing the GPU with pre-release PyMC v4 <span id="id4">[<a class="reference internal" href="#id12" title="Martin Ingram, Thomas V Wiecki, and PyMC developers. Mcmc for big datasets – faster sampling with jax and the gpu. \url https://martiningram.github.io/mcmc-comparison/, 2021. Last accessed on 09.03.2022.">4</a>]</span>. PyMC v4 comes with a jax backend allowing for sampling bayesian models with numpyro’s No-U-Turn sampler (NUTS) implementation on the GPU <span id="id5">[<a class="reference internal" href="#id13" title="James Bradbury, Roy Frostig, Peter Hawkins, Matthew James Johnson, Chris Leary, Dougal Maclaurin, George Necula, Adam Paszke, Jake VanderPlas, Skye Wanderman-Milne, and Qiao Zhang. JAX: composable transformations of Python+NumPy programs. 2018. URL: http://github.com/google/jax.">5</a>, <a class="reference internal" href="#id14" title="Du Phan, Neeraj Pradhan, and Martin Jankowiak. Composable effects for flexible and accelerated probabilistic programming in numpyro. arXiv preprint arXiv:1912.11554, 2019.">6</a>]</span> .</p>
+<p>The probabilistic models are written with the probabilistic programming library PyMC <span id="id3">[<a class="reference internal" href="#id9" title="John Salvatier, Thomas V Wiecki, and Christopher Fonnesbeck. Probabilistic programming in python using pymc3. PeerJ Computer Science, 2:e55, 2016.">3</a>]</span>. The PyMC developers recently reported a sampling speed up by employing the GPU with pre-release PyMC v4 <span id="id4">[<a class="reference internal" href="#id12" title="Martin Ingram, Thomas V Wiecki, and PyMC developers. Mcmc for big datasets – faster sampling with jax and the gpu. https://martiningram.github.io/mcmc-comparison/, 2021. Last accessed on 09.03.2022.">4</a>]</span>. PyMC v4 comes with a jax backend allowing for sampling bayesian models with numpyro’s No-U-Turn sampler (NUTS) implementation on the GPU <span id="id5">[<a class="reference internal" href="#id13" title="James Bradbury, Roy Frostig, Peter Hawkins, Matthew James Johnson, Chris Leary, Dougal Maclaurin, George Necula, Adam Paszke, Jake VanderPlas, Skye Wanderman-Milne, and Qiao Zhang. JAX: composable transformations of Python+NumPy programs. 2018. URL: http://github.com/google/jax.">5</a>, <a class="reference internal" href="#id14" title="Du Phan, Neeraj Pradhan, and Martin Jankowiak. Composable effects for flexible and accelerated probabilistic programming in numpyro. arXiv preprint arXiv:1912.11554, 2019.">6</a>]</span> .</p>
 <p>Since parallel sampling of many instances of the same model on the GPU currently seemed difficult, an artificial parallelization was accomplished by building a PyMC model, that is spanning n submodels. Each submodel is an instance of the model of interest and is independent of each other submodel. The input data is shaped accordingly.</p>
 <p>As an minimal model example the inference of the mean of a normal distribution was employed (Fig.1):</p>
 <div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="n">pm</span><span class="o">.</span><span class="n">Model</span><span class="p">()</span> <span class="k">as</span> <span class="n">model</span><span class="p">:</span>
@@ -505,7 +504,7 @@ typical workstation CPU to it’s limits. However graphical processing units (GP
 </div>
 <p>To assay the runtime behaviour over time 640 datasets were created with 10 and 20 datapoints each. These datasets were passed to the artificial model set with increasing degree of parallelization. The tested numbers of submodels were 1,10,20,40,80,160,320 and 640, i.e. in the first case all datasets were regarded sequentially and in the last case parallely. For both CPU and GPU execution the runtimes were recorded. Python scripts for CPU and GPU samping can be downloaded
 (<a class="reference external" href="data/pymcCPUtest.py">CPU</a> and <a class="reference external" href="data/pymcGPUtest.py">GPU</a>). Due to crashing CPU execution in PyMC v4, CPU python program was executed with PyMC v3. Execution on GPU failed repeatedly for higher parallelization degrees with 20 datapoint datasets. —</p>
-<div style="background-color:white"><p><img alt="d09a470635434a669f4482e00c154c28" src="../../_images/modelGraphviz.svg" /></p>
+<div style="background-color:white"><p><img alt="bd8c9b83c04d42a588ec9a26aea5c263" src="../../_images/modelGraphviz.svg" /></p>
 </div><figcaption style="font-weight:bold;font-size:small"><p>Fig 1: Visualization of artificial Model spanning 10 submodels each receiving an independent dataset of normally distributed data of unknown mean. Visualization was created with python-graphviz <span id="id6">[<a class="reference internal" href="#id15" title="Emden R. Gansner and Stephen C. North. An open graph visualization system and its applications to software engineering. SOFTWARE - PRACTICE AND EXPERIENCE, 30(11):1203–1233, 2000.">7</a>]</span>.</p>
 </figcaption><div style="background-color:rgba(256, 76, 76,0.4)",height="200">
 <br>
@@ -513,7 +512,7 @@ typical workstation CPU to it’s limits. However graphical processing units (GP
 <br>
 </div><hr class="docutils" />
 <p>Since the GPU sampling run with datasets containing 20 datapoints repeatedly failed at high degrees of paralellization, three experiments were compared: CPU sampling of datasets with D3 = 10 (<code class="docutils literal notranslate"><span class="pre">CPUD310</span></code>) and D3 = 20 (<code class="docutils literal notranslate"><span class="pre">CPUD320</span></code>), with D3 being the number of datapoints per dataset, GPU sampling (chains sequential) with D3 = 10 and vectorized GPU sampling (chains parallelized) with D3 = 10 (both in <code class="docutils literal notranslate"><span class="pre">GPUD10</span></code>). The code below loads the csv files in which the measured runtimes were stored.</p>
-<div class="nbinput nblast docutils container">
+<div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
 </pre></div>
 </div>
@@ -540,6 +539,14 @@ typical workstation CPU to it’s limits. However graphical processing units (GP
 <span class="n">submodel_n</span> <span class="o">=</span> <span class="n">GPUD310</span><span class="o">.</span><span class="n">D2</span>
 </pre></div>
 </div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+&lt;frozen importlib._bootstrap&gt;:241: RuntimeWarning: scipy._lib.messagestream.MessageStream size changed, may indicate binary incompatibility. Expected 56 from C header, got 64 from PyObject
+</pre></div></div>
 </div>
 <p>Fig.2 A shows the change of the execution time (fitting all 640 datasets) depending on number of submodels inside the PyMC model. Since the drop from the complete sequential execution is quite large, Fig.2 B cuts off this case to make the differences between the more parallelized cases visible. In all experiments the runtime first benefits from parallelization, comes to a minimum and then increases againg with high numbers of submodels.</p>
 <div class="nbinput docutils container">
@@ -663,7 +670,7 @@ typical workstation CPU to it’s limits. However graphical processing units (GP
 <H4>Conclusion and Outlook</H4>
 <br>
 </div><hr class="docutils" />
-<p>Probabily the most important insight is that artificially “blowing up” the PyMC models and allow for parallel model fitting can boost sampling times on both CPU and GPU. However, GPU sampling does not seem to perform remarkably better than sampling on the CPU. Still, the findings of Ingram and the PyMC developers <span id="id7">[<a class="reference internal" href="#id12" title="Martin Ingram, Thomas V Wiecki, and PyMC developers. Mcmc for big datasets – faster sampling with jax and the gpu. \url https://martiningram.github.io/mcmc-comparison/, 2021. Last accessed on 09.03.2022.">4</a>]</span> suggests that the difference in sampling performance between CPU and GPU are depending on hardware setups and the model of interest.</p>
+<p>Probabily the most important insight is that artificially “blowing up” the PyMC models and allow for parallel model fitting can boost sampling times on both CPU and GPU. However, GPU sampling does not seem to perform remarkably better than sampling on the CPU. Still, the findings of Ingram and the PyMC developers <span id="id7">[<a class="reference internal" href="#id12" title="Martin Ingram, Thomas V Wiecki, and PyMC developers. Mcmc for big datasets – faster sampling with jax and the gpu. https://martiningram.github.io/mcmc-comparison/, 2021. Last accessed on 09.03.2022.">4</a>]</span> suggests that the difference in sampling performance between CPU and GPU are depending on hardware setups and the model of interest.</p>
 <hr class="docutils" />
 <div style="background-color:rgba(256, 76, 76,0.4)",height="200">
 <br>
@@ -722,18 +729,18 @@ typical workstation CPU to it’s limits. However graphical processing units (GP
         </article>
       </div>
       <footer>
-
+        
         <div class="related-pages">
-
+          
           <a class="prev-page" href="../week10/week10.html">
-              <svg><use href="#svg-arrow-right"></use></svg>
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
               <div class="page-info">
                 <div class="context">
                   <span>Previous</span>
                 </div>
-
+                
                 <div class="title">Week 10</div>
-
+                
               </div>
             </a>
         </div>
@@ -743,23 +750,21 @@ typical workstation CPU to it’s limits. However graphical processing units (GP
                 Copyright &#169; 2022, Tim Maier
             </div>
             Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
-
+            
             <a href="https://github.com/pradyunsg/furo">Furo</a>
-
+            
           </div>
           <div class="right-details">
-            <div class="icons">
-
-            </div>
+            
           </div>
         </div>
-
+        
       </footer>
     </div>
     <aside class="toc-drawer no-toc">
-
-
-
+      
+      
+      
     </aside>
   </div>
 </div><script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
@@ -767,6 +772,7 @@ typical workstation CPU to it’s limits. However graphical processing units (GP
     <script src="../../_static/underscore.js"></script>
     <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/sphinx_highlight.js"></script>
     <script src="../../_static/scripts/furo.js"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>

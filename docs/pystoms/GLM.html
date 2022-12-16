@@ -2,49 +2,49 @@
 <html class="no-js" lang="en">
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
-    <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+    <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 <link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="2D Models" href="models.html" /><link rel="prev" title="Stochastic Python library for Ion Mobility Mass Spectrometry" href="../index.html" />
 
-    <meta name="generator" content="sphinx-5.0.2, furo 2022.06.21"/>
+    <!-- Generated with Sphinx 5.3.0 and Furo 2022.12.07 -->
         <title>3D Model - PystoMS v0.1</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?digest=40978830699223671f4072448e654b5958f38b89" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?digest=91d0f0d1c444bdcb17a68e833c7a53903343c195" />
     <link rel="stylesheet" type="text/css" href="../_static/sg_gallery.css" />
     <link rel="stylesheet" type="text/css" href="../_static/sg_gallery-binder.css" />
     <link rel="stylesheet" type="text/css" href="../_static/sg_gallery-dataframe.css" />
     <link rel="stylesheet" type="text/css" href="../_static/sg_gallery-rendered-html.css" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?digest=30d1aed668e5c3a91c3e3bf6a60b675221979f0e" />
-
-
+    
+    
 
 
 <style>
   body {
     --color-code-background: #f8f8f8;
   --color-code-foreground: black;
-
+  
   }
   @media not print {
     body[data-theme="dark"] {
       --color-code-background: #202020;
   --color-code-foreground: #d0d0d0;
-
+  
     }
     @media (prefers-color-scheme: dark) {
       body:not([data-theme="light"]) {
         --color-code-background: #202020;
   --color-code-foreground: #d0d0d0;
-
+  
       }
     }
   }
 </style></head>
   <body>
-
+    
     <script>
       document.body.dataset.theme = localStorage.getItem("theme") || "auto";
     </script>
-
+    
 
 <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
   <symbol id="svg-toc" viewBox="0 0 24 24">
@@ -146,17 +146,17 @@
   </header>
   <aside class="sidebar-drawer">
     <div class="sidebar-container">
-
+      
       <div class="sidebar-sticky"><a class="sidebar-brand centered" href="../index.html">
-
+  
   <div class="sidebar-logo-container">
     <img class="sidebar-logo" src="../_static/pystomsLogo.png" alt="Logo"/>
   </div>
-
+  
   <span class="sidebar-brand-text">PystoMS v0.1</span>
-
+  
 </a><form class="sidebar-search-container" method="get" action="../search.html" role="search">
-  <input class="sidebar-search" placeholder=Search name="q" aria-label="Search">
+  <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
   <input type="hidden" name="check_keywords" value="yes">
   <input type="hidden" name="area" value="default">
 </form>
@@ -178,7 +178,7 @@
 </div>
 
       </div>
-
+      
     </div>
   </aside>
   <div class="main">
@@ -191,7 +191,8 @@
           <span>Back to top</span>
         </a>
         <div class="content-icon-container">
-          <div class="theme-toggle-container theme-toggle-content">
+          
+<div class="theme-toggle-container theme-toggle-content">
             <button class="theme-toggle">
               <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
               <svg class="theme-icon-when-auto"><use href="#svg-sun-half"></use></svg>
@@ -205,237 +206,14 @@
           </label>
         </div>
         <article role="main">
-          <section id="module-pystoms.models_3d.models_glm">
-<span id="d-model"></span><h1>3D Model<a class="headerlink" href="#module-pystoms.models_3d.models_glm" title="Permalink to this heading">#</a></h1>
-<p>Probabilistic General linear models for LC-IMS-MS precursor features</p>
-<dl class="py class">
-<dt class="sig sig-object py" id="pystoms.models_3d.models_glm.AbstractModel">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pystoms.models_3d.models_glm.</span></span><span class="sig-name descname"><span class="pre">AbstractModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pystoms.models_3d.models_glm.AbstractModel" title="Permalink to this definition">#</a></dt>
-<dd><p>Abstract model class for model evaluation.</p>
-<p>This class provides the 2D GLM model subclasses with
-evaluation methods.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>feature_ids</strong> (<em>List</em><em>[</em><em>int</em><em>]</em>) – List of feature ids in batch.</p></li>
-<li><p><strong>batch_size</strong> (<em>int</em>) – Number of features
-in one batch.</p></li>
-<li><p><strong>name</strong> (<em>str</em>) – Name of model.</p></li>
-<li><p><strong>coords</strong> (<em>Optional</em><em>[</em><em>dict</em><em>[</em><em>str</em><em>,</em><em>ArrayLike</em><em>]</em><em>,</em><em>optional</em><em>]</em>) – Coordinates for dims in model.</p></li>
-</ul>
-</dd>
-</dl>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="pystoms.models_3d.models_glm.AbstractModel.feature_ids">
-<span class="sig-name descname"><span class="pre">feature_ids</span></span><a class="headerlink" href="#pystoms.models_3d.models_glm.AbstractModel.feature_ids" title="Permalink to this definition">#</a></dt>
-<dd><p>List of feature ids in batch.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>List[int]</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="pystoms.models_3d.models_glm.AbstractModel.batch_size">
-<span class="sig-name descname"><span class="pre">batch_size</span></span><a class="headerlink" href="#pystoms.models_3d.models_glm.AbstractModel.batch_size" title="Permalink to this definition">#</a></dt>
-<dd><p>Number of features in
-one batch.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>int</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="pystoms.models_3d.models_glm.AbstractModel.idata">
-<span class="sig-name descname"><span class="pre">idata</span></span><a class="headerlink" href="#pystoms.models_3d.models_glm.AbstractModel.idata" title="Permalink to this definition">#</a></dt>
-<dd><p>inferenceData of current model.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>az.InferenceData</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="pystoms.models_3d.models_glm.AbstractModel.arviz_plots">
-<span class="sig-name descname"><span class="pre">arviz_plots</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">var_names</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_fig</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'.'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#pystoms.models_3d.models_glm.AbstractModel.arviz_plots" title="Permalink to this definition">#</a></dt>
-<dd><p>Generate various arviz plots</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>var_names</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><em>str</em><em>]</em><em>]</em><em>, </em><em>optional</em>) – Which variables
-to consider. If None, then
-[“i_t”,”i_s”,”alpha”,”ms_mz”,”ms_s”,”me”] are considered.
-Defaults to None.</p></li>
-<li><p><strong>save_fig</strong> (<em>bool</em><em>, </em><em>optional</em>) – Wether to save plots to png.
-Defaults to True.</p></li>
-<li><p><strong>path</strong> (<em>str</em><em>, </em><em>optional</em>) – Path to folder in which plots shall
-be saved. Defaults to “.”.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Raises<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>ValueError</strong> – If one of the variables in var_names has to many dimensions.</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="pystoms.models_3d.models_glm.AbstractModel.evaluation">
-<span class="sig-name descname"><span class="pre">evaluation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prior_pred_in</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">posterior_pred_in</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prior_pred_out</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">posterior_pred_out</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plots</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reset_idata</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">progressbar</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pred_name_list</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">plot_kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">InferenceData</span></span></span><a class="headerlink" href="#pystoms.models_3d.models_glm.AbstractModel.evaluation" title="Permalink to this definition">#</a></dt>
-<dd><p>Evaluate precursor feature model.</p>
-<p>This function is wrapping several steps
-such as sampling of the model ,predictive
-analyses and plotting.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>prior_pred_in</strong> (<em>bool</em><em>, </em><em>optional</em>) – Wether to perform prior
-predictive check (in-sample). Defaults to False.</p></li>
-<li><p><strong>posterior_pred_in</strong> (<em>bool</em><em>, </em><em>optional</em>) – Wether to perform posterior
-predictive check (in-sample). Defaults to True.</p></li>
-<li><p><strong>prior_pred_out</strong> (<em>bool</em><em>, </em><em>optional</em>) – Wether to perform prior
-predictive check (out-of-sample). Defaults to False.</p></li>
-<li><p><strong>posterior_pred_out</strong> (<em>bool</em><em>, </em><em>optional</em>) – Wether to perform posterior
-predictive check (out-of-sample). Defaults to False.</p></li>
-<li><p><strong>plots</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><em>str</em><em>]</em><em>]</em><em>,</em><em>optional</em>) – List of plots to generate.
-Possible entries :  ‘prior_pred_in’,’prior_pred_out’,
-‘posterior_pred_in’,’posterior_pred_out’.
-Defaults to None.</p></li>
-<li><p><strong>reset_idata</strong> (<em>bool</em><em>, </em><em>optional</em>) – Wether to reset
-inferenceData. Defaults to True.</p></li>
-<li><p><strong>progressbar</strong> (<em>bool</em><em>,</em><em>optional</em>) – Wether to plot progressbar.
-Defaults to True.</p></li>
-<li><p><strong>pred_name_list</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><em>str</em><em>]</em><em>]</em><em>,</em><em>optional</em>) – Which predicted
-variables to plot. If None, ‘obs’ is plotted. Defaults to None.</p></li>
-<li><p><strong>**plot_kwargs</strong> – Keyword Arguments passed to
-<cite>visualize_predictions_scatter</cite> method.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Inference data of model.</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>az.InferenceData</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="pystoms.models_3d.models_glm.AbstractModel.plot_feature_data">
-<span class="sig-name descname"><span class="pre">plot_feature_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">return_fig_trace</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">feature_ids</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Scatter3d</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#pystoms.models_3d.models_glm.AbstractModel.plot_feature_data" title="Permalink to this definition">#</a></dt>
-<dd><p>plots model’s input feature data.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>return_fig_trace</strong> (<em>bool</em><em>, </em><em>optional</em>) – Wether to only return
-plotly 3D scatter trace. Defaults to False.</p></li>
-<li><p><strong>feature_ids</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><em>int</em><em>]</em><em>]</em><em>, </em><em>optional</em>) – Which features
-to plot. If None all features are plotted. Defaults to None.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><dl class="simple">
-<dt>If <cite>return_fig_trace</cite> is True,</dt><dd><p>then list of plotly Scatter3d traces with observed data is
-returned.</p>
-</dd>
-</dl>
-</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Optional[List[go.Scatter3d]]</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="pystoms.models_3d.models_glm.AbstractModel.visualize_predictions_scatter">
-<span class="sig-name descname"><span class="pre">visualize_predictions_scatter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">50</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">in_sample</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_prior</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pred_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'obs'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_observed_data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">write_to_file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">folder_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'.'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_renderer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'notebook'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#pystoms.models_3d.models_glm.AbstractModel.visualize_predictions_scatter" title="Permalink to this definition">#</a></dt>
-<dd><p>Plotting posterior/prior predictions.</p>
-<p>Plotting posterior/prior predictions as plotly 3D scatter
-plots.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>size</strong> (<em>int</em><em>,</em><em>optional</em>) – Number of predictions to plot
-for each position. Defaults to 50.</p></li>
-<li><p><strong>in_sample</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True in-sample
-predictions are plotted. Else out-of-sample
-predictions are plotted. Defaults to True.</p></li>
-<li><p><strong>is_prior</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True prior
-predictions are plotted, else posterior.
-Defaults to False.</p></li>
-<li><p><strong>pred_name</strong> (<em>str</em><em>,</em><em>optional</em>) – predicted variable to plot.
-Defaults to ‘obs’. If variable is not found, first
-variable in <cite>data_vars</cite> of Dataset is used.</p></li>
-<li><p><strong>plot_observed_data</strong> (<em>bool</em><em>,</em><em>optional</em>) – Wether to plot observed
-data on top of scatter plot. Defaults to True.</p></li>
-<li><p><strong>write_to_file</strong> (<em>bool</em><em>, </em><em>optional</em>) – Wether to write plot to file.
-Defaults to False.</p></li>
-<li><p><strong>folder_path</strong> (<em>str</em><em>, </em><em>optional</em>) – Path to folder in which output files
-are stored. Defaults to “.”.</p></li>
-<li><p><strong>file_name</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em><em>, </em><em>optional</em>) – Name of html output file.
-If is None, generic file name depending on <cite>is_prior</cite>,
-<cite>pred_name</cite> and <cite>in_sample</cite> is used. Defaults to None.</p></li>
-<li><p><strong>use_renderer</strong> (<em>str</em><em>,</em><em>optional</em>) – Which plotly renderer to use.
-Defaults to ‘notebook’.</p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="pystoms.models_3d.models_glm.ModelGLM3D">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pystoms.models_3d.models_glm.</span></span><span class="sig-name descname"><span class="pre">ModelGLM3D</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pystoms.models_3d.models_glm.ModelGLM3D" title="Permalink to this definition">#</a></dt>
-<dd><p>Simple GLM like model of precursor feature</p>
-<p>GLM model fitting the 2D function</p>
-<div class="math-wrapper docutils container">
-<div class="math notranslate nohighlight">
-\[f(mz,scan) = α*f_{NM}(mz)*f_{N}(scan)\]</div>
-</div>
-<p>With <span class="math notranslate nohighlight">\(f_{NM}(mz)\)</span> being the pdf of a normal
-mixture distribution and <span class="math notranslate nohighlight">\(f_{N}(scan)\)</span> being
-the pdf of a normal distribution.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>feature_ids</strong> (<em>List</em><em>[</em><em>int</em><em>]</em>) – List of feature ids in batch.</p></li>
-<li><p><strong>z</strong> (<em>int</em>) – Charge of precursor.</p></li>
-<li><p><strong>intensity</strong> (<em>NDArrayFloat</em>) – Observed intensities</p></li>
-<li><p><strong>scan</strong> (<em>NDArrayFloat</em>) – Observed scan numbers.</p></li>
-<li><p><strong>mz</strong> (<em>NDArrayFloat</em>) – Observed mass to charge ratios.</p></li>
-<li><p><strong>peaks</strong> (<em>NDArrayInt</em>) – Isotopic peaks to consider as numpy nd array.</p></li>
-<li><p><strong>ims_mu</strong> (<em>float</em>) – Hyperprior. Expected value for scan number.</p></li>
-<li><p><strong>ims_sigma_max</strong> (<em>float</em>) – Hyperprior. Maximal expected standard deviation
-for scan number.</p></li>
-<li><p><strong>mz_mu</strong> (<em>float</em>) – Hyperprior. Expected value for monoisotopic
-mass to charge ratio.</p></li>
-<li><p><strong>mz_sigma</strong> (<em>float</em>) – Hyperprior. Standard deviation of prior normal
-distribution for monoisotopic peak</p></li>
-<li><p><strong>alpha_lam</strong> (<em>float</em>) – Expected value for scalar.</p></li>
-<li><p><strong>me_sigma</strong> (<em>float</em>) – Sigma for model error.</p></li>
-<li><p><strong>likelihood</strong> (<em>str</em><em>, </em><em>optional</em>) – Likelihood distribution. Currently
-supported: ‘Normal’, ‘StudentT’. Defaults to ‘Normal’.</p></li>
-<li><p><strong>name</strong> (<em>str</em><em>,</em><em>optional</em>) – Defaults to empty string.</p></li>
-<li><p><strong>coords</strong> (<em>Optional</em><em>[</em><em>dict</em><em>[</em><em>str</em><em>,</em><em>ArrayLike</em><em>]</em><em>]</em><em>,</em><em>optional</em>) – Coordinates for dims of model.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Raises<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>NotImplementedError if provided likelihood is not supported.</strong> – </p>
-</dd>
-</dl>
-</dd></dl>
-
+          <section id="d-model">
+<h1>3D Model<a class="headerlink" href="#d-model" title="Permalink to this heading">#</a></h1>
 </section>
 
         </article>
       </div>
       <footer>
-
+        
         <div class="related-pages">
           <a class="next-page" href="models.html">
               <div class="page-info">
@@ -444,17 +222,17 @@ supported: ‘Normal’, ‘StudentT’. Defaults to ‘Normal’.</p></li>
                 </div>
                 <div class="title">2D Models</div>
               </div>
-              <svg><use href="#svg-arrow-right"></use></svg>
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
             </a>
           <a class="prev-page" href="../index.html">
-              <svg><use href="#svg-arrow-right"></use></svg>
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
               <div class="page-info">
                 <div class="context">
                   <span>Previous</span>
                 </div>
-
+                
                 <div class="title">Home</div>
-
+                
               </div>
             </a>
         </div>
@@ -464,23 +242,21 @@ supported: ‘Normal’, ‘StudentT’. Defaults to ‘Normal’.</p></li>
                 Copyright &#169; 2022, Tim Maier
             </div>
             Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
-
+            
             <a href="https://github.com/pradyunsg/furo">Furo</a>
-
+            
           </div>
           <div class="right-details">
-            <div class="icons">
-
-            </div>
+            
           </div>
         </div>
-
+        
       </footer>
     </div>
     <aside class="toc-drawer no-toc">
-
-
-
+      
+      
+      
     </aside>
   </div>
 </div><script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
@@ -488,9 +264,8 @@ supported: ‘Normal’, ‘StudentT’. Defaults to ‘Normal’.</p></li>
     <script src="../_static/underscore.js"></script>
     <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../_static/doctools.js"></script>
+    <script src="../_static/sphinx_highlight.js"></script>
     <script src="../_static/scripts/furo.js"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-    <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
-    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     </body>
 </html>
