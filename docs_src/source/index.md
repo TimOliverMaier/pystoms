@@ -19,10 +19,4 @@ This Library is under Construction
 :glob:
 pystoms/*
 ```
-```{toctree}
-:caption: 'Weekly Reports:'
-:hidden:
-:maxdepth: 2
-:glob:
-weekReport/*/*
-```
+
