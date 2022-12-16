@@ -1,3 +1,4 @@
+from __future__ import annotations
 import numpy as np
 from numpy.typing import ArrayLike
 from scipy.special import factorial
@@ -5,7 +6,7 @@ import matplotlib.pyplot as plt
 from scipy.stats import exponnorm, norm, rv_continuous
 import pandas as pd
 import os
-from typing import Union,Optional
+from typing import Union,Optional,Any
 
 
 class Isotopic_Averagine_Distribution(rv_continuous):
