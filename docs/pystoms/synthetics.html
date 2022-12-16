@@ -201,86 +201,6 @@
           <section id="generate-synthetic-data">
 <h1>Generate Synthetic Data<a class="headerlink" href="#generate-synthetic-data" title="Permalink to this heading">#</a></h1>
 <dl class="py class">
-<dt class="sig sig-object py" id="pystoms.synthetics.Isotopic_Averagine_Distribution">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pystoms.synthetics.</span></span><span class="sig-name descname"><span class="pre">Isotopic_Averagine_Distribution</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">averagine_style</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'averagine'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pystoms.synthetics.Isotopic_Averagine_Distribution" title="Permalink to this definition">#</a></dt>
-<dd><p>Isotopic pattern distribution according to averagine model</p>
-<p>Subclass of <cite>scipy.rv_continuous</cite> with custom <cite>._pdf()</cite> and <cite>._rvs()</cite> methods.
-Isotopic distribution is modeled as a gaussian mixture of a set of n
-normal distributions around the monoisotopic and isotopic mass to charge values:
-The weights are determined by the averagine-like model by Breen et. al.</p>
-<p><span class="math notranslate nohighlight">\(f(x)=\frac{1}{\sqrt{2\pi}\sigma}\sum_{i=1}^{n}w_i e^{-0.5(\frac{x-\mu_i}{\sigma})^2}\)</span></p>
-<p class="rubric">Examples</p>
-<p>This class is instantiated without any arguments:</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">iso</span> <span class="o">=</span> <span class="n">Isotopic_Averagine_Distribution</span><span class="p">()</span>
-</pre></div>
-</div>
-<p>Parameters of distribution are given to pdf function:</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">pdf_values</span> <span class="o">=</span> <span class="n">iso</span><span class="o">.</span><span class="n">pdf</span><span class="p">(</span><span class="n">x</span><span class="p">:</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span><span class="n">mass</span><span class="p">:</span><span class="nb">float</span><span class="p">,</span><span class="n">charge</span><span class="p">:</span><span class="nb">int</span><span class="p">,</span><span class="n">sigma</span><span class="p">:</span><span class="nb">float</span><span class="p">,</span><span class="n">num_peaks</span><span class="p">:</span><span class="nb">int</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>The pdf method of scipy.rv_continuous is then calling customized internal _pdf method, which returns
-array of pdf evaluations at positions in input array x.</p>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="pystoms.synthetics.Isotopic_Averagine_Distribution.averagine_style">
-<span class="sig-name descname"><span class="pre">averagine_style</span></span><a class="headerlink" href="#pystoms.synthetics.Isotopic_Averagine_Distribution.averagine_style" title="Permalink to this definition">#</a></dt>
-<dd><p>Style of used averagine model. ‘non_averagine’ shall allow sampling non-petide
-isotopic patterns. Defaults to ‘averagine’.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>str</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="pystoms.synthetics.Isotopic_Averagine_Distribution.rvs_to_intensities">
-<span class="sig-name descname"><span class="pre">rvs_to_intensities</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">loc</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mass</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">charge</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_peaks</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bin_width</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">signal_per_molecule</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">detection_limit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">random_state</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">np.random.RandomState</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">full_return</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">np.ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">np.ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#pystoms.synthetics.Isotopic_Averagine_Distribution.rvs_to_intensities" title="Permalink to this definition">#</a></dt>
-<dd><p>Simulates (m/z, intensity) data.</p>
-<blockquote>
-<div><p>The method draws <cite>size</cite> samples from <cite>.rvs()</cite> and bins theses samples based on <cite>bin_width</cite>.
-Each sample is considered a single molecule that contributes <cite>signal_per_molecule</cite> arbitrary units
-to intensity of it’s bin.</p>
-</div></blockquote>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>loc</strong> (<em>float</em>) – Mass to charge ratio of monoisotopic peak.</p></li>
-<li><p><strong>mass</strong> (<em>float</em>) – Mass of monoisotopic peak.</p></li>
-<li><p><strong>charge</strong> (<em>int</em>) – Charge of peptide.</p></li>
-<li><p><strong>sigma</strong> (<em>float</em>) – Standard deviation of gauss bells.</p></li>
-<li><p><strong>num_peaks</strong> (<em>int</em>) – Number of (isotopic) peaks to consider.</p></li>
-<li><p><strong>bin_width</strong> (<em>float</em>) – Size of bins that are reduced to an intensity.</p></li>
-<li><p><strong>signal_per_molecule</strong> (<em>float</em><em>, </em><em>optional</em>) – Number of added arbitrary units to intensity per molecule.
-Defaults to 1.</p></li>
-<li><p><strong>detection_limit</strong> (<em>float</em><em>, </em><em>optional</em>) – Minimal intensity that can be detected.
-Defaults to 0.</p></li>
-<li><p><strong>size</strong> (<em>int</em><em>, </em><em>optional</em>) – Sample Size. Defaults to 1000.</p></li>
-<li><p><strong>random_state</strong> (<em>Optional</em><em>[</em><em>np.random.RandomState</em><em>]</em><em>,</em><em>optional</em>) – e.g. numpy random number generator. Defaults to None.
-If None, random_state is set to <cite>self.random_state</cite></p></li>
-<li><p><strong>full_return</strong> (<em>bool</em><em>, </em><em>optional</em>) – Wether to return list of bins and list of bin’s start and end values.
-Defaults to False.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><dl>
-<dt>If <cite>full_return</cite> is set to true</dt><dd><p>tuple of three lists is returned: <cite>bins</cite>, <cite>bins_start_end</cite> and <cite>bins_intensities</cite>. <cite>bins</cite> is a list of bins that are themselves
-lists with sampled mass-to-charge ratios. <cite>bins_intensities</cite> is a list of the calculated intensity of each bin and <cite>bins_start_end</cite> stores
-the bins mass-to-charge ratio boundaries as tuple <cite>[begin,end)</cite>.</p>
-<p>If <cite>full_return</cite> is set to false (default), a numpy array of the bin’s positions (mean of start and end) together with the a numpy array of
-calculated intensities is returned.</p>
-</dd>
-</dl>
-</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Union[tuple[list[list[float]],list[tuple[float]],list[float]],tuple[np.ndarray[float],np.ndarray[float]]]</p>
-</dd>
-</dl>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="py class">
 <dt class="sig sig-object py" id="pystoms.synthetics.SyntheticPeptideFeature">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pystoms.synthetics.</span></span><span class="sig-name descname"><span class="pre">SyntheticPeptideFeature</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mass</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">charge</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">emg_μ</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">emg_σ</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">emg_λ</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">elution_noise</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.01</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">isotopic_noise</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.01</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_peaks</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">6</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">isotopic_sigma</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scan_intervall</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ms_resolution</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">isotopic_pattern_model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'averagine'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">correctBaseline</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pystoms.synthetics.SyntheticPeptideFeature" title="Permalink to this definition">#</a></dt>
 <dd><p>Synthetic peptide feature generator.</p>
@@ -291,7 +211,7 @@ data for a single peptide.</p>
 exponentially modified gaussian (EMG) distribution with a
 normally distributed additive noise.</p>
 <p>Isotopic pattern distribution is represented by
-Isotopic_Averagine_Distribution (IAD) with a normally
+IsotopicAveragineDistribution (IAD) with a normally
 distributed additive noise.</p>
 <p>Synthetic Data is generated in 4D format for a range of
 retention times (rt) and mass to charge values (mz):
@@ -517,11 +437,6 @@ Samples with replacement, weighted by intensity value.</p>
           <div class="toc-tree">
             <ul>
 <li><a class="reference internal" href="#">Generate Synthetic Data</a><ul>
-<li><a class="reference internal" href="#pystoms.synthetics.Isotopic_Averagine_Distribution"><code class="docutils literal notranslate"><span class="pre">Isotopic_Averagine_Distribution</span></code></a><ul>
-<li><a class="reference internal" href="#pystoms.synthetics.Isotopic_Averagine_Distribution.averagine_style"><code class="docutils literal notranslate"><span class="pre">Isotopic_Averagine_Distribution.averagine_style</span></code></a></li>
-<li><a class="reference internal" href="#pystoms.synthetics.Isotopic_Averagine_Distribution.rvs_to_intensities"><code class="docutils literal notranslate"><span class="pre">Isotopic_Averagine_Distribution.rvs_to_intensities()</span></code></a></li>
-</ul>
-</li>
 <li><a class="reference internal" href="#pystoms.synthetics.SyntheticPeptideFeature"><code class="docutils literal notranslate"><span class="pre">SyntheticPeptideFeature</span></code></a><ul>
 <li><a class="reference internal" href="#pystoms.synthetics.SyntheticPeptideFeature.mass"><code class="docutils literal notranslate"><span class="pre">SyntheticPeptideFeature.mass</span></code></a></li>
 <li><a class="reference internal" href="#pystoms.synthetics.SyntheticPeptideFeature.charge"><code class="docutils literal notranslate"><span class="pre">SyntheticPeptideFeature.charge</span></code></a></li>
