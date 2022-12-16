@@ -2,7 +2,7 @@
 
 ```{eval-rst}
 .. currentmodule:: pystoms.synthetics
-.. autoclass:: Isotopic_Averagine_Distribution
+.. autoclass:: IsotopicAveragineDistribution
     :members:
 .. autoclass:: SyntheticPeptideFeature
     :members:
