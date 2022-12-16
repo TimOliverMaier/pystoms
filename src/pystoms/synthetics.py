@@ -15,10 +15,18 @@ class IsotopicAveragineDistribution(rv_continuous):
 
     Subclass of ``scipy.rv_continuous`` with custom ``._pdf()`` and ``._rvs()`` methods.
     Isotopic distribution is modeled as a gaussian mixture of a set of n
-    normal distributions around the monoisotopic and isotopic mass to charge values:
-    The weights are determined by the averagine-like model by Breen et. al.
+    normal distributions around the monoisotopic and isotopic mass to charge ratios.
+    The weights are determined by the averagine-like model by Breen `et. al` [1]_.
+    The underlying probability density is given by:
 
-    :math:`f(x)=\frac{1}{\sqrt{2\pi}\sigma}\sum_{i=1}^{n}w_i e^{-0.5(\frac{x-\mu_i}{\sigma})^2}`
+    .. math:
+
+        `f(x)=\frac{1}{\sigma\sqrt{2\pi}}\sum_{i=1}^{n}w_i e^{-0.5\left(\frac{x-\mu_i}{\sigma}\right)^2}`
+
+    Attributes:
+
+        averagine_style (str): Style of used averagine model. 'non_averagine' shall allow sampling non-petide
+            isotopic patterns. Defaults to 'averagine'.
 
     Examples:
 
@@ -28,14 +36,25 @@ class IsotopicAveragineDistribution(rv_continuous):
 
         Parameters of distribution are given to pdf function:
 
-        >>> pdf_values = iso.pdf(x:np.ndarray,mass:float,charge:int,sigma:float,num_peaks:int)
+        >>> x = np.arange(2200,2300)/10
+        >>> m = 442.5
+        >>> c = 2
+        >>> s = 0.05
+        >>> n = 6
+        >>> pdf_values = iso.pdf(x=x,loc=m/c,mass=m,charge=c,sigma=s,num_peaks=n)
 
         The pdf method of scipy.rv_continuous is then calling customized internal _pdf method, which returns
-        array of pdf evaluations at positions in input array x.
+        array of pdf evaluations at positions in input array x. Note that ``mass`` is solely used for
+        calculation of the weights. To shift the distribution's first peak from 0 to the monoisotopic
+        mass to charge ratio, ``loc`` must be used. However using ``scale`` with this distribution
+        should be avoided. Use ``charge`` and ``sigma`` instead to tune the shape of the distribution.
 
-    Attributes:
-        averagine_style (str): Style of used averagine model. 'non_averagine' shall allow sampling non-petide
-            isotopic patterns. Defaults to 'averagine'.
+    References:
+
+        .. [1] E. J. Breen, F. G. Hopwood, K. L. Williams, and M. R. Wilkins,
+               “Automatic poisson peak harvesting for high throughput protein identification,”
+               ELECTROPHORESIS: An International Journal, vol. 21, Art. no. 11, 2000,
+               doi: 10.1002/1522-2683(20000601)21:11<2243::AID-ELPS2243>3.0.CO;2-K.
 
     """
 
