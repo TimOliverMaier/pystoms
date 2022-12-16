@@ -217,14 +217,10 @@ distributed additive noise.</p>
 retention times (rt) and mass to charge values (mz):
 (rt, elution-curve(rt), mz, intensity)</p>
 <p>Elution curve column can be discarded to yield typical 3D
-format. Intensity is calculated by function <span class="math notranslate nohighlight">\(I(rt,mz)\)</span>:
-.. math:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>I(rt,mz) &amp;= (EMG(rt)+X_{EMG})*(IAD(mz)+X_{IAD})
-
-X_{EMG} &amp;∼ N(0,elution_noise)
-
-X_{IAD} &amp;∼ N(0,isotopic_noise)
-</pre></div>
+format. Intensity is calculated by function <span class="math notranslate nohighlight">\(I(rt,mz)\)</span>:</p>
+<div class="math-wrapper docutils container">
+<div class="math notranslate nohighlight">
+\[ \begin{align}\begin{aligned}I(rt,mz) &amp;= (EMG(rt)+X_{EMG})*(IAD(mz)+X_{IAD})\\X_{EMG} &amp;∼ N(0,elution_noise)\\X_{IAD} &amp;∼ N(0,isotopic_noise)\end{aligned}\end{align} \]</div>
 </div>
 <p>If correctBaseline set to True, all intensities below zero are
 set to zero.</p>
