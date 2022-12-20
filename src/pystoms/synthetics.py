@@ -51,7 +51,7 @@ class IsotopicAveragineDistribution(rv_continuous):
 
     References:
 
-        .. [1] E. J. Breen, F. G. Hopwood, K. L. Williams, and M. R. Wilkins,
+        .. _[1] E. J. Breen, F. G. Hopwood, K. L. Williams, and M. R. Wilkins,
                “Automatic poisson peak harvesting for high throughput protein identification,”
                ELECTROPHORESIS: An International Journal, vol. 21, Art. no. 11, 2000,
                doi: 10.1002/1522-2683(20000601)21:11<2243::AID-ELPS2243>3.0.CO;2-K.
