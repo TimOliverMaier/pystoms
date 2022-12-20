@@ -19,7 +19,7 @@ class IsotopicAveragineDistribution(rv_continuous):
     The weights are determined by the averagine-like model by Breen `et. al` [1].
     The underlying probability density is given by:
 
-    .. math:
+    .. math::
 
         `f(x)=\frac{1}{\sigma\sqrt{2\pi}}\sum_{i=1}^{n}w_i e^{-0.5\left(\frac{x-\mu_i}{\sigma}\right)^2}`
 
