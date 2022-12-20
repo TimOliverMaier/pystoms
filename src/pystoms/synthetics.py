@@ -16,7 +16,7 @@ class IsotopicAveragineDistribution(rv_continuous):
     Subclass of ``scipy.rv_continuous`` with custom ``._pdf()`` and ``._rvs()`` methods.
     Isotopic distribution is modeled as a gaussian mixture of a set of n
     normal distributions around the monoisotopic and isotopic mass to charge ratios.
-    The weights are determined by the averagine-like model by Breen `et. al` [1]_.
+    The weights are determined by the averagine-like model by Breen `et. al` [1].
     The underlying probability density is given by:
 
     .. math:
@@ -51,7 +51,7 @@ class IsotopicAveragineDistribution(rv_continuous):
 
     References:
 
-        .. _[1] E. J. Breen, F. G. Hopwood, K. L. Williams, and M. R. Wilkins,
+        .. [1] E. J. Breen, F. G. Hopwood, K. L. Williams, and M. R. Wilkins,
                “Automatic poisson peak harvesting for high throughput protein identification,”
                ELECTROPHORESIS: An International Journal, vol. 21, Art. no. 11, 2000,
                doi: 10.1002/1522-2683(20000601)21:11<2243::AID-ELPS2243>3.0.CO;2-K.
