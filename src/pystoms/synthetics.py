@@ -5,32 +5,36 @@ from scipy.special import factorial
 from scipy.stats import rv_continuous
 from typing import Union
 
+
 class IsotopicAveragineDistribution(rv_continuous):
     r"""Isotopic pattern distribution according to averagine-like model
 
 
-    Subclass of ``scipy.rv_continuous`` with custom ``._pdf()`` and ``._rvs()`` methods.
-    Isotopic distribution is modeled as a gaussian mixture of a set of n
-    normal distributions around the monoisotopic and isotopic mass to charge ratios.
+    Subclass of ``scipy.rv_continuous`` with overwritten ``.pdf()``,``._pdf()``,
+    ``.rvs()`` and ``._rvs()`` methods.
+    Isotopic distribution is modeled as a mixture of a set of n
+    normal distributions around the monoisotopic and isotopic mass-to-charge ratios.
     The weights are determined by the averagine-like model by Breen `et. al` [1].
     The underlying probability density is given by:
 
     .. math::
 
-        f(x)=\frac{1}{\sigma\sqrt{2\pi}}\sum_{i=1}^{n}w_i e^{-0.5\left(\frac{x-\mu_i}{\sigma}\right)^2}
+        f(x)=\frac{1}{\sigma_i\sqrt{2\pi}}\sum_{i=1}^{n}w_i e^{-0.5\left(\frac{x-\mu_i}{\sigma_i}\right)^2}
 
     Attributes:
 
-        averagine_style (str): Style of used averagine model. 'non_averagine' shall allow sampling non-petide
-            isotopic patterns. Defaults to 'averagine'.
+        decoy (bool, optional): If False, weights are calculated according to [1].
+            Else, the order of the weights is reversed. Defaults to False.
 
     Examples:
 
-        This class is instantiated without any arguments:
+        This class can be instantiated without any arguments, except
+        if instance shall describe decoy distributions:
 
         >>> iso = IsotopicAveragineDistribution()
+        >>> iso_decoy = IsotopicAveragineDistribution(decoy = True)
 
-        Parameters of distribution are given to pdf function:
+        Parameters of distribution are given to ``.pdf()``,``.rvs()`` methods:
 
         >>> x = np.arange(2200,2300)/10
         >>> m = 442.5
@@ -39,12 +43,13 @@ class IsotopicAveragineDistribution(rv_continuous):
         >>> n = 6
         >>> pdf_values = iso.pdf(x=x,loc=m/c,mass=m,charge=c,sigma=s,num_peaks=n)
 
-        The ``.pdf()`` method of ``scipy.rv_continuous`` is then calling the customized internal ``._pdf()``
-        method, which returns an array of pdf evaluations at positions in input array ``x``.
-        Note that ``mass`` is solely used for calculation of the weights. To shift the distribution's
-        first peak from 0 to the monoisotopic mass to charge ratio, ``loc`` must be used.
-        However using ``scale`` with this distribution should be avoided. Use ``charge`` and ``sigma`` instead
-        to tune the shape of the distribution.
+        The ``.pdf()`` method is then calling the internal ``._pdf()``
+        method (as in ``scipy.stats.rv_continuous``), which returns an array of
+        pdf evaluations at positions in input array ``x``. Note that ``mass``,
+        is solely used for calculation of the weights. To shift the distribution's
+        first peak from 0 to the monoisotopic mass-to-charge ratio, ``loc`` must be used.
+        However using ``scale`` with this subclass is not supported.
+        Use ``charge`` and ``sigma`` instead to tune the shape of the distribution.
 
     References:
 
@@ -55,16 +60,17 @@ class IsotopicAveragineDistribution(rv_continuous):
 
     Warning:
 
-        This class is overwriting ``._pdf()`` and ``._rvs()`` as well as ``.pdf()`` and ``.rvs()``. While the first
-        two are meant to be customized, this is rather not the case for the latter two. However,
-        to allow for passing a vector of different standard deviations for each gauss bell a custom
+        This class is overwriting ``._pdf()`` and ``._rvs()`` as well as
+        ``.pdf()`` and ``.rvs()``. While the first two are meant to be customized,
+        this is rather not the case for the latter two. However, to allow for
+        passing a vector of different standard deviations for each gauss bell a custom
         handling of these two methods was necessary.
 
     """
 
-    def __init__(self, averagine_style:str ="averagine"):
+    def __init__(self, decoy: bool = False):
         super().__init__()
-        self.averagine_style = averagine_style
+        self.decoy = decoy
 
     def pdf(
         self,
@@ -74,30 +80,72 @@ class IsotopicAveragineDistribution(rv_continuous):
         sigma: ArrayLike,
         num_peaks: ArrayLike,
         loc: ArrayLike = 0,
-        scale: ArrayLike = 1,
-        set_peak_height_to_1 = False,
-        ):
-        """
+        set_peak_height_to_1=False,
+    ) -> np.ndarray:
+        """Calculates probability density function (PDF)
 
+        Calculates PDF for given position ``x``
+        and parameters by evaluating and adding the PDFs of num_peaks
+        weighted normal distributions.
+
+        Important: ``mass`` is only for calculation of the components' weights. Variable ``loc``
+            is used to set the location of the monoisotopic peak.
+
+        Args:
+            x (ArrayLike): Positions to calculate PDF at.
+            mass (ArrayLike): Monoisotopic mass of the peptide [Da].
+            charge (ArrayLike): Charge of peptide.
+            sigma (ArrayLike): Standard deviation(s) of gauss bells.
+            num_peaks (ArrayLike) : Number of peaks to consider.
+            loc (ArrayLike, optional): Location of monoisotopic peak. Defaults to 0.
+            set_peak_height_to_1 (bool, optional): If True, each gauss bells maximum is
+                set to its weight.
+
+        Returns:
+            ``np.ndarray``. Evaluations of PDF at positions in ``x`` under given parametrization.
+
+        Raises:
+            ``AssertionError``, if sigma is not scalar and shape of sigma does not correspond to number of peaks
+            ``AssertionError``, if x has more than one dimension.
+
+        Examples:
+            For calculation of probability density at position ``x``
+            ,with ``loc = 0``:
+
+            >>> iso = IsotopicAveragineDistribution()
+            >>> x = np.arange(0,5)/10
+            >>> y = iso.pdf(x, mass=301.2, charge=1, sigma=0.05, num_peaks=6)
+            >>> print(y)
+            [6.88118553e+00 9.31267193e-01 2.30838058e-03 1.04800316e-07
+             8.71444728e-14]
         """
         # check and transform args for pdf
         if np.asarray(sigma).ndim < 1:
-            sigma = np.repeat(sigma,num_peaks)
+            sigma = np.repeat(sigma, num_peaks)
         if np.asarray(sigma).size == num_peaks:
-            sigma = np.asarray(sigma).reshape((-1,1))
+            sigma = np.asarray(sigma).reshape((-1, 1))
         else:
             sigma = np.asarray(sigma)
-            assert sigma.size == num_peaks*x.size
+            assert sigma.size == num_peaks * x.size
         x = np.atleast_1d(x)
-        assert x.ndim == 1, f"x has shape {x.shape} with {x.ndim} dimensions. x must be 1D maximal"
+        assert (
+            x.ndim == 1
+        ), f"x has shape {x.shape} with {x.ndim} dimensions. x must be 1D maximal"
         mass = np.atleast_1d(mass)
         charge = np.atleast_1d(charge)
         num_peaks = np.atleast_1d(num_peaks)
 
         # transform x
-        _x = (x-loc)/scale
+        _x = x - loc
         # return densities
-        return self._pdf(_x,mass,charge,sigma,num_peaks,set_peak_height_to_1=set_peak_height_to_1)/scale
+        return self._pdf(
+            _x,
+            mass,
+            charge,
+            sigma,
+            num_peaks,
+            set_peak_height_to_1=set_peak_height_to_1,
+        )
 
     def _pdf(
         self,
@@ -112,11 +160,11 @@ class IsotopicAveragineDistribution(rv_continuous):
 
         This method is for internal use only, use ``.pdf()`` instead.
         Overwrites ``scipy.rv_continuous._pdf``. Is internally called by ``.pdf()``
-        method inherited by ``scipy.rv_continuous``. Calculates PDF for given position ``x``
+        method. Calculates PDF for given position ``x``
         and parameters by evaluating and adding pdf of num_peaks
         weighted normal distributions.
 
-        Important: ``mass`` is only for calculation of the weights of the components. Variable ``loc`` in
+        Important: ``mass`` is only for calculation of the components' weights. Variable ``loc`` in
         ``.pdf()`` is used to set the location of the monoisotopic peak.
 
 
@@ -131,77 +179,61 @@ class IsotopicAveragineDistribution(rv_continuous):
 
         Returns:
             ``np.ndarray``. Evaluations of PDF at positions in ``x`` under given parametrization.
-
-        Raises:
-            ``ValueError`` if ``self.averagine_style`` stores unsupported averagine style.
-            Supported are "averagine" and "non_averagine".
-            ``ValueError`` if shape of sigma does not fit to shape ``(len(x),num_peaks)``.
-                Sigma shape must be either ``(len(x),1)`` or ``(len(x),num_peaks)``.
-                In ``.pdf()`` these correspond to a scalar or an array of size ``num_peaks``,
-                respectively.
-
-        Examples:
-            For calculation of probability density at position ``x``:
-
-            >>> iso = IsotopicAveragineDistribution()
-            >>> x = np.arange(0,5)/10
-            >>> y = iso.pdf(x, mass=301.2, charge=1, sigma=0.05, num_peaks=6)
-            >>> print(y)
-            [6.88118553e+00 9.31267193e-01 2.30838058e-03 1.04800316e-07
-             8.71444728e-14]
         """
 
-
         # broadcast 1D arrays
-        x,m,c,n = np.broadcast_arrays(x,mass,charge,num_peaks)
+        x, m, c, n = np.broadcast_arrays(x, mass, charge, num_peaks)
         # broadcast sigma which is potentially 2D
-        _,s = np.broadcast_arrays(x,sigma)
+        _, s = np.broadcast_arrays(x, sigma)
         p = np.zeros_like(x)
 
         # cache calculated averagine weights
         weights_cache = {}
+
         for idx in range(x.size):
             p_xi = 0
-            x_i,m_i,c_i,n_i = x[idx],m[idx],c[idx],n[idx]
+            x_i, m_i, c_i, n_i = x[idx], m[idx], c[idx], n[idx]
             means = np.arange(n_i) / c_i
-            s_i = s[:,idx]
-            sigmas  = s_i
-
-            if self.averagine_style == "averagine":
+            s_i = s[:, idx]
+            sigmas = s_i
+            # reveresed weights
+            if self.decoy:
                 if n_i not in weights_cache:
-                    weights_cache[n_i] = self._averagine_isotopic(m_i, n_i)
+                    weights_cache[n_i] = self.non_averagine_isotopic(m_i, n_i)
                 weights = weights_cache[n_i]
-            # not averagine like
-            elif self.averagine_style == "non_averagine":
-                if n_i not in weights_cache:
-                    weights_cache[n_i] = self._non_averagine_isotopic(m_i, n_i)
-                weights = weights_cache[n_i]
+            # usual case -> weights via averagine-like model
             else:
-                raise ValueError("Averagine style not supported")
+                if n_i not in weights_cache:
+                    weights_cache[n_i] = self.averagine_isotopic(m_i, n_i)
+                weights = weights_cache[n_i]
+
             for μ, w, σ in zip(means, weights, sigmas):
                 if set_peak_height_to_1:
-                    p_xi += (
-                    w * np.exp(-0.5 * ((x_i - μ) / σ) ** 2)
-                    )
+                    p_xi += w * np.exp(-0.5 * ((x_i - μ) / σ) ** 2)
                 else:
                     p_xi += (
-                    w * 1 / (σ * np.sqrt(2 * np.pi)) * np.exp(-0.5 * ((x_i - μ) / σ) ** 2)
+                        w
+                        * 1
+                        / (σ * np.sqrt(2 * np.pi))
+                        * np.exp(-0.5 * ((x_i - μ) / σ) ** 2)
                     )
             p[idx] = p_xi
 
         return p
 
-    def _rvs(self, mass, charge, sigma, num_peaks, size, random_state) -> np.ndarray[float]:
+    def _rvs(
+        self, mass, charge, sigma, num_peaks, size, random_state
+    ) -> np.ndarray[float]:
         """Generation of random variable samples
 
         Overwrites ``scipy.stats.rv_generic._rvs()``. This sampling method
-        first samples component of mixture a sample is generated by and then
-        samples from normal distribution of the given component.
+        first samples a component and then
+        samples from the normal distribution of the given component.
 
         Args:
             mass: Monoisotopic mass of the peptide [Da].
             charge: Charge of peptide.
-            sigma: Standard deviation of gauss bells.
+            sigma: Standard deviation(s) of gauss bells.
             num_peaks: Number of peaks to consider.
             size : Sample Size.
             random_state : e.g. numpy random number generator.
@@ -218,73 +250,98 @@ class IsotopicAveragineDistribution(rv_continuous):
         """
         us = random_state.uniform(size=size)
         devs_std = random_state.normal(size=size)
-        weights = self._averagine_isotopic(mass,num_peaks).cumsum()
 
-        def _get_component(u:float,weights_cum_sum:ArrayLike=weights) -> int:
-            for idx,weight_sum in enumerate(weights_cum_sum):
+        if self.decoy:
+            weights = self.non_averagine_isotopic(mass, num_peaks).cumsum()
+        else:
+            weights = self.averagine_isotopic(mass, num_peaks).cumsum()
+
+        def _get_component(u: float, weights_cum_sum: ArrayLike = weights) -> int:
+            for idx, weight_sum in enumerate(weights_cum_sum):
                 if u < weight_sum:
                     return idx
 
         comps = np.zeros_like(us)
         devs = np.zeros_like(us)
-        for idx,u in enumerate(us):
+        for idx, u in enumerate(us):
             comp = _get_component(u)
             comps[idx] = comp
-            devs[idx] = sigma[comp]*devs_std[idx]
+            devs[idx] = sigma[comp] * devs_std[idx]
 
-        values = comps/charge+devs
+        values = comps / charge + devs
         return values
 
-    def rvs(self, loc, mass, charge, sigma, num_peaks, size=None, random_state=None):
-        """_summary_
+    def rvs(self, mass, charge, sigma, num_peaks, loc=0, size=None, random_state=None):
+        """Generation of random variable samples
+
+        First samples the component of a sample, than from the normal distribution of
+        the sampled component. Component is sampled based on weights
+        calculated by either ``.averagine_isotopic()`` or ``.non_averagine_isotopic()``.
 
         Args:
-            mass (_type_): _description_
-            charge (_type_): _description_
-            sigma (_type_): _description_
-            num_peaks (_type_): _description_
-            size (_type_, optional): _description_. Defaults to None.
-            random_state (_type_, optional): _description_. Defaults to None.
+            mass: Monoisotopic mass of the peptide [Da].
+            charge: Charge of peptide.
+            sigma: Standard deviation(s) of gauss bells.
+            num_peaks: Number of peaks to consider.
+            loc: Location of monoisotopic peak.
+            size : Sample Size.
+            random_state : e.g. numpy random number generator.
+
+        Returns:
+            np.ndarray[float]: Samples from distribution.
+
+        Examples:
+            Used via ``.rvs()`` method:
+            >>> iso = IsotopicAveragineDistribution()
+            >>> y = iso.rvs(loc=301.2, mass = 301.2,charge = 1,sigma=0.05,num_peaks=6,size=5,random_state=np.random.default_rng(2022))
+            >>> print(y)
+            [301.19520469 301.07622945 301.18164187 301.22961325 301.05343757]
         """
         # check arguments for rvs
         if np.asarray(sigma).ndim < 1:
-            sigma = np.repeat(sigma,num_peaks)
+            sigma = np.repeat(sigma, num_peaks)
         elif np.asarray(sigma).size == num_peaks:
-            sigma = np.asarray(sigma).reshape((-1,1))
+            sigma = np.asarray(sigma).reshape((-1, 1))
         else:
-            raise ValueError(f"Sigma is neither scalar nor does sigma's shape ({np.asarray(sigma).shape}) correspond to num_peaks")
+            raise ValueError(
+                f"Sigma is neither scalar nor does sigma's shape ({np.asarray(sigma).shape}) correspond to num_peaks"
+            )
         if size == None:
             size = 1
-        if random_state==None:
+        if random_state == None:
             random_state = self.random_state
 
         # return rvs
-        return self._rvs(mass,charge,sigma,num_peaks,size,random_state)+loc
+        return self._rvs(mass, charge, sigma, num_peaks, size, random_state) + loc
 
-
-    def rvs_to_intensities(self,
-                           loc:float,
-                           mass:float,
-                           charge:int,
-                           sigma:ArrayLike,
-                           num_peaks:int,
-                           bin_width:float,
-                           signal_per_molecule:float=1,
-                           detection_limit:float=0,
-                           size:int=1000,
-                           random_state:np.random.RandomState=None,
-                           full_return:bool = False) -> Union[tuple[list[list[float]],list[tuple[float]],list[float]],tuple[np.ndarray[float],np.ndarray[float]]]:
+    def rvs_to_intensities(
+        self,
+        loc: float,
+        mass: float,
+        charge: int,
+        sigma: ArrayLike,
+        num_peaks: int,
+        bin_width: float,
+        signal_per_molecule: float = 1,
+        detection_limit: float = 0,
+        size: int = 1000,
+        random_state: np.random.RandomState = None,
+        full_return: bool = False,
+    ) -> Union[
+        tuple[list[list[float]], list[tuple[float]], list[float]],
+        tuple[np.ndarray[float], np.ndarray[float]],
+    ]:
         """Simulates (m/z, intensity) data.
 
         The method draws ``size`` samples from ``.rvs()`` and bins theses samples based on ``bin_width``.
         Each sample is considered a single molecule that contributes ``signal_per_molecule`` arbitrary units
-        to intensity of it's bin.
+        to intensity of its bin.
 
         Args:
-            loc (float): Mass to charge ratio of monoisotopic peak.
+            loc (float): mass-to-charge ratio of monoisotopic peak.
             mass (float): Mass of monoisotopic peak.
             charge (int): Charge of peptide.
-            sigma (ArrayLike): Standard deviations of gauss bells.
+            sigma (ArrayLike): Standard deviation(s) of gauss bells.
             num_peaks (int): Number of (isotopic) peaks to consider.
             bin_width (float): Size of bins that are reduced to an intensity.
             signal_per_molecule (float, optional): Number of added arbitrary units to intensity per molecule.
@@ -306,13 +363,21 @@ class IsotopicAveragineDistribution(rv_continuous):
                 If ``full_return`` is set to false (default), a numpy array of the bin's positions (mean of start and end) together with the a numpy array of
                 calculated intensities is returned.
         """
-        samples_mz = self.rvs(loc=loc, mass=mass, charge=charge, sigma=sigma, num_peaks=num_peaks, size=size, random_state=random_state)
+        samples_mz = self.rvs(
+            loc=loc,
+            mass=mass,
+            charge=charge,
+            sigma=sigma,
+            num_peaks=num_peaks,
+            size=size,
+            random_state=random_state,
+        )
         samples_mz.sort()
 
         bins = []
         s_idx = 0
         current_bin_start = samples_mz[s_idx]
-        current_bin_end = current_bin_start+bin_width
+        current_bin_end = current_bin_start + bin_width
         bins_start_end = []
         bins_position = []
         current_bin_intensity = 0
@@ -336,8 +401,8 @@ class IsotopicAveragineDistribution(rv_continuous):
             # store
             if current_bin_intensity >= detection_limit:
                 bins.append(current_bin.copy())
-                bins_start_end.append((current_bin_start,current_bin_end))
-                bins_position.append((current_bin_start+current_bin_end)/2)
+                bins_start_end.append((current_bin_start, current_bin_end))
+                bins_position.append((current_bin_start + current_bin_end) / 2)
                 current_bin.append(s)
                 bins_intensities.append(current_bin_intensity)
 
@@ -356,24 +421,22 @@ class IsotopicAveragineDistribution(rv_continuous):
             s_idx += 1
 
         if full_return:
-            return (bins,bins_start_end,bins_intensities)
+            return (bins, bins_start_end, bins_intensities)
         else:
-            return (np.array(bins_position),np.array(bins_intensities))
+            return (np.array(bins_position), np.array(bins_intensities))
 
     @staticmethod
-    def _averagine_isotopic(mass: np.ndarray, num_peaks: int):
+    def averagine_isotopic(mass: np.ndarray, num_peaks: int) -> np.ndarray:
         """Calculates weights for isotopic distribution
 
         Calculates weights for isotopic pattern (gaussian mixture)
-        distribution based on averagine model and normalization.
+        distribution based on averagine-like model ([1]) and normalization.
 
         Args:
             mass: Monoisotopic mass of peptide.
             num_peaks: Number of considered peaks.
         Returns:
             np.ndarray. Array of weights.
-        Raises:
-            None.
         """
         # averagine approx. Adopted from Hildebrandt Github
         λ = 0.000594 * mass - 0.03091
@@ -386,26 +449,16 @@ class IsotopicAveragineDistribution(rv_continuous):
         return iso_w_norm
 
     @staticmethod
-    def _non_averagine_isotopic(mass: np.ndarray, num_peaks: int):
+    def non_averagine_isotopic(mass: np.ndarray, num_peaks: int) -> np.ndarray:
         """Calculates weights for isotopic distribution
 
-        Decoy method. Returns averagine weights inversed.
+        Decoy method. Returns weights of ``averagine_isotopic`` inversed.
 
         Args:
             mass: Monoisotopic mass of peptide.
             num_peaks: Number of considered peaks.
         Returns:
             np.ndarray. Array of weights.
-        Raises:
-            None.
         """
-        # averagine approx. Adopted from Hildebrandt Github
-        λ = 0.000594 * mass - 0.03091
-        n = num_peaks
-        iso_w = np.fromiter(
-            (np.exp(-λ) * np.power(λ, k) / factorial(k) for k in range(n)), float
-        )
-        # normalization
-        iso_w_norm = iso_w / iso_w.sum()
+        iso_w_norm = IsotopicAveragineDistribution.averagine_isotopic(mass, num_peaks)
         return np.flip(iso_w_norm, 0)
-
