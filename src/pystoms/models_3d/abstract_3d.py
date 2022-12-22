@@ -18,6 +18,7 @@ import matplotlib.pyplot as plt
 import os
 from numpy.typing import ArrayLike
 from time import time
+
 # typing
 NDArrayFloat = npt.NDArray[np.float64]
 NDArrayInt = npt.NDArray[np.int64]
@@ -452,7 +453,15 @@ class AbstractModel(pm.Model):
             else:
                 plt.show()
 
-            az.plot_trace(idata_sliced, var_names, legend=True, chain_prop={"linestyle": ("solid", "dotted", "dashed", "dashdot"),"color":("black","blue","green","red")})
+            az.plot_trace(
+                idata_sliced,
+                var_names,
+                legend=True,
+                chain_prop={
+                    "linestyle": ("solid", "dotted", "dashed", "dashdot"),
+                    "color": ("black", "blue", "green", "red"),
+                },
+            )
             if save_fig:
                 plt.tight_layout()
                 plt.savefig(feature_path + "trace.png")
@@ -484,9 +493,11 @@ class AbstractModel(pm.Model):
 
             # posterior predictive lm
             idata_feature_sliced = self.idata.isel(feature=idx)
-            az.plot_lm(y=idata_feature_sliced.observed_data.obs,
-                       y_hat=idata_feature_sliced.posterior_predictive.obs,
-                       num_samples=500)
+            az.plot_lm(
+                y=idata_feature_sliced.observed_data.obs,
+                y_hat=idata_feature_sliced.posterior_predictive.obs,
+                num_samples=500,
+            )
             if save_fig:
                 plt.savefig(feature_path + "posterior_predictive_lm.png")
                 plt.close()
@@ -494,31 +505,31 @@ class AbstractModel(pm.Model):
                 plt.show()
 
             # prior predictive lm
-            fig,ax = plt.subplots(1,1)
-            az.plot_lm(y=idata_feature_sliced.observed_data.obs,
-                       y_hat=idata_feature_sliced.prior_predictive.obs,
-                       num_samples=500,
-                       legend=False,
-                       axes=ax)
-            h,l = ax.get_legend_handles_labels()
-            for idx,lab in enumerate(l):
+            fig, ax = plt.subplots(1, 1)
+            az.plot_lm(
+                y=idata_feature_sliced.observed_data.obs,
+                y_hat=idata_feature_sliced.prior_predictive.obs,
+                num_samples=500,
+                legend=False,
+                axes=ax,
+            )
+            h, l = ax.get_legend_handles_labels()
+            for idx, lab in enumerate(l):
                 if lab == "Posterior predictive samples":
                     l[idx] = "Prior predictive samples"
-            ax.legend(h,l)
+            ax.legend(h, l)
             if save_fig:
                 fig.savefig(feature_path + "prior_predictive_lm.png")
                 plt.close()
             else:
                 plt.show()
 
-            az.plot_parallel(idata_sliced,norm_method="minmax")
+            az.plot_parallel(idata_sliced, norm_method="minmax")
             if save_fig:
                 plt.savefig(feature_path + "plot_parallel.png")
                 plt.close()
             else:
                 plt.show()
-            
-
 
     def evaluation(
         self,
@@ -531,7 +542,7 @@ class AbstractModel(pm.Model):
         progressbar: bool = True,
         pred_name_list: Optional[List[str]] = None,
         **plot_kwargs,
-    ) -> Tuple[az.InferenceData,float]:
+    ) -> Tuple[az.InferenceData, float]:
         """Evaluate precursor feature model.
 
         This function is wrapping several steps
@@ -571,7 +582,7 @@ class AbstractModel(pm.Model):
         end_sampling = time()
 
         if pred_name_list is None:
-            pred_name_list = ["obs","mu"]
+            pred_name_list = ["obs", "mu"]
 
         if plots is None:
             # make 'in' operator available for plots
@@ -588,7 +599,9 @@ class AbstractModel(pm.Model):
 
         if prior_pred_out:
             # prior predictive analysis out-of-sample
-            self._sample_predictive(is_prior=True, is_grid_predictive=True, var_names=pred_name_list)
+            self._sample_predictive(
+                is_prior=True, is_grid_predictive=True, var_names=pred_name_list
+            )
             if "prior_pred_out" in plots:
                 for pred_name in pred_name_list:
                     plot_kwargs["pred_name"] = pred_name
@@ -606,10 +619,14 @@ class AbstractModel(pm.Model):
 
         if posterior_pred_out:
             # posterior predictive analysis out-of-sample
-            self._sample_predictive(is_grid_predictive=True, progressbar=progressbar, var_names=pred_name_list)
+            self._sample_predictive(
+                is_grid_predictive=True,
+                progressbar=progressbar,
+                var_names=pred_name_list,
+            )
             if "posterior_pred_out" in plots:
                 for pred_name in pred_name_list:
                     plot_kwargs["pred_name"] = pred_name
                     self.visualize_predictions_scatter(in_sample=False, **plot_kwargs)
 
-        return (self.idata.copy(),end_sampling-start_sampling)
+        return (self.idata.copy(), end_sampling - start_sampling)

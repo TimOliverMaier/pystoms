@@ -2,7 +2,7 @@
 model M2
 """
 
-from typing import Optional,Dict
+from typing import Optional, Dict
 import pymc as pm
 import pymc.math as pmath
 import numpy as np
@@ -33,7 +33,7 @@ class ModelM2(AbstractModel):
     Args:
         features (AlignedFeatureData): Feature's data wrapped in
             pystoms.AlignedFeatureData container.
-        model_parameters (Dictionary, optional): parameters for 
+        model_parameters (Dictionary, optional): parameters for
             priors and hyperpriors. Defaults to None.
         likelihood (str, optional): Likelihood distribution. Currently
             supported: 'Normal', 'StudentT'. Defaults to 'Normal'.
@@ -62,7 +62,9 @@ class ModelM2(AbstractModel):
         if model_parameters is None:
             model_parameters = {}
         self.model_parameters = model_parameters.copy()
-        super().__init__(feature_ids, batch_size, random_number_generator, name, coords=coords)
+        super().__init__(
+            feature_ids, batch_size, random_number_generator, name, coords=coords
+        )
         self.setup_mutable_data(features)
         # TODO is there a nicer way to share this between init and setup_mutable_data()
         dims_2d = ["data_point", "feature"]
@@ -164,18 +166,36 @@ class ModelM2(AbstractModel):
                 axis=0,
                 weights=intensity,
             ).reshape((1, num_features, 1))
-            self.model_parameters.setdefault("mz_sigma",10)
-            mz_sigma = np.ones((1, num_features, 1), dtype="float") * self.model_parameters["mz_sigma"]
-            self.model_parameters.setdefault("mz_s_scale",0.05)
-            ms_s_scale = np.ones((1, num_features, 1), dtype="float") * self.model_parameters["mz_s_scale"]
-            self.model_parameters.setdefault("ms_s_alpha",2)
-            ms_s_alpha = np.ones((1, num_features, 1), dtype="float") * self.model_parameters["ms_s_alpha"]
-            self.model_parameters.setdefault("alpha_scale",intensity.max(axis=0))
-            alpha_scale = np.ones((1, num_features), dtype="float") * self.model_parameters["alpha_scale"]
-            self.model_parameters.setdefault("alpha_alpha",2)
-            alpha_alpha = np.ones((1, num_features), dtype="float") * self.model_parameters["alpha_alpha"]
-            self.model_parameters.setdefault("me_sigma",10)
-            me_sigma = np.ones((1, num_features), dtype="float") * self.model_parameters["me_sigma"]
+            self.model_parameters.setdefault("mz_sigma", 10)
+            mz_sigma = (
+                np.ones((1, num_features, 1), dtype="float")
+                * self.model_parameters["mz_sigma"]
+            )
+            self.model_parameters.setdefault("mz_s_scale", 0.05)
+            ms_s_scale = (
+                np.ones((1, num_features, 1), dtype="float")
+                * self.model_parameters["mz_s_scale"]
+            )
+            self.model_parameters.setdefault("ms_s_alpha", 2)
+            ms_s_alpha = (
+                np.ones((1, num_features, 1), dtype="float")
+                * self.model_parameters["ms_s_alpha"]
+            )
+            self.model_parameters.setdefault("alpha_scale", intensity.max(axis=0))
+            alpha_scale = (
+                np.ones((1, num_features), dtype="float")
+                * self.model_parameters["alpha_scale"]
+            )
+            self.model_parameters.setdefault("alpha_alpha", 2)
+            alpha_alpha = (
+                np.ones((1, num_features), dtype="float")
+                * self.model_parameters["alpha_alpha"]
+            )
+            self.model_parameters.setdefault("me_sigma", 10)
+            me_sigma = (
+                np.ones((1, num_features), dtype="float")
+                * self.model_parameters["me_sigma"]
+            )
             z = np.array(charge).reshape((1, num_features, 1))
             mz_tile = np.tile(mz, (1, 1, num_isotopic_peaks))
             peaks = np.arange(num_isotopic_peaks)
