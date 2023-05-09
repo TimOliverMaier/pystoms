@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import seaborn as sns
 import matplotlib.lines as mlines
+import numpy as np
 from matplotlib import colormaps
 
 
