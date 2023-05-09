@@ -1,25 +1,55 @@
+from typing import Optional, Dict
 import matplotlib.pyplot as plt
 import seaborn as sns
 import matplotlib.lines as mlines
 import numpy as np
+import arviz as az
+from numpy.typing import ArrayLike
 from matplotlib import colormaps
 
 
-def plot_feature_im_mz(mz, scan, intensity):
+def plot_feature_im_mz(
+    mz: ArrayLike, scan: ArrayLike, intensity: ArrayLike, standardized: bool = True
+):
+    """
+    Summary plot of a precursor feature
+    (inside a fixed frame).
+
+
+    :param mz: Mass-to-charge-ratio values
+    :type mz: ArrayLike
+    :param scan: Scan values
+    :type scan: ArrayLike
+    :param intensity: Intensity values
+    :type intensity: ArrayLike
+    :param standardized: Wether values are standardized (alters labels)
+    :type standardized: bool, optional
+    :return: Summary Figure
+    :rtype: plt.Figure
+    """
+    if standardized:
+        suffix = " (std)"
+    else:
+        suffix = ""
+
     Fig, axs = plt.subplot_mosaic("AA;BC", figsize=(6, 4))
+
+    # Intensity vs Mz
     axs["A"].scatter(x=mz, y=intensity)
-    axs["A"].set_xlabel("Mass-to-Charge-Ratio (std)")
-    axs["A"].set_ylabel("Intensity (std)")
+    axs["A"].set_xlabel(f"Mass-to-Charge-Ratio{suffix}")
+    axs["A"].set_ylabel(f"Intensity{suffix}")
     axs["A"].set_title("A", loc="left", fontdict={"fontweight": "bold"})
 
+    # Intensity vs Scan
     axs["B"].scatter(x=scan, y=intensity)
-    axs["B"].set_xlabel("Scan Number (std)")
-    axs["B"].set_ylabel("Intensity (std)")
+    axs["B"].set_xlabel(f"Scan Number{suffix}")
+    axs["B"].set_ylabel(f"Intensity{suffix}")
     axs["B"].set_title("B", loc="left", fontdict={"fontweight": "bold"})
 
+    # 2D Intensity vs (mz, scan)
     intensity_scatter = axs["C"].scatter(x=mz, y=scan, c=intensity)
-    axs["C"].set_xlabel("Mass-to-Charge-Ratio (std)")
-    axs["C"].set_ylabel("Scan (std)")
+    axs["C"].set_xlabel(f"Mass-to-Charge-Ratio{suffix}")
+    axs["C"].set_ylabel(f"Scan{suffix}")
     axs["C"].set_title("C", loc="left", fontdict={"fontweight": "bold"})
     Fig.colorbar(intensity_scatter, ax=axs["C"], label="Intensity")
 
@@ -28,7 +58,7 @@ def plot_feature_im_mz(mz, scan, intensity):
 
 
 def is_oos_plot_lm(
-    idata,
+    idata: az.InferenceData,
     x_name: str,
     x_hidden: str,
     y_name: str,
@@ -36,16 +66,49 @@ def is_oos_plot_lm(
     random_state: np.random.Generator,
     num_samples: int = 40,
     group: str = "posterior",
-    prior_predictions=None,
+    prior_predictions: Optional[az.InferenceData] = None,
 ):
+    """
+    In-sample and out-of-sample prior/posterior
+    prediction plots for 2D regression models, similar to
+    `arviz.plot_lm`
 
+    :param idata: InferenceData (with in-sample and out-of-sample
+                  posterior-predictive and in-sample prior-predictive samples)
+    :type idata: az.InferenceData
+    :param x_name: Name of variable to consider as x
+    :type x_name: str
+    :param x_hidden: Name of variable that is marginalized
+    :type x_hidden: str
+    :param y_name: Name of variable to consider as y
+    :type y_name: str
+    :param obs_name: Name of observed variable
+    :type obs_name: str
+    :param random_state: random seed
+    :type random_state: np.random.Generator
+    :param num_samples: Number of predictive samples per x data point, defaults to 40
+    :type num_samples: int, optional
+    :param group: Wether to visualize prior- or posterior-predictive-checks,
+                  defaults to "posterior"
+    :type group: str, optional
+    :param prior_predictions: Out-of-sample prior-predictive samples, defaults to None
+    :type prior_predictions: Optional[az.InferenceData], optional
+    :raises ValueError: If name of variable is not found.
+    :return: Figure in-sample (scatter), Figure out-of-sample (scatter), Figure out-of-sample (line)
+    :rtype: Tuple[plt.Figure]
+    """
     if group == "prior" and prior_predictions is None:
         raise ValueError("For prior oos plot, prior predictions must be provided")
 
     if group == "posterior":
+        # number of chains and draws must be the same
+        # in in-sample and out-of-sample data
         chain_num = idata.posterior.dims["chain"]
         n_draws = idata.posterior.dims["draw"]
+        # select draws
         choice_sample = random_state.choice(np.arange(n_draws), num_samples)
+
+        # find y in in-sample data
         if y_name in idata.posterior_predictive:
             y_prediction_in_sample = (
                 idata.posterior_predictive.get(y_name)
@@ -64,6 +127,8 @@ def is_oos_plot_lm(
             raise ValueError(
                 f"{y_name} for in-sample predictions plot was neither found in posterior-predictive nor posterior group"
             )
+
+        # for out-of sample data y must be in predictions
         if y_name in idata.predictions:
             y_prediction_out_sample = (
                 idata.predictions.get(y_name)
@@ -77,9 +142,14 @@ def is_oos_plot_lm(
             )
 
     elif group == "prior":
+        # number of chains and draws must be the same
+        # in in-sample and out-of-sample data
         chain_num = idata.prior_predictive.dims["chain"]
         n_draws = idata.prior_predictive.dims["draw"]
+        # select draws
         choice_sample = random_state.choice(np.arange(n_draws), num_samples)
+
+        # find y in in-sample data
         if y_name in idata.prior_predictive:
             y_prediction_in_sample = (
                 idata.prior_predictive.get(y_name)
@@ -98,9 +168,14 @@ def is_oos_plot_lm(
             raise ValueError(
                 f"{y_name} for in-sample predictions plot was neither found in prior-predictive nor prior group"
             )
-        if y_name in prior_predictions:
+        # For out-of-sample data y must be in prior_predictive
+        # Here, it could also be in `prior` (for the posterior case `posterior`
+        # still holds in-sample data) but since no
+        # prior_predictions group exists the here used idata is completely new
+        # however for consistency only `prior_predictive` is searched here
+        if y_name in prior_predictions.prior_predictive:
             y_prediction_out_sample = (
-                prior_predictions.get(y_name)
+                prior_predictions.prior_predictive.get(y_name)
                 .isel(draw=choice_sample)
                 .to_dataframe()
                 .reset_index()
@@ -168,6 +243,7 @@ def is_oos_plot_lm(
         )
 
         for color, draw in enumerate(choice_sample):
+            # scale color int to [0,1] for colormap
             color /= num_samples
             rows_draw = oos_data.draw == draw
             for hidden_x in oos_data[x_hidden].unique():
@@ -262,6 +338,7 @@ def is_oos_plot_lm(
         )
         rows_chain = oos_data.chain == c
         for color, draw in enumerate(choice_sample):
+            # scale color int to [0,1] for colormap
             color /= num_samples
             rows_draw_chain = (rows_chain) & (oos_data.draw == draw)
             for hidden_x in oos_data[x_hidden].unique():
@@ -317,8 +394,28 @@ def is_oos_plot_lm(
 
 
 def chain_comparison_posterior_plot(
-    idata, var_name, coords=None, sharex=False, sharey=False
+    idata: az.InferenceData,
+    var_name: str,
+    coords: Optional[Dict] = None,
+    sharex: bool = False,
+    sharey: bool = False,
 ):
+    """
+    Compare posterior of `var_name` between chains.
+
+    :param idata: InferenceData with posterior samples.
+    :type idata: az.InferenceData
+    :param var_name: Name of variable to plot.
+    :type var_name: str
+    :param coords: Selection of coordinates to consider, defaults to None
+    :type coords: Optional[Dict], optional
+    :param sharex: Wether subplots share x-axis, defaults to False
+    :type sharex: bool, optional
+    :param sharey: Wether subplots share y-axis, defaults to False
+    :type sharey: bool, optional
+    :return: Figure
+    :rtype: plt.Figure
+    """
     chain_num = idata.posterior.dims["chain"]
 
     if coords is not None:
