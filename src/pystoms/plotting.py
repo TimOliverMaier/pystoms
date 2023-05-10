@@ -67,6 +67,7 @@ def is_oos_plot_lm(
     num_samples: int = 40,
     group: str = "posterior",
     prior_predictions: Optional[az.InferenceData] = None,
+    plot_line_plot: bool = False,
 ):
     """
     In-sample and out-of-sample prior/posterior
@@ -93,6 +94,8 @@ def is_oos_plot_lm(
     :type group: str, optional
     :param prior_predictions: Out-of-sample prior-predictive samples, defaults to None
     :type prior_predictions: Optional[az.InferenceData], optional
+    :param plot_line_plot: Wether to plot line plot (time consuming), defaults to False
+    :type plot_line_plot: bool, optional
     :raises ValueError: If name of variable is not found.
     :return: Figure in-sample (scatter), Figure out-of-sample (scatter), Figure out-of-sample (line)
     :rtype: Tuple[plt.Figure]
@@ -208,7 +211,6 @@ def is_oos_plot_lm(
     if chain_num == 1:
         Fig_is, ax_is = plt.subplots(1, 1, figsize=(6, 4), sharex=True)
         Fig_oos, ax_oos = plt.subplots(1, 1, figsize=(6, 4), sharex=True)
-        Fig_oos_line, ax_oos_line = plt.subplots(1, 1, figsize=(6, 4), sharex=True)
 
         ax_is.scatter(
             x=observed_data.loc[:, x_name],
@@ -236,47 +238,54 @@ def is_oos_plot_lm(
             alpha=0.2,
         )
 
-        ax_oos_line_observed = ax_oos_line.scatter(
-            x=observed_data.loc[:, x_name],
-            y=observed_data.loc[:, obs_name],
-            color="black",
-        )
-
-        for color, draw in enumerate(choice_sample):
-            # scale color int to [0,1] for colormap
-            color /= num_samples
-            rows_draw = oos_data.draw == draw
-            for hidden_x in oos_data[x_hidden].unique():
-                rows_draw_hidden_x = (rows_draw) & (oos_data[x_hidden] == hidden_x)
-                ax_oos_line.plot(
-                    oos_data.loc[rows_draw_hidden_x, x_name],
-                    oos_data.loc[rows_draw_hidden_x, y_name],
-                    color=color_map(color),
-                    alpha=0.7,
-                )
-
         Fig_is.supxlabel(x_name)
         Fig_is.supylabel(y_name)
         Fig_oos.supxlabel(x_name)
         Fig_oos.supylabel(y_name)
-        Fig_oos_line.supxlabel(x_name)
-        Fig_oos_line.supylabel(y_name)
 
         Fig_is.legend(loc="lower center", ncol=2, bbox_to_anchor=(0.5, 0.05))
         Fig_oos.legend(loc="lower center", ncol=2, bbox_to_anchor=(0.5, 0.05))
-        line = mlines.Line2D([], [], color="black", label="predicted")
-        Fig_oos_line.legend(
-            [ax_oos_line_observed, line],
-            ["observed", "predicted"],
-            loc="lower center",
-            ncol=2,
-            bbox_to_anchor=(0.5, 0.05),
-        )
+
         Fig_is.tight_layout()
         Fig_oos.tight_layout()
-        Fig_oos_line.tight_layout()
 
-        return Fig_is, Fig_oos, Fig_oos_line
+        if plot_line_plot:
+            Fig_oos_line, ax_oos_line = plt.subplots(1, 1, figsize=(6, 4), sharex=True)
+
+            ax_oos_line_observed = ax_oos_line.scatter(
+                x=observed_data.loc[:, x_name],
+                y=observed_data.loc[:, obs_name],
+                color="black",
+            )
+
+            for color, draw in enumerate(choice_sample):
+                # scale color int to [0,1] for colormap
+                color /= num_samples
+                rows_draw = oos_data.draw == draw
+                for hidden_x in oos_data[x_hidden].unique():
+                    rows_draw_hidden_x = (rows_draw) & (oos_data[x_hidden] == hidden_x)
+                    ax_oos_line.plot(
+                        oos_data.loc[rows_draw_hidden_x, x_name],
+                        oos_data.loc[rows_draw_hidden_x, y_name],
+                        color=color_map(color),
+                        alpha=0.7,
+                    )
+            Fig_oos_line.supxlabel(x_name)
+            Fig_oos_line.supylabel(y_name)
+
+            line = mlines.Line2D([], [], color="black", label="predicted")
+            Fig_oos_line.legend(
+                [ax_oos_line_observed, line],
+                ["observed", "predicted"],
+                loc="lower center",
+                ncol=2,
+                bbox_to_anchor=(0.5, 0.05),
+            )
+
+            Fig_oos_line.tight_layout()
+            return Fig_is, Fig_oos, Fig_oos_line
+        else:
+            return Fig_is, Fig_oos
 
     ncol = 2
     nrow = int(chain_num // 2 + chain_num % 2)
@@ -284,22 +293,19 @@ def is_oos_plot_lm(
 
     Fig_is, axs_is = plt.subplots(nrow, ncol, figsize=figsize, sharex=True)
     Fig_oos, axs_oos = plt.subplots(nrow, ncol, figsize=figsize, sharex=True)
-    Fig_oos_line, axs_oos_line = plt.subplots(nrow, ncol, figsize=figsize, sharex=True)
+
     # remove unnecessary axes at the end of plot in case of uneven chain number
-    for ax_is, ax_oos, ax_oos_line in zip(
+    for ax_is, ax_oos in zip(
         axs_is.flatten()[chain_num:],
         axs_oos.flatten()[chain_num:],
-        axs_oos_line.flatten()[chain_num:],
     ):
         ax_is.remove()
         ax_oos.remove()
-        ax_oos_line.remove()
 
-    for c, ax_is, ax_oos, ax_oos_line in zip(
+    for c, ax_is, ax_oos in zip(
         range(chain_num),
         axs_is.flatten()[:chain_num],
         axs_oos.flatten()[:chain_num],
-        axs_oos_line.flatten()[:chain_num],
     ):
 
         observed_is = ax_is.scatter(
@@ -331,31 +337,6 @@ def is_oos_plot_lm(
         ax_oos.set_xlabel(None)
         ax_oos.set_ylabel(None)
 
-        observed_oos_line = ax_oos_line.scatter(
-            x=observed_data.loc[:, x_name],
-            y=observed_data.loc[:, obs_name],
-            color="black",
-        )
-        rows_chain = oos_data.chain == c
-        for color, draw in enumerate(choice_sample):
-            # scale color int to [0,1] for colormap
-            color /= num_samples
-            rows_draw_chain = (rows_chain) & (oos_data.draw == draw)
-            for hidden_x in oos_data[x_hidden].unique():
-                rows_draw_chain_hidden_x = (rows_draw_chain) & (
-                    oos_data[x_hidden] == hidden_x
-                )
-                ax_oos_line.plot(
-                    oos_data.loc[rows_draw_chain_hidden_x, x_name],
-                    oos_data.loc[rows_draw_chain_hidden_x, y_name],
-                    color=color_map(color),
-                    alpha=0.7,
-                )
-
-        ax_oos_line.set_title(f"Chain {c}")
-        ax_oos_line.set_xlabel(None)
-        ax_oos_line.set_ylabel(None)
-
     Fig_is.supxlabel(x_name)
     Fig_is.supylabel(y_name)
     Fig_is.legend(
@@ -378,19 +359,56 @@ def is_oos_plot_lm(
     )
     Fig_oos.tight_layout()
 
-    Fig_oos_line.supxlabel(x_name)
-    Fig_oos_line.supylabel(y_name)
-    line = mlines.Line2D([], [], color="black", label="predicted")
-    Fig_oos_line.legend(
-        [observed_oos_line, line],
-        ["observed", "predicted"],
-        loc="lower center",
-        ncols=2,
-        bbox_to_anchor=(0.5, 0.05),
-    )
-    Fig_oos_line.tight_layout()
+    if plot_line_plot:
+        Fig_oos_line, axs_oos_line = plt.subplots(
+            nrow, ncol, figsize=figsize, sharex=True
+        )
 
-    return Fig_is, Fig_oos, Fig_oos_line
+        for ax_oos_line in axs_oos_line.flatten()[chain_num:]:
+            ax_oos_line.remove()
+
+        for c, ax_oos_line in zip(range(chain_num), axs_oos_line.flatten()[:chain_num]):
+            observed_oos_line = ax_oos_line.scatter(
+                x=observed_data.loc[:, x_name],
+                y=observed_data.loc[:, obs_name],
+                color="black",
+            )
+            rows_chain = oos_data.chain == c
+            for color, draw in enumerate(choice_sample):
+                # scale color int to [0,1] for colormap
+                color /= num_samples
+                rows_draw_chain = (rows_chain) & (oos_data.draw == draw)
+                for hidden_x in oos_data[x_hidden].unique():
+                    rows_draw_chain_hidden_x = (rows_draw_chain) & (
+                        oos_data[x_hidden] == hidden_x
+                    )
+                    ax_oos_line.plot(
+                        oos_data.loc[rows_draw_chain_hidden_x, x_name],
+                        oos_data.loc[rows_draw_chain_hidden_x, y_name],
+                        color=color_map(color),
+                        alpha=0.7,
+                    )
+
+            ax_oos_line.set_title(f"Chain {c}")
+            ax_oos_line.set_xlabel(None)
+            ax_oos_line.set_ylabel(None)
+
+        Fig_oos_line.supxlabel(x_name)
+        Fig_oos_line.supylabel(y_name)
+        line = mlines.Line2D([], [], color="black", label="predicted")
+        Fig_oos_line.legend(
+            [observed_oos_line, line],
+            ["observed", "predicted"],
+            loc="lower center",
+            ncols=2,
+            bbox_to_anchor=(0.5, 0.05),
+        )
+        Fig_oos_line.tight_layout()
+
+        return Fig_is, Fig_oos, Fig_oos_line
+
+    else:
+        return Fig_is, Fig_oos
 
 
 def chain_comparison_posterior_plot(
