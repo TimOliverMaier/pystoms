@@ -213,29 +213,29 @@ def is_oos_plot_lm(
         Fig_oos, ax_oos = plt.subplots(1, 1, figsize=(6, 4), sharex=True)
 
         ax_is.scatter(
-            x=observed_data.loc[:, x_name],
-            y=observed_data.loc[:, obs_name],
-            color="black",
-            label="observed",
-        )
-        ax_is.scatter(
             x=is_data.loc[:, x_name],
             y=is_data.loc[:, y_name],
             label="predicted",
             alpha=0.2,
         )
-
-        ax_oos.scatter(
+        ax_is.scatter(
             x=observed_data.loc[:, x_name],
             y=observed_data.loc[:, obs_name],
             color="black",
             label="observed",
         )
+
         ax_oos.scatter(
             x=oos_data.loc[:, x_name],
             y=oos_data.loc[:, y_name],
             label="predicted",
             alpha=0.2,
+        )
+        ax_oos.scatter(
+            x=observed_data.loc[:, x_name],
+            y=observed_data.loc[:, obs_name],
+            color="black",
+            label="observed",
         )
 
         Fig_is.supxlabel(x_name)
@@ -252,12 +252,6 @@ def is_oos_plot_lm(
         if plot_line_plot:
             Fig_oos_line, ax_oos_line = plt.subplots(1, 1, figsize=(6, 4), sharex=True)
 
-            ax_oos_line_observed = ax_oos_line.scatter(
-                x=observed_data.loc[:, x_name],
-                y=observed_data.loc[:, obs_name],
-                color="black",
-            )
-
             for color, draw in enumerate(choice_sample):
                 # scale color int to [0,1] for colormap
                 color /= num_samples
@@ -270,6 +264,11 @@ def is_oos_plot_lm(
                         color=color_map(color),
                         alpha=0.7,
                     )
+            ax_oos_line_observed = ax_oos_line.scatter(
+                x=observed_data.loc[:, x_name],
+                y=observed_data.loc[:, obs_name],
+                color="black",
+            )
             Fig_oos_line.supxlabel(x_name)
             Fig_oos_line.supylabel(y_name)
 
@@ -308,29 +307,29 @@ def is_oos_plot_lm(
         axs_oos.flatten()[:chain_num],
     ):
 
-        observed_is = ax_is.scatter(
-            x=observed_data.loc[:, x_name],
-            y=observed_data.loc[:, obs_name],
-            color="black",
-        )
         predicted_is = ax_is.scatter(
             x=is_data.loc[is_data.chain == c, x_name],
             y=is_data.loc[is_data.chain == c, y_name],
             alpha=0.2,
         )
-        ax_is.set_title(f"Chain {c}")
-        ax_is.set_xlabel(None)
-        ax_is.set_ylabel(None)
-
-        observed_oos = ax_oos.scatter(
+        observed_is = ax_is.scatter(
             x=observed_data.loc[:, x_name],
             y=observed_data.loc[:, obs_name],
             color="black",
         )
+        ax_is.set_title(f"Chain {c}")
+        ax_is.set_xlabel(None)
+        ax_is.set_ylabel(None)
+
         predicted_oos = ax_oos.scatter(
             x=oos_data.loc[oos_data.chain == c, x_name],
             y=oos_data.loc[oos_data.chain == c, y_name],
             alpha=0.2,
+        )
+        observed_oos = ax_oos.scatter(
+            x=observed_data.loc[:, x_name],
+            y=observed_data.loc[:, obs_name],
+            color="black",
         )
 
         ax_oos.set_title(f"Chain {c}")
@@ -368,11 +367,7 @@ def is_oos_plot_lm(
             ax_oos_line.remove()
 
         for c, ax_oos_line in zip(range(chain_num), axs_oos_line.flatten()[:chain_num]):
-            observed_oos_line = ax_oos_line.scatter(
-                x=observed_data.loc[:, x_name],
-                y=observed_data.loc[:, obs_name],
-                color="black",
-            )
+
             rows_chain = oos_data.chain == c
             for color, draw in enumerate(choice_sample):
                 # scale color int to [0,1] for colormap
@@ -388,6 +383,11 @@ def is_oos_plot_lm(
                         color=color_map(color),
                         alpha=0.7,
                     )
+            observed_oos_line = ax_oos_line.scatter(
+                x=observed_data.loc[:, x_name],
+                y=observed_data.loc[:, obs_name],
+                color="black",
+            )
 
             ax_oos_line.set_title(f"Chain {c}")
             ax_oos_line.set_xlabel(None)
