@@ -9,7 +9,11 @@ from matplotlib import colormaps
 
 
 def plot_feature_im_mz(
-    mz: ArrayLike, scan: ArrayLike, intensity: ArrayLike, standardized: bool = True
+    mz: ArrayLike,
+    scan: ArrayLike,
+    intensity: ArrayLike,
+    normalized: bool = True,
+    **plot_kwargs,
 ):
     """
     Summary plot of a precursor feature
@@ -22,17 +26,17 @@ def plot_feature_im_mz(
     :type scan: ArrayLike
     :param intensity: Intensity values
     :type intensity: ArrayLike
-    :param standardized: Wether values are standardized (alters labels)
-    :type standardized: bool, optional
+    :param normalized: Wether values are normalized (alters labels)
+    :type normalized: bool, optional
     :return: Summary Figure
     :rtype: plt.Figure
     """
-    if standardized:
-        suffix = " (std)"
+    if normalized:
+        suffix = " (normalized)"
     else:
         suffix = ""
 
-    Fig, axs = plt.subplot_mosaic("AA;BC", figsize=(6, 4))
+    Fig, axs = plt.subplot_mosaic("AA;BC", **plot_kwargs)
 
     # Intensity vs Mz
     axs["A"].scatter(x=mz, y=intensity)
