@@ -213,8 +213,8 @@ def is_oos_plot_lm(
     color_map = colormaps["twilight"]
 
     if chain_num == 1:
-        Fig_is, ax_is = plt.subplots(1, 1, figsize=(6, 4), sharex=True)
-        Fig_oos, ax_oos = plt.subplots(1, 1, figsize=(6, 4), sharex=True)
+        Fig_is, ax_is = plt.subplots(1, 1, figsize=(4.7, 3.5), sharex=True)
+        Fig_oos, ax_oos = plt.subplots(1, 1, figsize=(4.7, 3.5), sharex=True)
 
         ax_is.scatter(
             x=is_data.loc[:, x_name],
@@ -247,14 +247,16 @@ def is_oos_plot_lm(
         Fig_oos.supxlabel(x_name)
         Fig_oos.supylabel(y_name)
 
-        Fig_is.legend(loc="lower center", ncol=2, bbox_to_anchor=(0.5, 0.05))
-        Fig_oos.legend(loc="lower center", ncol=2, bbox_to_anchor=(0.5, 0.05))
+        Fig_is.legend(loc="lower center", ncol=2, bbox_to_anchor=(0.5, 0.025))
+        Fig_oos.legend(loc="lower center", ncol=2, bbox_to_anchor=(0.5, 0.025))
 
         Fig_is.tight_layout()
         Fig_oos.tight_layout()
 
         if plot_line_plot:
-            Fig_oos_line, ax_oos_line = plt.subplots(1, 1, figsize=(6, 4), sharex=True)
+            Fig_oos_line, ax_oos_line = plt.subplots(
+                1, 1, figsize=(4.7, 3.5), sharex=True
+            )
 
             for color, draw in enumerate(choice_sample):
                 # scale color int to [0,1] for colormap
@@ -282,7 +284,7 @@ def is_oos_plot_lm(
                 ["observed", "predicted"],
                 loc="lower center",
                 ncol=2,
-                bbox_to_anchor=(0.5, 0.05),
+                bbox_to_anchor=(0.5, 0.025),
             )
 
             Fig_oos_line.tight_layout()
@@ -292,7 +294,7 @@ def is_oos_plot_lm(
 
     ncol = 2
     nrow = int(chain_num // 2 + chain_num % 2)
-    figsize = (6, 2 * nrow)
+    figsize = (4.7, 1.75 * nrow)
 
     Fig_is, axs_is = plt.subplots(nrow, ncol, figsize=figsize, sharex=True)
     Fig_oos, axs_oos = plt.subplots(nrow, ncol, figsize=figsize, sharex=True)
@@ -347,7 +349,7 @@ def is_oos_plot_lm(
         ["observed", "predicted"],
         loc="lower center",
         ncols=2,
-        bbox_to_anchor=(0.5, 0.05),
+        bbox_to_anchor=(0.5, 0.025),
     )
     Fig_is.tight_layout()
 
@@ -358,7 +360,7 @@ def is_oos_plot_lm(
         ["observed", "predicted"],
         loc="lower center",
         ncols=2,
-        bbox_to_anchor=(0.5, 0.05),
+        bbox_to_anchor=(0.5, 0.025),
     )
     Fig_oos.tight_layout()
 
@@ -405,7 +407,7 @@ def is_oos_plot_lm(
             ["observed", "predicted"],
             loc="lower center",
             ncols=2,
-            bbox_to_anchor=(0.5, 0.05),
+            bbox_to_anchor=(0.5, 0.025),
         )
         Fig_oos_line.tight_layout()
 
@@ -449,7 +451,7 @@ def chain_comparison_posterior_plot(
 
     ncol = 2
     nrow = int(chain_num // 2 + chain_num % 2)
-    figsize = (6, 2 * nrow)
+    figsize = (4.7, 1.75 * nrow)
 
     Fig, axs = plt.subplots(nrow, ncol, figsize=figsize, sharex=sharex, sharey=sharey)
     # remove unnecessary axes at the end of plot in case of uneven chain number
